@@ -1,7 +1,10 @@
 {
-  "extends": "@actor-core/cloudflare-workers/tsconfig",
-  "compilerOptions": {
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
-  }
+	"extends": "@actor-core/cloudflare-workers/tsconfig",
+	"compilerOptions": {
+		"strict": true,
+		"jsx": "react-jsx",
+		"jsxImportSource": "hono/jsx",
+		"allowImportingTsExtensions": true
+	},
+	"include": ["src/**/*.ts", "src/**/*.tsx"]
 }
