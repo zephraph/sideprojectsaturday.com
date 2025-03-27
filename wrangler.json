@@ -1,0 +1,28 @@
+{
+	"name": "actor-core",
+	"main": "src/index.ts",
+	"compatibility_date": "2025-01-29",
+	"migrations": [
+		{
+			"new_classes": ["ActorHandler"],
+			"tag": "v1"
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"class_name": "ActorHandler",
+				"name": "ACTOR_DO"
+			}
+		]
+	},
+	"kv_namespaces": [
+		{
+			"binding": "ACTOR_KV",
+			"id": "TODO"
+		}
+	],
+	"observability": {
+		"enabled": true
+	}
+}

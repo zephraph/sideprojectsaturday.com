@@ -1,0 +1,33 @@
+{
+	"name": "sideprojectsaturday.com",
+	"description": "The official website for Side Project Saturday",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev --port 6420",
+		"start": "wrangler dev --port 6420",
+		"cf-typegen": "wrangler types",
+		"check-types": "tsc --noEmit",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"devDependencies": {
+		"@actor-core/cloudflare-workers": "0.7.6",
+		"@cloudflare/vitest-pool-workers": "^0.8.7",
+		"@cloudflare/workers-types": "^4.20250129.0",
+		"@types/node": "^22.13.9",
+		"actor-core": "0.7.6",
+		"tsx": "^3.12.7",
+		"typescript": "^5.7.3",
+		"vitest": "^3.0.9",
+		"wrangler": "^3.101.0"
+	},
+	"packageManager": "pnpm@10.6.5+sha512.cdf928fca20832cd59ec53826492b7dc25dc524d4370b6b4adbf65803d32efaa6c1c88147c0ae4e8d579a6c9eec715757b50d4fa35eea179d868eada4ed043af",
+	"dependencies": {
+		"effection": "4.0.0-alpha.7",
+		"hono": "^4.7.5",
+		"zod": "^3.24.2"
+	}
+}

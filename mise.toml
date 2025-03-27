@@ -1,0 +1,14 @@
+[tools]
+node = "23.5.0"
+"npm:wrangler" = "4.5.0"
+pnpm = "9.15.1"
+
+[tasks]
+deploy = "wrangler deploy"
+dev = "wrangler dev --port 6420"
+start = "wrangler dev --port 6420"
+cf-typegen = "wrangler types"
+check-types = "tsc --noEmit"
+
+[env]
+_.path = "./node_modules/.bin"
