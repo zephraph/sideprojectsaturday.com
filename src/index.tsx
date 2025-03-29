@@ -11,9 +11,9 @@ import { Base } from "./views/base.tsx";
 import { createMiddleware } from "hono/factory";
 import { Homepage } from "./views/homepage.tsx";
 import { CheckReservation } from "./components/CheckReservation.tsx";
-import { SignupForm } from "./components/SignupForm.tsx";
 import { ReservationResults } from "./components/ReservationResults.tsx";
 import { emailActor } from "./actors/email.ts";
+import { SignupResults } from "./components/SignupResults.tsx";
 
 //#region ActorCore
 const ACTOR_ROUTE = "/act";
@@ -54,7 +54,7 @@ app.use(
 app.get("/", (c) => c.render(<Homepage />));
 app.get("/check", (c) => c.render(<CheckReservation />));
 app.post("/check", (c) => c.render(<ReservationResults />));
-app.post("/signup", (c) => c.render(<SignupForm />));
+app.post("/signup", (c) => c.render(<SignupResults />));
 // TODO: Add resend webhooks
 // app.post("/webhook", async (c) => {
 // 	const url = new URL(c.req.url);

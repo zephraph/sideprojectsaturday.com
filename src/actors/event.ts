@@ -1,5 +1,6 @@
 import { actor, UserError } from "actor-core";
 import { z } from "zod";
+import { isEventFull } from "../lib";
 
 type Guest = {
 	id: string;
@@ -208,11 +209,7 @@ export const eventActor = actor({
 				...guest,
 			};
 
-			// Check if event is full
-			const goingCount = event.guests.filter(
-				(g) => g.status === "going",
-			).length;
-			const status = goingCount >= event.guestLimit ? "waitlisted" : "going";
+			const status = isEventFull(event) ? "waitlisted" : "going";
 
 			c.state.guests.set(newGuest.id, newGuest);
 			event.guests.push({ guestId: newGuest.id, status });

@@ -4,7 +4,6 @@ import { useEventActor } from "../hooks/use-event-actor";
 import { Hero } from "./Hero";
 import { EventDetails } from "./EventDetails";
 import { SignupForm } from "./SignupForm";
-import { match } from "ts-pattern";
 import { ReservationConfirmation } from "./ReservationConfirmation";
 import { SignupSuccess } from "./SignupSuccess";
 
@@ -21,7 +20,7 @@ export const SignupResults = async () => {
 	const event = await eventActor.getNextEvent();
 
 	if (!result.success) {
-		return c.render(
+		return (
 			<main>
 				<Hero />
 				<EventDetails event={event} />
@@ -32,7 +31,7 @@ export const SignupResults = async () => {
 						email: formData.email as string,
 					}}
 				/>
-			</main>,
+			</main>
 		);
 	}
 
@@ -56,9 +55,9 @@ export const SignupResults = async () => {
 		}
 	}
 
-	return c.render(
+	return (
 		<main>
-			<SignupSuccess status={status} />
-		</main>,
+			<SignupSuccess event={event} />
+		</main>
 	);
 };

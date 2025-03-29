@@ -1,6 +1,6 @@
 import type { FC } from "hono/jsx";
-import { EventStatus, getEventDateMessage, getEventTime } from "./types";
-import type { Event } from "../actors/event";
+import { getEventDateMessage, getEventTime } from "../lib";
+import type { Event } from "../types.d.ts";
 
 export const EventDetails: FC<{ event?: Event }> = ({ event }) => (
 	<div class="max-w-3xl mx-auto px-4">
@@ -19,11 +19,17 @@ export const EventDetails: FC<{ event?: Event }> = ({ event }) => (
 						</div>
 					</div>
 				)}
-				<p class="text-slate-500 max-w-xl mx-auto">
-					Bring your side project and join other developers for three focused
-					hours of building, learning, and sharing. Coffee and good vibes
-					included!
-				</p>
+				{event ? (
+					<p class="text-slate-500 max-w-xl mx-auto">
+						Bring your side project and join other developers for three focused
+						hours of building, learning, and sharing. Coffee and good vibes
+						included!
+					</p>
+				) : (
+					<p class="text-slate-500 max-w-xl mx-auto">
+						Sign up to get notified when the next event is scheduled.
+					</p>
+				)}
 			</div>
 		</div>
 	</div>
