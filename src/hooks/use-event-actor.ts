@@ -1,8 +1,6 @@
-import { useRequestContext } from "hono/jsx-renderer";
-import type { HonoEnv } from "..";
+import type { HonoContext } from "..";
 
-export const useEventActor = async (location: string = "nyc") => {
-	const c = useRequestContext<HonoEnv>();
-	const status = await c.var.client.event.get({ tags: { location } });
+export const useEventActor = async (context: HonoContext, location: string = "nyc") => {
+	const status = await context.var.client.event.get({ tags: { location } });
 	return status;
 };

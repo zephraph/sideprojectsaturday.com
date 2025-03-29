@@ -7,7 +7,7 @@ import { ReservationConfirmation } from "./ReservationConfirmation";
 
 export const ReservationResults = async () => {
 	const c = useRequestContext();
-	const event = await useEventActor();
+	const event = await useEventActor(c);
 	const formData = await c.req.parseBody();
 	const result = zCheckEmail.safeParse({
 		email: formData.email,

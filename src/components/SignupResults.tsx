@@ -11,7 +11,7 @@ import { SignupSuccess } from "./SignupSuccess";
 export const SignupResults = async () => {
 	const c = useRequestContext();
 	const formData = await c.req.parseBody();
-	const eventActor = await useEventActor();
+	const eventActor = await useEventActor(c);
 
 	const result = zSignup.safeParse({
 		name: formData.name,
