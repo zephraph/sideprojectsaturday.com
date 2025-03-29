@@ -10,7 +10,7 @@ dev = "wrangler dev --port 6420"
 start = "wrangler dev --port 6420"
 cf-typegen = "wrangler types"
 check-types = "tsc --noEmit"
-format = "biome format --fix ."
+fmt = "biome format --fix ."
 
 [env]
 _.path = "./node_modules/.bin"
