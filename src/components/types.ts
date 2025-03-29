@@ -14,3 +14,7 @@ export function getEventDateMessage(date?: Date): string {
 		? "This Saturday"
 		: `Next Saturday, ${date.toLocaleDateString("en-US", { month: "long", day: "numeric" })}`;
 }
+
+export function getEventTime(startDate: Date, endDate: Date): string {
+	return `${startDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} - ${endDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`;
+}

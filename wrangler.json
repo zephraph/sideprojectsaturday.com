@@ -1,6 +1,6 @@
 {
 	"name": "actor-core",
-	"main": "src/index.ts",
+	"main": "src/index.tsx",
 	"compatibility_date": "2025-01-29",
 	"migrations": [
 		{
