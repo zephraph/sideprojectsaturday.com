@@ -1,10 +1,9 @@
-import { Client, createClient } from "actor-core/client";
-import type { ActorApp } from ".";
-import type { Actors, Event } from "./types.d.ts";
+import { createClient } from "actor-core/client";
+import type { Event } from "./types.d.ts";
 import { ACTOR_ROUTE } from "./constants";
-import { ActorCoreApp, ActorDefinition } from "actor-core";
-import { eventActor } from "./actors/event.ts";
-import { emailActor } from "./actors/email.ts";
+import type { ActorCoreApp, ActorDefinition } from "actor-core";
+import type { eventActor } from "./actors/event.ts";
+import type { emailActor } from "./actors/email.ts";
 
 export function isEventFull(event: Event) {
   return event.guestLimit <= event.guests.filter((g) => g.status === "going").length;
