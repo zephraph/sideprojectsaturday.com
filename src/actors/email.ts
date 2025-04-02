@@ -30,6 +30,12 @@ export const emailActor = actor({
     };
   },
   actions: {
+    isVerified(c, emailAddress: EmailAddress) {
+      zEmailAddress.parse(emailAddress);
+      const { emails, emailIndex } = c.state;
+      const email = emails[emailIndex[emailAddress]];
+      return email?.verified ?? false;
+    },
     verify(c, emailId: string) {
       const { emails, emailIndex } = c.state;
       const email = emails[emailIndex[emailId]];

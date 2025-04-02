@@ -1,13 +1,13 @@
 import { useRequestContext } from "hono/jsx-renderer";
-import { useEventActor } from "../hooks/use-event-actor";
 import { zCheckEmail } from "../schemas";
 import { CheckReservation } from "./CheckReservation";
 import { SignupForm } from "./SignupForm";
 import { ReservationConfirmation } from "./ReservationConfirmation";
+import { getEventActor } from "../lib";
 
 export const ReservationResults = async () => {
 	const c = useRequestContext();
-	const event = await useEventActor(c);
+	const eventActor = await getEventActor(c.env);
 	const formData = await c.req.parseBody();
 	const result = zCheckEmail.safeParse({
 		email: formData.email,
@@ -23,7 +23,7 @@ export const ReservationResults = async () => {
 		);
 	}
 
-	const guest = await event.getGuest({ email: result.data.email });
+	const guest = await eventActor.getGuest({ email: result.data.email });
 
 	if (!guest) {
 		return (

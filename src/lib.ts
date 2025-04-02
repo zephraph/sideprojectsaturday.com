@@ -1,7 +1,10 @@
-import { createClient } from "actor-core/client";
-import { type ActorApp } from ".";
-import { Event } from "./actors/event";
+import { Client, createClient } from "actor-core/client";
+import type { ActorApp } from ".";
+import type { Actors, Event } from "./types.d.ts";
 import { ACTOR_ROUTE } from "./constants";
+import { ActorCoreApp, ActorDefinition } from "actor-core";
+import { eventActor } from "./actors/event.ts";
+import { emailActor } from "./actors/email.ts";
 
 export function isEventFull(event: Event) {
   return event.guestLimit <= event.guests.filter((g) => g.status === "going").length;
@@ -20,4 +23,17 @@ export function getEventDateMessage(date?: Date): string {
 
 export function getEventTime(startDate: Date, endDate: Date): string {
   return `${startDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })} - ${endDate.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+export function getActorClient<A extends { [key: string]: ActorDefinition<any, any, any, any, any> }>(appUrl: string) {
+  const url = new URL(appUrl);
+  return createClient<ActorCoreApp<A>>(`${url.origin}${ACTOR_ROUTE}`)
+}
+
+export function getEventActor(env: Env, { event = "sps:nyc" }: { event?: string } = { event: "sps:nyc" }) {
+  return getActorClient<{ event: typeof eventActor }>(env.APP_URL).event.get({ tags: { event } })
+}
+
+export function getEmailActor(env: Env, { context = "event:sps:nyc" }: { context?: string } = { context: "event:sps:nyc" }) {
+  return getActorClient<{ email: typeof emailActor }>(env.APP_URL).email.get({ tags: { context } });
 }

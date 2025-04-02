@@ -1,6 +1,8 @@
-import { actor, UserError } from "actor-core";
+import { actor, ActorCoreApp, UserError } from "actor-core";
 import { z } from "zod";
-import { isEventFull } from "../lib";
+import { isEventFull, getEmailActor } from "../lib";
+import { emailActor } from "./email";
+import { ActorInstance } from "actor-core/driver-helpers";
 
 type Guest = {
 	id: string;

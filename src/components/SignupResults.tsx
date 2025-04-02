@@ -1,20 +1,26 @@
 import { useRequestContext } from "hono/jsx-renderer";
 import { zSignup } from "../schemas";
-import { useEventActor } from "../hooks/use-event-actor";
 import { Hero } from "./Hero";
 import { EventDetails } from "./EventDetails";
 import { SignupForm } from "./SignupForm";
 import { ReservationConfirmation } from "./ReservationConfirmation";
 import { SignupSuccess } from "./SignupSuccess";
+import { getEmailActor, getEventActor } from "../lib";
+import { VerifyEmail } from "./VerifyEmail";
 
 export const SignupResults = async () => {
 	const c = useRequestContext();
-	const formData = await c.req.parseBody();
-	const eventActor = await useEventActor(c);
+
+	// Try to get data from query parameters first
+	const queryParams = c.req.query();
+	const params = 'name' in queryParams && 'email' in queryParams ? queryParams : await c.req.parseBody();
+
+	const eventActor = await getEventActor(c.env);
+	const emailActor = await getEmailActor(c.env);
 
 	const result = zSignup.safeParse({
-		name: formData.name,
-		email: formData.email,
+		name: params.name,
+		email: params.email,
 	});
 
 	const event = await eventActor.getNextEvent();
@@ -27,10 +33,18 @@ export const SignupResults = async () => {
 				<SignupForm
 					errors={result.error.flatten().fieldErrors}
 					values={{
-						name: formData.name as string,
-						email: formData.email as string,
+						name: params.name as string,
+						email: params.email as string,
 					}}
 				/>
+			</main>
+		);
+	}
+
+	if (!emailActor.isVerified(result.data.email)) {
+		return (
+			<main>
+				<VerifyEmail email={result.data.email} />
 			</main>
 		);
 	}

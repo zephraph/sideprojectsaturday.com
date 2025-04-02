@@ -6,4 +6,4 @@ export interface EventStatus {
 	nextDate?: Date;
 }
 
-
+export type Actors<A> = A extends ActorCoreApp<infer Actors> ? Actors[keyof Actors] : never;

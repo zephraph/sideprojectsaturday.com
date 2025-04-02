@@ -1,6 +1,6 @@
 import { FC, PropsWithChildren } from "hono/jsx";
 
-export const Base: FC<PropsWithChildren> = ({ children }) => (
+export const PageShell: FC<PropsWithChildren> = ({ children }) => (
 	<html lang="en">
 		<head>
 			<meta charset="utf-8" />
