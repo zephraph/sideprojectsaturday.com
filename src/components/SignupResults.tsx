@@ -15,8 +15,8 @@ export const SignupResults = async () => {
 	const queryParams = c.req.query();
 	const params = 'name' in queryParams && 'email' in queryParams ? queryParams : await c.req.parseBody();
 
-	const eventActor = await getEventActor(c.env);
-	const emailActor = await getEmailActor(c.env);
+	const eventActor = await getEventActor(c);
+	const emailActor = await getEmailActor(c);
 
 	const result = zSignup.safeParse({
 		name: params.name,

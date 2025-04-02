@@ -4,7 +4,7 @@ import { type Context, Hono } from "hono";
 import { jsxRenderer } from "hono/jsx-renderer";
 import { doorActor } from "./actors/door.ts";
 import { eventActor } from "./actors/event.ts";
-import type { Client } from "actor-core/client";
+import { createClient, type Client } from "actor-core/client";
 
 import { PageShell } from "./components/PageShell.tsx";
 
@@ -17,6 +17,11 @@ import { SignupResults } from "./components/SignupResults.tsx";
 import { ACTOR_ROUTE } from "./constants.ts";
 
 //#region ActorCore
+const actorMiddleware = createMiddleware<HonoEnv>(async (c, next) => {
+	const url = new URL(c.req.url);
+	c.set("client", createClient<ActorApp>(`${url.origin}${ACTOR_ROUTE}`));
+	await next();
+});
 export type ActorApp = typeof actorApp;
 export const actorApp = setup({
 	actors: { door: doorActor, event: eventActor, email: emailActor },
@@ -34,6 +39,7 @@ export type HonoEnv = {
 export type HonoContext = Context<HonoEnv>;
 const app = new Hono<HonoEnv>();
 
+app.use(actorMiddleware);
 app.use(jsxRenderer());
 app.use("*", jsxRenderer(({ children }) => <PageShell>{children}</PageShell>));
 

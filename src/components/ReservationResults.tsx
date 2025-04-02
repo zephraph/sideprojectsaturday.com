@@ -7,7 +7,7 @@ import { getEventActor } from "../lib";
 
 export const ReservationResults = async () => {
 	const c = useRequestContext();
-	const eventActor = await getEventActor(c.env);
+	const eventActor = await getEventActor(c);
 	const formData = await c.req.parseBody();
 	const result = zCheckEmail.safeParse({
 		email: formData.email,

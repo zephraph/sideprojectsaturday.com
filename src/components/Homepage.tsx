@@ -1,4 +1,4 @@
-import { FC } from "hono/jsx";
+import type { FC } from "hono/jsx";
 import { Background } from "./Background";
 import { Hero } from "./Hero";
 import { EventDetails } from "./EventDetails";
@@ -11,7 +11,7 @@ import type { HonoEnv } from "../index";
 export const Homepage: FC = async () => {
 	const c = useRequestContext<HonoEnv>();
 	
-	const eventActor = await getEventActor(c.env);
+	const eventActor = await getEventActor(c);
 	const event = await eventActor.getCurrentOrNextEvent();
 	return (
 		<main>
