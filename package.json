@@ -5,27 +5,34 @@
 	"private": true,
 	"type": "module",
 	"devDependencies": {
-		"@actor-core/cloudflare-workers": "0.7.6",
-		"@cloudflare/vitest-pool-workers": "^0.8.7",
-		"@cloudflare/workers-types": "^4.20250129.0",
-		"@types/node": "^22.13.9",
-		"actor-core": "0.7.6",
-		"tsx": "^3.12.7",
-		"typescript": "^5.7.3",
-		"vitest": "^3.0.9"
+		"@actor-core/cloudflare-workers": "0.8.0",
+		"@cloudflare/vitest-pool-workers": "^0.8.14",
+		"@cloudflare/workers-types": "^4.20250409.0",
+		"@types/node": "^22.14.0",
+		"actor-core": "0.8.0",
+		"tsx": "^4.19.3",
+		"typescript": "^5.8.3",
+		"vitest": "^3.1.1"
 	},
 	"packageManager": "pnpm@10.6.5+sha512.cdf928fca20832cd59ec53826492b7dc25dc524d4370b6b4adbf65803d32efaa6c1c88147c0ae4e8d579a6c9eec715757b50d4fa35eea179d868eada4ed043af",
 	"dependencies": {
 		"effection": "4.0.0-alpha.7",
-		"hono": "^4.7.5",
+		"hono": "^4.7.6",
 		"jsx-email": "^2.7.1",
 		"resend": "^4.2.0",
-		"svix": "^1.62.0",
-		"ts-pattern": "^5.6.2",
+		"svix": "^1.63.1",
+		"ts-pattern": "^5.7.0",
 		"zod": "^3.24.2"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": ["esbuild"],
-		"ignoredBuiltDependencies": ["@parcel/watcher"]
+		"onlyBuiltDependencies": [
+			"cbor-extract",
+			"esbuild",
+			"sharp",
+			"workerd"
+		],
+		"ignoredBuiltDependencies": [
+			"@parcel/watcher"
+		]
 	}
 }
