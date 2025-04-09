@@ -1,17 +1,16 @@
 [tools]
 node = "22.12.0"
 "npm:@actor-core/cli" = "0.8.0"
-"npm:@biomejs/biome" = "1.9.4"
-"npm:wrangler" = "4.5.1"
 pnpm = "9.15.1"
 
-[tasks]
-deploy = "wrangler deploy"
-dev = "wrangler dev --port 6420"
-start = "wrangler dev --port 6420"
-cf-typegen = "wrangler types"
-check-types = "tsc --noEmit"
-fmt = "biome format --fix ."
 
 [env]
 _.path = "./node_modules/.bin"
+
+[tasks]
+deploy = "pnpm run deploy"
+dev = "pnpm run dev"
+start = "pnpm run start"
+cf-typegen = "pnpm run cf-typegen"
+check-types = "pnpm run check-types"
+fmt = "pnpm run fmt"

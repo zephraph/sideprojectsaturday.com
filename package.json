@@ -6,6 +6,7 @@
 	"type": "module",
 	"devDependencies": {
 		"@actor-core/cloudflare-workers": "0.8.0",
+		"@biomejs/biome": "^1.9.4",
 		"@cloudflare/vitest-pool-workers": "^0.8.14",
 		"@cloudflare/workers-types": "^4.20250409.0",
 		"@types/node": "^22.14.0",
@@ -13,6 +14,14 @@
 		"tsx": "^4.19.3",
 		"typescript": "^5.8.3",
 		"vitest": "^3.1.1"
+	},
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev --port 6420",
+		"start": "wrangler dev --port 6420",
+		"cf-typegen": "wrangler types",
+		"check-types": "tsc --noEmit",
+		"fmt": "biome format --fix ."
 	},
 	"packageManager": "pnpm@10.6.5+sha512.cdf928fca20832cd59ec53826492b7dc25dc524d4370b6b4adbf65803d32efaa6c1c88147c0ae4e8d579a6c9eec715757b50d4fa35eea179d868eada4ed043af",
 	"dependencies": {
@@ -25,14 +34,7 @@
 		"zod": "^3.24.2"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": [
-			"cbor-extract",
-			"esbuild",
-			"sharp",
-			"workerd"
-		],
-		"ignoredBuiltDependencies": [
-			"@parcel/watcher"
-		]
+		"onlyBuiltDependencies": ["cbor-extract", "esbuild", "sharp", "workerd"],
+		"ignoredBuiltDependencies": ["@parcel/watcher"]
 	}
 }
