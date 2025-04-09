@@ -4,9 +4,7 @@ interface VerifyEmailProps {
 	email: string;
 }
 
-export const VerifyEmail: FC<VerifyEmailProps> = ({
-	email,
-}) => (
+export const VerifyEmail: FC<VerifyEmailProps> = ({ email }) => (
 	<div class="max-w-xl mx-auto px-4 py-32 text-center">
 		<div class="space-y-6">
 			<h2 class="text-2xl font-bold text-slate-600">Check Your Email</h2>

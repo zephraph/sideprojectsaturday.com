@@ -1,18 +1,18 @@
 import { createRouter } from "@actor-core/cloudflare-workers";
 import { setup } from "actor-core";
+import { type Client, createClient } from "actor-core/client";
 import { type Context, Hono } from "hono";
 import { jsxRenderer } from "hono/jsx-renderer";
 import { doorActor } from "./actors/door.ts";
 import { eventActor } from "./actors/event.ts";
-import { createClient, type Client } from "actor-core/client";
 
 import { PageShell } from "./components/PageShell.tsx";
 
 import { createMiddleware } from "hono/factory";
-import { Homepage } from "./components/Homepage.tsx";
-import { CheckReservation } from "./components/CheckReservation.tsx";
-import { ReservationResults } from "./components/ReservationResults.tsx";
 import { emailActor } from "./actors/email.ts";
+import { CheckReservation } from "./components/CheckReservation.tsx";
+import { Homepage } from "./components/Homepage.tsx";
+import { ReservationResults } from "./components/ReservationResults.tsx";
 import { SignupResults } from "./components/SignupResults.tsx";
 import { ACTOR_ROUTE } from "./constants.ts";
 
@@ -41,7 +41,10 @@ const app = new Hono<HonoEnv>();
 
 app.use(actorMiddleware);
 app.use(jsxRenderer());
-app.use("*", jsxRenderer(({ children }) => <PageShell>{children}</PageShell>));
+app.use(
+	"*",
+	jsxRenderer(({ children }) => <PageShell>{children}</PageShell>),
+);
 
 app.route(ACTOR_ROUTE, actorRouter);
 

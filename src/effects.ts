@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { action, call, sleep, spawn, type Operation } from "effection";
+import { type Operation, action, call, sleep, spawn } from "effection";
+import type { z } from "zod";
 import { TimeoutError } from "./errors";
 
 // Operations
@@ -81,7 +81,7 @@ export function* retryWithBackoff<T>(
 			if (i === options.retries - 1) {
 				throw error;
 			}
-			const backoff = Math.pow(2, i - 1) * 1000;
+			const backoff = 2 ** (i - 1) * 1000;
 			const delayMs = Math.round((backoff * (1 + Math.random())) / 2);
 			yield* sleep(delayMs);
 		}

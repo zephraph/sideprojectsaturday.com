@@ -1,4 +1,4 @@
-import { FC, PropsWithChildren } from "hono/jsx";
+import type { FC, PropsWithChildren } from "hono/jsx";
 
 export const PageShell: FC<PropsWithChildren> = ({ children }) => (
 	<html lang="en">
@@ -6,7 +6,7 @@ export const PageShell: FC<PropsWithChildren> = ({ children }) => (
 			<meta charset="utf-8" />
 			<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 			<title>Side Project Saturdays</title>
-			<script src="https://cdn.twind.style" crossorigin="anonymous"></script>
+			<script src="https://cdn.twind.style" crossorigin="anonymous" />
 		</head>
 		<body class="font-sans antialiased">{children}</body>
 	</html>

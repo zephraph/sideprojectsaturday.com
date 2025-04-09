@@ -1,7 +1,7 @@
 import type { FC } from "hono/jsx";
-import { Event } from "../types";
-import { AddressWithMap } from "./AddressWithMap";
 import { isEventFull } from "../lib";
+import type { Event } from "../types";
+import { AddressWithMap } from "./AddressWithMap";
 
 export const SignupSuccess: FC<{ event?: Event }> = ({ event }) => {
 	let message = "";

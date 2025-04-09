@@ -1,9 +1,9 @@
 import { useRequestContext } from "hono/jsx-renderer";
+import { getEventActor } from "../lib";
 import { zCheckEmail } from "../schemas";
 import { CheckReservation } from "./CheckReservation";
-import { SignupForm } from "./SignupForm";
 import { ReservationConfirmation } from "./ReservationConfirmation";
-import { getEventActor } from "../lib";
+import { SignupForm } from "./SignupForm";
 
 export const ReservationResults = async () => {
 	const c = useRequestContext();

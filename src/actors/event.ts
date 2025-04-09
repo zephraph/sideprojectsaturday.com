@@ -1,4 +1,4 @@
-import { actor, UserError } from "actor-core";
+import { UserError, actor } from "actor-core";
 import { z } from "zod";
 import { isEventFull } from "../lib";
 

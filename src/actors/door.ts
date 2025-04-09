@@ -1,8 +1,8 @@
 /// <reference types="../../worker-configuration.d.ts" />
-import { actor, UserError } from "actor-core";
+import { UserError, actor } from "actor-core";
+import { type Operation, call, run } from "effection";
 import { z } from "zod";
 import { fetch, jsonFromRes } from "../effects";
-import { run, type Operation, call } from "effection";
 
 type OpenResponse =
 	| { success: true; openedAt: Date }

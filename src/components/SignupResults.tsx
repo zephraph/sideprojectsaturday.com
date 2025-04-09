@@ -1,11 +1,11 @@
 import { useRequestContext } from "hono/jsx-renderer";
-import { zSignup } from "../schemas";
-import { Hero } from "./Hero";
-import { EventDetails } from "./EventDetails";
-import { SignupForm } from "./SignupForm";
-import { ReservationConfirmation } from "./ReservationConfirmation";
-import { SignupSuccess } from "./SignupSuccess";
 import { getEmailActor, getEventActor } from "../lib";
+import { zSignup } from "../schemas";
+import { EventDetails } from "./EventDetails";
+import { Hero } from "./Hero";
+import { ReservationConfirmation } from "./ReservationConfirmation";
+import { SignupForm } from "./SignupForm";
+import { SignupSuccess } from "./SignupSuccess";
 import { VerifyEmail } from "./VerifyEmail";
 
 export const SignupResults = async () => {
@@ -13,7 +13,10 @@ export const SignupResults = async () => {
 
 	// Try to get data from query parameters first
 	const queryParams = c.req.query();
-	const params = 'name' in queryParams && 'email' in queryParams ? queryParams : await c.req.parseBody();
+	const params =
+		"name" in queryParams && "email" in queryParams
+			? queryParams
+			: await c.req.parseBody();
 
 	const eventActor = await getEventActor(c);
 	const emailActor = await getEmailActor(c);

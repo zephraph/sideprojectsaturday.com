@@ -1,20 +1,20 @@
-import { call, Operation } from "effection";
-import { PromiseToOperation } from "../effects.ts";
-import {
-	R2Object,
-	R2ObjectBody,
+import type {
 	R2Bucket,
 	R2Checksums,
-	R2HTTPMetadata,
-	R2Range,
-	R2GetOptions,
 	R2Conditional,
-	R2PutOptions,
-	R2MultipartOptions,
-	R2Objects,
-	R2MultipartUpload,
+	R2GetOptions,
+	R2HTTPMetadata,
 	R2ListOptions,
+	R2MultipartOptions,
+	R2MultipartUpload,
+	R2Object,
+	R2ObjectBody,
+	R2Objects,
+	R2PutOptions,
+	R2Range,
 } from "@cloudflare/workers-types";
+import { type Operation, call } from "effection";
+import type { PromiseToOperation } from "../effects.ts";
 
 type OperationR2Object = {
 	[K in keyof R2Object]: PromiseToOperation<R2Object[K]>;
@@ -24,14 +24,14 @@ type OperationR2Bucket = {
 	[K in keyof R2Bucket]: R2Bucket[K] extends (
 		...args: any[]
 	) => Promise<infer R>
-		? (
-				...args: Parameters<R2Bucket[K]>
-			) => Operation<R extends R2ObjectBody ? OperationR2ObjectBody : R>
-		: R2Bucket[K];
+	? (
+		...args: Parameters<R2Bucket[K]>
+	) => Operation<R extends R2ObjectBody ? OperationR2ObjectBody : R>
+	: R2Bucket[K];
 };
 
 export class OperationR2ObjectBody implements OperationR2Object {
-	constructor(private r2Body: R2ObjectBody) {}
+	constructor(private r2Body: R2ObjectBody) { }
 
 	get key(): string {
 		return this.r2Body.key;
@@ -82,7 +82,7 @@ export class OperationR2ObjectBody implements OperationR2Object {
 	}
 
 	writeHttpMetadata(headers: Headers): void {
-		return this.r2Body.writeHttpMetadata(headers);
+		this.r2Body.writeHttpMetadata(headers);
 	}
 
 	get body(): ReadableStream {
@@ -111,7 +111,7 @@ export class OperationR2ObjectBody implements OperationR2Object {
 }
 
 export class R2BucketEffects implements OperationR2Bucket {
-	constructor(private bucket: R2Bucket) {}
+	constructor(private bucket: R2Bucket) { }
 
 	head(key: string): Operation<R2Object | null> {
 		return call(() => this.bucket.head(key));
@@ -183,5 +183,5 @@ export class R2BucketEffects implements OperationR2Bucket {
 }
 
 export class CFEnv {
-	constructor(private env: Env) {}
+	constructor(private env: Env) { }
 }
