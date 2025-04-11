@@ -9,7 +9,10 @@
 		"@biomejs/biome": "^1.9.4",
 		"@cloudflare/vitest-pool-workers": "^0.8.14",
 		"@cloudflare/workers-types": "^4.20250409.0",
+		"@react-email/tailwind": "^1.0.4",
 		"@types/node": "^22.14.0",
+		"@types/react": "^19.1.1",
+		"@types/react-dom": "^19.1.2",
 		"actor-core": "0.8.0",
 		"tsx": "^4.19.3",
 		"typescript": "^5.8.3",
@@ -21,19 +24,32 @@
 		"start": "wrangler dev --port 6420",
 		"cf-typegen": "wrangler types",
 		"check-types": "tsc --noEmit",
-		"fmt": "biome check --fix --unsafe ."
+		"fmt": "biome check --fix --unsafe .",
+		"emails": "email dev -d src/emails"
 	},
 	"packageManager": "pnpm@10.6.5+sha512.cdf928fca20832cd59ec53826492b7dc25dc524d4370b6b4adbf65803d32efaa6c1c88147c0ae4e8d579a6c9eec715757b50d4fa35eea179d868eada4ed043af",
 	"dependencies": {
+		"@react-email/components": "^0.0.36",
+		"@react-email/render": "^1.0.6",
 		"hono": "^4.7.6",
 		"jsx-email": "^2.7.1",
+		"react": "^19.1.0",
+		"react-dom": "^19.1.0",
+		"react-email": "^4.0.7",
 		"resend": "^4.2.0",
 		"svix": "^1.63.1",
 		"ts-pattern": "^5.7.0",
 		"zod": "^3.24.2"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": ["cbor-extract", "esbuild", "sharp", "workerd"],
-		"ignoredBuiltDependencies": ["@parcel/watcher"]
+		"onlyBuiltDependencies": [
+			"cbor-extract",
+			"esbuild",
+			"sharp",
+			"workerd"
+		],
+		"ignoredBuiltDependencies": [
+			"@parcel/watcher"
+		]
 	}
 }
