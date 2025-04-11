@@ -16,7 +16,8 @@
 		"actor-core": "0.8.0",
 		"tsx": "^4.19.3",
 		"typescript": "^5.8.3",
-		"vitest": "^3.1.1"
+		"vitest": "^3.1.1",
+		"wrangler": "^4.10.0"
 	},
 	"scripts": {
 		"deploy": "wrangler deploy",
@@ -42,14 +43,7 @@
 		"zod": "^3.24.2"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": [
-			"cbor-extract",
-			"esbuild",
-			"sharp",
-			"workerd"
-		],
-		"ignoredBuiltDependencies": [
-			"@parcel/watcher"
-		]
+		"onlyBuiltDependencies": ["cbor-extract", "esbuild", "sharp", "workerd"],
+		"ignoredBuiltDependencies": ["@parcel/watcher"]
 	}
 }
