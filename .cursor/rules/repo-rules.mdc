@@ -1,0 +1,17 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Rules
+
+- This project is the website for https://sideprojectsaturday.com
+- Side project saturday is a casual, weekly social gathering where we meet at the val.town office from 9am til 12pm in downtown Brooklyn, NY to work on side projects.
+
+## Technical constraints
+
+- Use PNPM to manage dependencies
+- Hono.js is the backend. Use hono client components if you need to write frontend code. 
+- The environment is cloudflare workers
+- If you add a new script to the package.json, also add a mise task to `mise.toml`
+- Emails in the `src/emails` directory use `react-email`. It's the only place in this codebase that uses react. 
