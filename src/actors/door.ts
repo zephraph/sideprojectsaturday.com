@@ -1,8 +1,6 @@
 /// <reference types="../../worker-configuration.d.ts" />
 import { UserError, actor } from "actor-core";
-import { type Operation, call, run } from "effection";
 import { z } from "zod";
-import { fetch, jsonFromRes } from "../effects";
 
 type OpenResponse =
 	| { success: true; openedAt: Date }
@@ -39,39 +37,38 @@ export const doorActor = actor({
 			c.state.isLocked = true;
 			c.broadcast("doorLocked");
 		},
-		openDoor: (c) =>
-			run(function* (): Operation<OpenResponse> {
-				if (c.state.isLocked) {
-					return { success: false, error: "Door is locked" };
-				}
-				const { deviceId, sbToken, sbKey } = c.vars;
+		async openDoor(c) {
+			if (c.state.isLocked) {
+				return { success: false, error: "Door is locked" };
+			}
+			const { deviceId, sbToken, sbKey } = c.vars;
 
-				if (!deviceId || !sbToken || !sbKey) {
-					return { success: false, error: "Switchbot not configured" };
-				}
+			if (!deviceId || !sbToken || !sbKey) {
+				return { success: false, error: "Switchbot not configured" };
+			}
 
-				try {
-					yield* switchbotRequest(
-						`v1.1/devices/${deviceId}/commands`,
-						{
-							method: "POST",
-							body: JSON.stringify({
-								command: "press",
-								parameter: "default",
-								commandType: "command",
-							}),
-						},
-						{ token: sbToken, secret: sbKey },
-					);
+			try {
+				await switchbotRequest(
+					`v1.1/devices/${deviceId}/commands`,
+					{
+						method: "POST",
+						body: JSON.stringify({
+							command: "press",
+							parameter: "default",
+							commandType: "command",
+						}),
+					},
+					{ token: sbToken, secret: sbKey },
+				);
 
-					return { success: true, openedAt: new Date() };
-				} catch (error) {
-					return {
-						success: false,
-						error: `Failed to open door: ${error instanceof Error ? error.message : String(error)}`,
-					};
-				}
-			}),
+				return { success: true, openedAt: new Date() };
+			} catch (error) {
+				return {
+					success: false,
+					error: `Failed to open door: ${error instanceof Error ? error.message : String(error)}`,
+				};
+			}
+		},
 
 		scheduleUnlockPeriod(c, unlockAt: Date, lockAt: Date) {
 			const now = new Date();
@@ -97,11 +94,19 @@ const zSwitchbotResponse = z.object({
 });
 type SwitchbotResponse = z.infer<typeof zSwitchbotResponse>;
 
-function* switchbotRequest(
+async function jsonFromResAsync<T>(
+	response: Response,
+	schema: z.ZodType<T>,
+): Promise<T> {
+	const data = await response.json();
+	return schema.parse(data);
+}
+
+async function switchbotRequest(
 	path: string,
 	args: Partial<RequestInit>,
 	opts: { token: string; secret: string },
-): Operation<SwitchbotResponse> {
+): Promise<SwitchbotResponse> {
 	const { token, secret } = opts;
 
 	const t = Date.now();
@@ -113,31 +118,32 @@ function* switchbotRequest(
 	const keyData = encoder.encode(secret);
 
 	// Import the secret key and create signature
-	const key = yield* call(() =>
-		crypto.subtle.importKey(
-			"raw",
-			keyData,
-			{ name: "HMAC", hash: "SHA-256" },
-			false,
-			["sign"],
-		),
+	const key = await crypto.subtle.importKey(
+		"raw",
+		keyData,
+		{ name: "HMAC", hash: "SHA-256" },
+		false,
+		["sign"],
 	);
 
-	const signature = yield* call(() => crypto.subtle.sign("HMAC", key, message));
+	const signature = await crypto.subtle.sign("HMAC", key, message);
 
 	// Convert to base64
 	const sign = btoa(String.fromCharCode(...new Uint8Array(signature)));
 
-	const response = yield* fetch(`https://api.switch-bot.com/${path}`, {
-		headers: {
-			Authorization: token,
-			t: t.toString(),
-			nonce: nonce.toString(),
-			sign: sign,
-			"Content-Type": "application/json",
+	const response = await globalThis.fetch(
+		`https://api.switch-bot.com/${path}`,
+		{
+			headers: {
+				Authorization: token,
+				t: t.toString(),
+				nonce: nonce.toString(),
+				sign: sign,
+				"Content-Type": "application/json",
+			},
+			...args,
 		},
-		...args,
-	});
+	);
 
-	return yield* jsonFromRes(response, zSwitchbotResponse);
+	return await jsonFromResAsync(response, zSwitchbotResponse);
 }
