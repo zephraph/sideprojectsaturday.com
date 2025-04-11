@@ -1,8 +1,3 @@
-import type { ActorCoreApp, ActorDefinition } from "actor-core";
-import { createClient } from "actor-core/client";
-import type { emailActor } from "./actors/email.ts";
-import type { eventActor } from "./actors/event.ts";
-import { ACTOR_ROUTE } from "./constants";
 import type { HonoContext } from "./index.tsx";
 import type { Event } from "./types.d.ts";
 

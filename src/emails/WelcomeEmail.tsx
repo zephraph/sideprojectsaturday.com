@@ -1,4 +1,4 @@
-import { Button, Heading, Link, Text } from "@react-email/components";
+import { Button, Heading, Text } from "@react-email/components";
 import { BaseEmail } from "./components/BaseEmail";
 
 interface WelcomeEmailProps {
