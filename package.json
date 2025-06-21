@@ -3,12 +3,15 @@
 	"type": "module",
 	"version": "0.0.1",
 	"dependencies": {
-		"astro": "^5.10.0"
+		"@tailwindcss/vite": "^4.1.10",
+		"astro": "^5.10.0",
+		"tailwindcss": "^4.1.10"
 	},
 	"devDependencies": {
 		"@astrojs/cloudflare": "^12.6.0",
 		"@biomejs/biome": "^2.0.0",
 		"alchemy": "^0.36.0",
+		"daisyui": "^5.0.43",
 		"tsx": "^4.20.3",
 		"wrangler": "^4.20.5"
 	},
