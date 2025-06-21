@@ -10,3 +10,10 @@ postinstall = "pnpm install"
 
 [env]
 _.path = "node_modules/.bin"
+_.file = ".env"
+
+[tasks.deploy]
+run = "tsx alchemy.run.ts"
+
+[tasks.destroy]
+run = "tsx alchemy.run.ts --destroy"

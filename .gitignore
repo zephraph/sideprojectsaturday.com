@@ -22,3 +22,7 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+.alchemy
+wrangler.jsonc
+.vscode/settings.json
+.wrangler
