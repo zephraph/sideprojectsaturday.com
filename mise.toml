@@ -12,6 +12,19 @@ postinstall = "pnpm install"
 _.path = "node_modules/.bin"
 _.file = ".env"
 
+[tasks.dev]
+run = "astro dev"
+
+[tasks.build]
+run = "astro build"
+
+[tasks.preview]
+run = "wrangler dev ./dist/_worker.js"
+depends = ["build"]
+
+[tasks.astro]
+run = "astro"
+
 [tasks.deploy]
 run = "tsx alchemy.run.ts"
 
@@ -20,3 +33,9 @@ run = "tsx alchemy.run.ts --destroy"
 
 [tasks.fmt]
 run = "biome check --write --unsafe ."
+
+[tasks."open:deployment"]
+run = "open https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/workers/services/view/sideprojectsaturday/production/metrics"
+
+[tasks.logs]
+run = "wrangler tail sideprojectsaturday"
