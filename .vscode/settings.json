@@ -1,6 +1,0 @@
-{
-  "deno.path": "/Users/just-be/.local/share/mise/installs/deno/2.1.1/bin/deno",
-  "debug.javascript.defaultRuntimeExecutable": {
-    "pwa-node": "/Users/just-be/.local/share/mise/installs/node/22.16.0/bin/node"
-  }
-}

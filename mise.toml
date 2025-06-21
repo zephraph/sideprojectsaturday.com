@@ -17,3 +17,6 @@ run = "tsx alchemy.run.ts"
 
 [tasks.destroy]
 run = "tsx alchemy.run.ts --destroy"
+
+[tasks.fmt]
+run = "biome check --write --unsafe ."
