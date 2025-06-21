@@ -1,0 +1,12 @@
+[tools]
+node = "22.16.0"
+pnpm = "10.12.1"
+
+[settings]
+experimental = true
+
+[hooks]
+postinstall = "pnpm install"
+
+[env]
+_.path = "node_modules/.bin"
