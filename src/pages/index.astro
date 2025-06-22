@@ -1,10 +1,102 @@
 ---
-import Welcome from "../components/Welcome.astro";
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
 import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout>
-  <Welcome />
+  <div
+    class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden -mt-16"
+    style={{
+      background:
+        "linear-gradient(135deg, #fff8e7 0%, #ffeaa7 20%, #ffb347 35%, #87ceeb 60%, #4fc3f7 80%, #0288d1 100%)",
+    }}
+  >
+    <!-- Morning light overlay for west-facing window -->
+    <div
+      class="absolute inset-0 pointer-events-none"
+      style={{
+        background:
+          "linear-gradient(45deg, rgba(255,255,255,0.4) 0%, rgba(255,248,220,0.3) 30%, rgba(255,235,179,0.2) 50%, transparent 70%)",
+      }}
+    >
+    </div>
+
+    <!-- Soft morning glow -->
+    <div
+      class="absolute inset-0 pointer-events-none"
+      style={{
+        background:
+          "radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.5) 0%, rgba(255,248,220,0.3) 40%, transparent 70%)",
+      }}
+    >
+    </div>
+
+    <!-- Window overlay on top -->
+    <div
+      class="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: "url(/window.svg)",
+      }}
+    >
+    </div>
+
+    <!-- Plant in bottom left corner -->
+    <div
+      class="absolute -bottom-3 xl:-bottom-5 xl:left-10 lg:left-8 left-4 pointer-events-none h-full w-42 xl:w-52 bg-contain bg-bottom-left bg-no-repeat"
+      style={{
+        backgroundImage: "url(/plant.svg)",
+      }}
+    >
+    </div>
+
+    <h1
+      class="text-6xl md:text-7xl font-extrabold text-center relative z-10 mb-2 text-white font-sans tracking-tight"
+      style={{
+        textShadow: "2px 2px 4px rgba(0,0,0,0.8), 0px 0px 8px rgba(0,0,0,0.6)",
+      }}
+    >
+      Side Project Saturday
+    </h1>
+
+    <h2
+      class="text-3xl md:text-4xl font-bold text-center relative z-10 mb-8 text-amber-400 font-sans"
+      style={{
+        textShadow:
+          "0 0 15px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.6), 2px 2px 6px rgba(0,0,0,0.7), 0px 0px 4px rgba(0,0,0,0.5)",
+        WebkitTextStroke: "0.5px rgba(0,0,0,0.4)",
+      }}
+    >
+      9am to noon
+    </h2>
+
+    <div
+      class="backdrop-blur-sm rounded-lg p-6 shadow-xl relative z-10 max-w-md mx-4 border border-white/30"
+      style={{
+        background: "rgba(255,255,255,0.85)",
+      }}
+    >
+      <h3 class="text-xl font-bold text-gray-800 mb-3 text-center">
+        Come build with us
+      </h3>
+      <p class="text-gray-700 mb-4 text-center">
+        Get notified about upcoming Side Project Saturdays and connect with
+        fellow builders.
+      </p>
+      <div class="flex flex-col gap-3">
+        <input
+          type="email"
+          placeholder="Enter your email"
+          class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white text-amber-950"
+        />
+        <button
+          class="text-white font-semibold py-2 px-4 rounded-md transition-all hover:scale-105 cursor-pointer shadow-lg"
+          style={{
+            background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+            boxShadow: "0 4px 12px rgba(251, 191, 36, 0.4)",
+          }}
+        >
+          Sign up
+        </button>
+      </div>
+    </div>
+  </div>
 </Layout>
