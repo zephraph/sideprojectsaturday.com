@@ -1,5 +1,36 @@
 ---
+import { actions } from "astro:actions";
 import Layout from "../layouts/Layout.astro";
+
+// Handle action results
+const magicLinkResult = Astro.getActionResult(actions.sendMagicLink);
+const signOutResult = Astro.getActionResult(actions.signOut);
+
+// Get user session from middleware
+const user = Astro.locals.user;
+const session = Astro.locals.session;
+
+// Calculate next Saturday
+function getNextSaturday() {
+	const now = new Date();
+	const daysUntilSaturday = (6 - now.getDay()) % 7 || 7;
+	const nextSaturday = new Date(now);
+	nextSaturday.setDate(now.getDate() + daysUntilSaturday);
+
+	return nextSaturday.toLocaleDateString("en-US", {
+		weekday: "long",
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	});
+}
+
+const nextEventDate = getNextSaturday();
+
+// Redirect after successful sign out
+if (signOutResult && !signOutResult.error) {
+	return Astro.redirect("/");
+}
 ---
 
 <Layout>
@@ -62,41 +93,159 @@ import Layout from "../layouts/Layout.astro";
       style={{
         textShadow:
           "0 0 15px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.6), 2px 2px 6px rgba(0,0,0,0.7), 0px 0px 4px rgba(0,0,0,0.5)",
-        WebkitTextStroke: "0.5px rgba(0,0,0,0.4)",
       }}
     >
       9am to noon
     </h2>
 
+    <p
+      class="text-xl md:text-2xl font-medium text-center relative z-10 mb-8 text-white font-sans"
+      style={{
+        textShadow: "2px 2px 4px rgba(0,0,0,0.8), 0px 0px 8px rgba(0,0,0,0.6)",
+      }}
+    >
+      Brooklyn, NY
+    </p>
+
     <div
-      class="backdrop-blur-sm rounded-lg p-6 shadow-xl relative z-10 max-w-md mx-4 border border-white/30"
+      class="backdrop-blur-sm rounded-lg p-6 shadow-xl relative z-10 w-md mx-4 border border-white/30"
       style={{
         background: "rgba(255,255,255,0.85)",
       }}
     >
-      <h3 class="text-xl font-bold text-gray-800 mb-3 text-center">
-        Come build with us
-      </h3>
-      <p class="text-gray-700 mb-4 text-center">
-        Get notified about upcoming Side Project Saturdays and connect with
-        fellow builders.
-      </p>
-      <div class="flex flex-col gap-3">
-        <input
-          type="email"
-          placeholder="Enter your email"
-          class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white text-amber-950"
-        />
-        <button
-          class="text-white font-semibold py-2 px-4 rounded-md transition-all hover:scale-105 cursor-pointer shadow-lg"
-          style={{
-            background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
-            boxShadow: "0 4px 12px rgba(251, 191, 36, 0.4)",
-          }}
-        >
-          Sign up
-        </button>
+      <!-- Next Event Date -->
+      <div class="bg-gray-50/50 border border-gray-200/50 rounded-lg p-4 mb-4 pulse-glow">
+        <div class="text-center">
+          <div class="text-sm font-medium text-gray-600 mb-1">Next Event</div>
+          <div class="text-lg font-bold text-amber-600">
+            {nextEventDate}
+          </div>
+        </div>
       </div>
+
+      {user && session ? (
+        <!-- Authenticated User State -->
+        <div>
+          <h3 class="text-xl font-bold text-gray-800 mb-3 text-center">
+            Welcome back, {user.name || user.email}!
+          </h3>
+          <div class="space-y-3">
+            <div class="bg-green-50 border border-green-200 rounded-md p-3">
+              <div class="text-sm font-medium text-green-800">
+                Registration Status
+              </div>
+              <div class="text-green-700">✅ Confirmed for next event</div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-200 rounded-md p-3">
+              <div class="text-sm font-medium text-blue-800">Event Details</div>
+              <div class="text-blue-700 text-sm mt-1">
+                📍 Location: 325 Gold Street, Brooklyn, NY Studio 501<br />
+                ⏰ Time: 9:00 AM - 12:00 PM<br />
+              </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-md p-3">
+              <div class="text-sm font-medium text-amber-800">What to Bring</div>
+              <div class="text-amber-700 text-sm mt-1">
+                💻 Your laptop<br />
+                💡 A project idea<br />
+                ☕ Good vibes!
+              </div>
+            </div>
+
+            <form method="POST" action={actions.signOut}>
+              <button
+                type="submit"
+                class="w-full text-gray-600 font-medium py-2 px-4 rounded-md border border-gray-300 hover:bg-gray-50 transition-all"
+              >
+                Sign Out
+              </button>
+            </form>
+          </div>
+        </div>
+      ) : magicLinkResult && !magicLinkResult.error ? (
+        <!-- Magic Link Sent State -->
+        <div>
+          <h3 class="text-xl font-bold text-gray-800 mb-3 text-center">
+            Check your email!
+          </h3>
+          <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
+            <p class="text-green-700 text-center">
+              {magicLinkResult.data.message}
+            </p>
+          </div>
+          <p class="text-gray-600 text-sm text-center mb-4">
+            The magic link will expire in 5 minutes. Check your spam folder if you don't see it.
+          </p>
+          <form method="GET" action="/">
+            <button
+              type="submit"
+              class="w-full text-gray-600 font-medium py-2 px-4 rounded-md border border-gray-300 hover:bg-gray-50 transition-all"
+            >
+              ← Back to Registration
+            </button>
+          </form>
+        </div>
+      ) : (
+        <!-- Magic Link Registration Form -->
+        <div>
+          <h3 class="text-xl font-bold text-gray-800 mb-3 text-center">
+            Join Side Project Saturday
+          </h3>
+
+          <!-- Show errors -->
+          {magicLinkResult?.error && (
+            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <p class="text-red-700 text-sm">
+                {magicLinkResult.error.message || "Failed to send magic link. Please try again."}
+              </p>
+            </div>
+          )}
+
+          <!-- Magic Link Form -->
+          <form method="POST" action={actions.sendMagicLink}>
+            <div class="flex flex-col gap-3">
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                required
+                class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white text-amber-950"
+              />
+              <button
+                type="submit"
+                class="text-white font-semibold py-2 px-4 rounded-md transition-all hover:scale-105 cursor-pointer shadow-lg"
+                style={{
+                  background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+                  boxShadow: "0 4px 12px rgba(251, 191, 36, 0.4)",
+                }}
+              >
+                Let's build!
+              </button>
+            </div>
+          </form>
+
+          <p class="text-gray-500 text-xs text-center mt-4">
+            New users will be registered. Existing users will be signed in.
+          </p>
+        </div>
+      )}
     </div>
   </div>
 </Layout>
+
+<style>
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+    }
+    50% {
+      box-shadow: 0 0 25px rgba(251, 191, 36, 0.4);
+    }
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+</style>

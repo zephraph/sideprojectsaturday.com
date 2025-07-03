@@ -1,5 +1,6 @@
 [tools]
 node = "22.16.0"
+"npm:@anthropic-ai/claude-code" = "1.0.35"
 pnpm = "10.12.1"
 
 [settings]
@@ -39,3 +40,6 @@ run = "open https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/workers/service
 
 [tasks.logs]
 run = "wrangler tail sideprojectsaturday"
+
+[tasks."gen:better-auth"]
+run = "npx @better-auth/cli@latest generate --config src/lib/auth.ts"
