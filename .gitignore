@@ -26,3 +26,4 @@ pnpm-debug.log*
 wrangler.jsonc
 .vscode/settings.json
 .wrangler
+.claude/*.local.json

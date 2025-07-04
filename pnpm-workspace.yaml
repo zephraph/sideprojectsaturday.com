@@ -1,5 +1,8 @@
 onlyBuiltDependencies:
+  - '@prisma/client'
+  - '@prisma/engines'
   - '@swc/core'
   - '@tailwindcss/oxide'
   - esbuild
+  - prisma
   - workerd

@@ -3,17 +3,32 @@
 	"type": "module",
 	"version": "0.0.1",
 	"dependencies": {
-		"@tailwindcss/vite": "^4.1.10",
-		"astro": "^5.10.0",
-		"tailwindcss": "^4.1.10"
+		"@cloudflare/workers-types": "^4.20250702.0",
+		"@prisma/adapter-d1": "^6.11.0",
+		"@prisma/client": "^6.11.0",
+		"@react-email/components": "^0.1.1",
+		"@tailwindcss/vite": "^4.1.11",
+		"astro": "^5.10.2",
+		"better-auth": "^1.2.12",
+		"prisma": "^6.11.0",
+		"react": "^19.1.0",
+		"react-dom": "^19.1.0",
+		"react-email": "^4.0.17",
+		"resend": "^4.6.0",
+		"tailwindcss": "^4.1.11",
+		"zod": "^3.25.69"
 	},
 	"devDependencies": {
+		"@astrojs/check": "^0.9.4",
 		"@astrojs/cloudflare": "^12.6.0",
-		"@biomejs/biome": "^2.0.0",
-		"alchemy": "^0.36.0",
+		"@biomejs/biome": "^2.0.6",
+		"@types/react": "^19.1.8",
+		"@types/react-dom": "^19.1.6",
+		"alchemy": "^0.43.0",
 		"daisyui": "^5.0.43",
 		"tsx": "^4.20.3",
-		"wrangler": "^4.20.5"
+		"typescript": "^5.8.3",
+		"wrangler": "^4.22.0"
 	},
 	"packageManager": "pnpm@10.6.5+sha512.cdf928fca20832cd59ec53826492b7dc25dc524d4370b6b4adbf65803d32efaa6c1c88147c0ae4e8d579a6c9eec715757b50d4fa35eea179d868eada4ed043af"
 }
