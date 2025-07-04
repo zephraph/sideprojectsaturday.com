@@ -1,0 +1,52 @@
+---
+import { actions } from "astro:actions";
+
+interface Props {
+	user: {
+		name?: string;
+		email: string;
+	};
+}
+
+const { user } = Astro.props;
+---
+
+<div>
+	<h3 class="text-xl font-bold text-gray-800 mb-3 text-center">
+		Welcome back, {user.name || user.email}!
+	</h3>
+	<div class="space-y-3">
+		<div class="bg-green-50 border border-green-200 rounded-md p-3">
+			<div class="text-sm font-medium text-green-800">
+				Registration Status
+			</div>
+			<div class="text-green-700">✅ Confirmed for next event</div>
+		</div>
+
+		<div class="bg-blue-50 border border-blue-200 rounded-md p-3">
+			<div class="text-sm font-medium text-blue-800">Event Details</div>
+			<div class="text-blue-700 text-sm mt-1">
+				📍 Location: 325 Gold Street, Brooklyn, NY Studio 501<br />
+				⏰ Time: 9:00 AM - 12:00 PM<br />
+			</div>
+		</div>
+
+		<div class="bg-amber-50 border border-amber-200 rounded-md p-3">
+			<div class="text-sm font-medium text-amber-800">What to Bring</div>
+			<div class="text-amber-700 text-sm mt-1">
+				💻 Your laptop<br />
+				💡 A project idea<br />
+				☕ Good vibes!
+			</div>
+		</div>
+
+		<form method="POST" action={actions.signOut}>
+			<button
+				type="submit"
+				class="w-full text-gray-600 font-medium py-2 px-4 rounded-md border border-gray-300 hover:bg-gray-50 transition-all"
+			>
+				Sign Out
+			</button>
+		</form>
+	</div>
+</div>

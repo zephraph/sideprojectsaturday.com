@@ -1,0 +1,31 @@
+---
+interface Props {
+	nextEventDate: string;
+}
+
+const { nextEventDate } = Astro.props;
+---
+
+<div class="bg-gray-50/50 border border-gray-200/50 rounded-lg p-4 mb-4 pulse-glow">
+	<div class="text-center">
+		<div class="text-sm font-medium text-gray-600 mb-1">Next Event</div>
+		<div class="text-lg font-bold text-amber-600">
+			{nextEventDate}
+		</div>
+	</div>
+</div>
+
+<style>
+	@keyframes pulse-glow {
+		0%, 100% {
+			box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
+		}
+		50% {
+			box-shadow: 0 0 25px rgba(251, 191, 36, 0.4);
+		}
+	}
+
+	.pulse-glow {
+		animation: pulse-glow 3s ease-in-out infinite;
+	}
+</style>

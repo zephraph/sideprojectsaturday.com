@@ -1,0 +1,53 @@
+---
+import { actions } from "astro:actions";
+
+interface Props {
+	error?: {
+		message?: string;
+	};
+}
+
+const { error } = Astro.props;
+---
+
+<div>
+	<h3 class="text-xl font-bold text-gray-800 mb-3 text-center">
+		Join Side Project Saturday
+	</h3>
+
+	<!-- Show errors -->
+	{error && (
+		<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+			<p class="text-red-700 text-sm">
+				{error.message || "Failed to send magic link. Please try again."}
+			</p>
+		</div>
+	)}
+
+	<!-- Magic Link Form -->
+	<form method="POST" action={actions.sendMagicLink}>
+		<div class="flex flex-col gap-3">
+			<input
+				type="email"
+				name="email"
+				placeholder="Enter your email"
+				required
+				class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white text-amber-950"
+			/>
+			<button
+				type="submit"
+				class="text-white font-semibold py-2 px-4 rounded-md transition-all hover:scale-105 cursor-pointer shadow-lg"
+				style={{
+					background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+					boxShadow: "0 4px 12px rgba(251, 191, 36, 0.4)",
+				}}
+			>
+				Let's build!
+			</button>
+		</div>
+	</form>
+
+	<p class="text-gray-500 text-xs text-center mt-4">
+		New users will be registered. Existing users will be signed in.
+	</p>
+</div>
