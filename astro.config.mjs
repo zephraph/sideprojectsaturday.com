@@ -20,6 +20,9 @@ export default defineConfig({
 				"@generated": fileURLToPath(
 					new URL("./node_modules/generated", import.meta.url),
 				),
+				...(process.env.NODE_ENV === "production" && {
+					"react-dom/server": "react-dom/server.edge",
+				}),
 			},
 		},
 	},
