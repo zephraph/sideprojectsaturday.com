@@ -35,6 +35,9 @@ run = "tsx alchemy.run.ts --destroy"
 [tasks.fmt]
 run = "biome check --write --unsafe ."
 
+[tasks.emails]
+run = "email dev -d src/emails"
+
 [tasks."open:deployment"]
 run = "open https://dash.cloudflare.com/${CLOUDFLARE_ACCOUNT_ID}/workers/services/view/sideprojectsaturday/production/metrics"
 
@@ -43,3 +46,16 @@ run = "wrangler tail sideprojectsaturday"
 
 [tasks."gen:better-auth"]
 run = "npx @better-auth/cli@latest generate --config src/lib/auth.ts"
+
+[tasks."migrate:create"]
+run = '''
+MIGRATION_OUTPUT=$(wrangler d1 migrations create sps-db {{arg(name="migration_name")}})
+MIGRATION_FILE=$(echo "$MIGRATION_OUTPUT" | grep -o "prisma/migrations/[0-9]*_.*\.sql" | head -1)
+prisma migrate diff --from-empty --to-schema-datamodel ./prisma/schema.prisma --script --output "$MIGRATION_FILE"
+'''
+
+[tasks."migrate:dev"]
+run = ["prisma generate", "wrangler d1 migrations apply DB --local"]
+
+[tasks."migrate:prod"]
+run = ["prisma generate", "wrangler d1 migrations apply DB --remote"]
