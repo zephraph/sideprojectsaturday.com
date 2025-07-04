@@ -1,7 +1,9 @@
 import alchemy from "alchemy";
 import { Astro, D1Database } from "alchemy/cloudflare";
 
-const app = await alchemy("sideprojectsaturday");
+const app = await alchemy("sideprojectsaturday", {
+  password: process.env.ALCHEMY_SECRET as string,
+});
 
 export const db = await D1Database("sps-db", {
   name: "sps-db",
