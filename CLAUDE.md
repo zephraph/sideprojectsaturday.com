@@ -9,23 +9,26 @@ Side Project Saturday - A web application for managing weekly side project meetu
 ## Essential Commands
 
 ```bash
-# Start development server
-mise dev
+# Development
+mise dev                    # Start development server at localhost:4433
+mise build                  # Build for production
+mise preview               # Preview production build locally
+mise fmt                   # Format code with Biome
 
-# Build for production
-mise build
+# Email Development
+mise emails                # Preview email templates with react-email
 
-# Preview production build locally
-mise preview
+# Database
+mise migrate:create name="migration_name"  # Create new migration
+mise migrate:dev           # Apply migrations locally
+mise migrate:prod          # Apply migrations to production
+mise gen:better-auth       # Generate better-auth types
 
-# Format code
-mise fmt
-
-# Deploy to Cloudflare
-mise deploy
-
-# View production logs
-mise logs
+# Deployment
+mise deploy                # Deploy to Cloudflare via Alchemy
+mise destroy               # Destroy Cloudflare resources
+mise logs                  # View production logs
+mise open:deployment       # Open Cloudflare dashboard
 ```
 
 ## Architecture Overview
@@ -35,7 +38,10 @@ mise logs
 - **Styling**: Tailwind CSS v4 (new Vite plugin) + DaisyUI v5
 - **Auth**: better-auth with magic link authentication (passwordless)
 - **Database**: SQLite via Cloudflare D1 with Prisma ORM
-- **Email**: Resend API for sending magic links
+- **Email**: Resend API for sending magic links and event invites
+- **Email Templates**: React Email with custom branded templates
+- **Deployment**: Alchemy deployment system
+- **Tooling**: mise for task management, Biome for formatting
 
 ### Key Architectural Decisions
 
@@ -71,9 +77,26 @@ Database migrations are managed by Prisma but require manual SQL application to 
 
 - **Auth Check Pattern**: Use `Astro.locals.user` in pages/components to check auth state
 - **Server Actions**: All mutations go through actions in `src/actions/`
-- **Client Auth**: Use `authClient` from `src/lib/auth-client.ts` for client-side auth operations
 - **Database Access**: Always use Prisma client from `src/lib/auth.ts` which is configured for D1
+- **Email Templates**: Three main templates in `src/emails/`:
+  - `MagicLinkEmail.tsx`: Authentication magic links
+  - `VerificationEmail.tsx`: New user email verification  
+  - `EventInviteEmail.tsx`: Event invitation emails
 
 ## Deployment
 
-The app deploys to Cloudflare using Alchemy deployment system. Environment variables and D1 database are managed through Cloudflare dashboard.
+The app deploys to Cloudflare using Alchemy deployment system configured in `alchemy.run.ts`:
+
+- **D1 Database**: Configured with `D1Database("sps-db")` and automatic migrations from `prisma/migrations`
+- **Worker**: Astro build with `nodejs_compat_v2` compatibility flags for React Email support
+- **Environment Variables**: `RESEND_API_KEY`, `BETTER_AUTH_BASE_URL`, and `DB` binding
+- **Edge Compatibility**: React DOM configured to use `react-dom/server.edge` in production to avoid MessageChannel issues
+
+## Development Notes
+
+1. **React 19 + Edge Runtime**: Uses `react-dom/server.edge` alias in `astro.config.mjs` to prevent MessageChannel errors
+2. **TypeScript Configuration**: JSX configured with `"jsx": "react-jsx"` to avoid explicit React imports
+3. **Email Development**: Use `mise emails` to preview templates during development
+4. **Database Changes**: Always create migrations with `mise migrate:create` and apply with `mise migrate:dev`
+5. **Authentication**: All auth flows go through better-auth magic links - no password authentication
+6. **Styling**: Uses Tailwind v4 with the new Vite plugin for improved performance

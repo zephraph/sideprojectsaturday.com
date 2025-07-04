@@ -15,7 +15,7 @@ export const worker = await Astro("sideprojectsaturday", {
     "nodejs_compat_populate_process_env",
   ],
   bindings: {
-    RESEND_API_KEY: process.env.RESEND_API_KEY as string,
+    RESEND_API_KEY: alchemy.secret(process.env.RESEND_API_KEY as string),
     BETTER_AUTH_BASE_URL: process.env.PROD_URL as string,
     DB: db,
   },
