@@ -26,10 +26,12 @@ model User {
   sessions Session[]
   accounts Account[]
 
-  role       String?
-  banned     Boolean?
-  banReason  String?
-  banExpires DateTime?
+  role                    String?
+  banned                  Boolean?
+  banReason               String?
+  banExpires              DateTime?
+  interestedInFutureEvents Boolean @default(true)
+  rsvpedForNextEvent      Boolean @default(false)
 
   @@map("user")
 }
