@@ -57,11 +57,6 @@ run = "wrangler tail sideprojectsaturday"
 description = "Generate better-auth types"
 run = "npx @better-auth/cli@latest generate --config src/lib/auth.ts"
 
-[tasks."gen:cf-types"]
-description = "Generate Cloudflare Worker types"
-# IMPORTANT: Dropping `--strict-vars` will spit out secrets in the types
-run = "wrangler types --strict-vars false"
-
 [tasks."migrate:create"]
 description = "Create new migration"
 run = '''
