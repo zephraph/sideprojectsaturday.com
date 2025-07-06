@@ -1,0 +1,115 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { auth } from "@/lib/auth";
+
+// Check if user is already authenticated
+const session = await auth.api.getSession({
+  headers: Astro.request.headers,
+});
+
+// If authenticated, redirect to home or callback URL
+if (session?.user) {
+  const url = new URL(Astro.request.url);
+  const callbackURL = url.searchParams.get('callback') || '/';
+  return Astro.redirect(callbackURL);
+}
+
+// Get callback URL from query params
+const url = new URL(Astro.request.url);
+const callbackURL = url.searchParams.get('callback');
+---
+
+<Layout title="Sign In - Side Project Saturday">
+  <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div class="max-w-md w-full">
+      <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">
+          Welcome Back
+        </h1>
+        <p class="text-gray-600 mb-8">
+          Sign in to access Side Project Saturday
+        </p>
+        
+        <form id="magic-link-form" class="space-y-4">
+          <div>
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500 bg-white"
+              style="color: #111827 !important;"
+            />
+          </div>
+          <button
+            type="submit"
+            id="magic-link-button"
+            class="btn btn-primary w-full"
+          >
+            Send Magic Link
+          </button>
+        </form>
+        
+        <div id="magic-link-status" class="mt-4 text-sm"></div>
+        
+        <div class="mt-8 pt-6 border-t border-gray-200">
+          <p class="text-xs text-gray-500">
+            We'll send you a secure link to sign in without a password
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  const magicLinkForm = document.getElementById('magic-link-form') as HTMLFormElement;
+  const magicLinkButton = document.getElementById('magic-link-button') as HTMLButtonElement;
+  const magicLinkStatus = document.getElementById('magic-link-status') as HTMLDivElement;
+  
+  // Get callback URL from current page params
+  const urlParams = new URLSearchParams(window.location.search);
+  const callbackURL = urlParams.get('callback') || '/';
+
+  if (magicLinkForm) {
+    magicLinkForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(magicLinkForm);
+      const email = formData.get('email') as string;
+
+      magicLinkButton.disabled = true;
+      magicLinkButton.textContent = '🔄 Sending...';
+      magicLinkStatus.textContent = 'Sending magic link...';
+      magicLinkStatus.className = 'mt-4 text-sm text-blue-600';
+
+      try {
+        const response = await fetch('/api/magiclink', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            callbackURL
+          }),
+        });
+
+        if (response.ok) {
+          magicLinkStatus.textContent = `Magic link sent to ${email}! Check your inbox.`;
+          magicLinkStatus.className = 'mt-4 text-sm text-green-600 font-medium';
+          magicLinkButton.textContent = '✅ Sent!';
+        } else {
+          const error = await response.text();
+          throw new Error(error || 'Failed to send magic link');
+        }
+      } catch (error) {
+        console.error('Magic link error:', error);
+        magicLinkStatus.textContent = 'Failed to send magic link. Please try again.';
+        magicLinkStatus.className = 'mt-4 text-sm text-red-600 font-medium';
+        magicLinkButton.textContent = 'Send Magic Link';
+        magicLinkButton.disabled = false;
+      }
+    });
+  }
+</script>
