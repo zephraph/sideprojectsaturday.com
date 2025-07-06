@@ -1,0 +1,88 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { db } from "../../lib/auth";
+import UnsubscribeSuccess from "../../components/UnsubscribeSuccess.astro";
+import UnsubscribeError from "../../components/UnsubscribeError.astro";
+import UnsubscribeAlready from "../../components/UnsubscribeAlready.astro";
+
+// Get user ID from URL params
+const { id } = Astro.params;
+
+// Initialize state
+type UnsubscribeResult =
+  | { type: "success"; email: string }
+  | { type: "already_unsubscribed"; email: string }
+  | { type: "error"; message: string };
+
+let result: UnsubscribeResult;
+
+// Only process if we have an ID
+if (id) {
+  try {
+    // Get the database instance with proper env
+    const runtime = Astro.locals.runtime;
+
+    // Initialize the database with runtime env
+    db(runtime.env);
+
+    // Find the user and check their subscription status
+    const user = await db.user.findUnique({
+      where: { id: id },
+    });
+
+    if (user) {
+      if (user.subscribed) {
+        // Update the user's subscription preference
+        await db.user.update({
+          where: { id: id },
+          data: { subscribed: false },
+        });
+        result = { type: "success", email: user.email };
+      } else {
+        result = { type: "already_unsubscribed", email: user.email };
+      }
+    } else {
+      result = { type: "error", message: "Invalid unsubscribe link" };
+    }
+  } catch (err) {
+    console.error("Unsubscribe error:", err);
+    result = {
+      type: "error",
+      message: "An error occurred while processing your request",
+    };
+  }
+} else {
+  result = { type: "error", message: "Invalid unsubscribe link" };
+}
+---
+
+<Layout>
+  <div
+    class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden -mt-16"
+    style={{
+      background:
+        "linear-gradient(135deg, #fff8e7 0%, #ffeaa7 20%, #ffb347 35%, #87ceeb 60%, #4fc3f7 80%, #0288d1 100%)",
+    }}
+  >
+    <div
+      class="backdrop-blur-sm rounded-lg p-8 shadow-xl relative z-10 max-w-md mx-4 border border-white/30"
+      style={{
+        background: "rgba(255,255,255,0.95)",
+      }}
+    >
+      <div class="text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">📧 Unsubscribe</h1>
+
+        {
+          result.type === "success" ? (
+            <UnsubscribeSuccess email={result.email} />
+          ) : result.type === "already_unsubscribed" ? (
+            <UnsubscribeAlready email={result.email} />
+          ) : (
+            <UnsubscribeError message={result.message} />
+          )
+        }
+      </div>
+    </div>
+  </div>
+</Layout>

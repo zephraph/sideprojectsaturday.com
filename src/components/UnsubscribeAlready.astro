@@ -1,0 +1,51 @@
+---
+interface Props {
+    email: string;
+}
+
+const { email } = Astro.props;
+---
+
+<div class="space-y-4">
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex items-center">
+            <svg
+                class="w-5 h-5 text-blue-600 mr-2"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+            >
+                <path
+                    fill-rule="evenodd"
+                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                    clip-rule="evenodd"
+                />
+            </svg>
+            <span class="text-blue-800 font-medium">
+                Already unsubscribed
+            </span>
+        </div>
+    </div>
+
+    <div class="text-gray-600 space-y-2">
+        <p>
+            You're already unsubscribed from Side Project
+            Saturday event notifications.
+        </p>
+        <p class="text-sm">
+            <strong>Email:</strong> {email}
+        </p>
+        <p class="text-sm">
+            You can re-subscribe anytime by visiting our
+            website and signing in.
+        </p>
+    </div>
+
+    <div class="pt-4">
+        <a
+            href="/"
+            class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white font-medium rounded-lg transition-colors"
+        >
+            Return to Homepage
+        </a>
+    </div>
+</div>
