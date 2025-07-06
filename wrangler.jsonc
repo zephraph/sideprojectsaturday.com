@@ -1,0 +1,22 @@
+{
+  "name": "sideprojectsaturday",
+  "main": "dist/_worker.js/index.js",
+  "compatibility_date": "2025-07-01",
+  "compatibility_flags": [
+    "nodejs_compat_v2",
+    "nodejs_compat_populate_process_env"
+  ],
+  "assets": { "binding": "ASSETS", "directory": "dist" },
+  "vars": {
+    "BETTER_AUTH_BASE_URL": "https://sideprojectsaturday.just-be.workers.dev"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_id": "9392bb26-e437-40ea-81cb-9d790bb62920",
+      "database_name": "sps-db",
+      "migrations_dir": "prisma/migrations",
+      "preview_database_id": "9392bb26-e437-40ea-81cb-9d790bb62920"
+    }
+  ]
+}
