@@ -11,29 +11,32 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { CouldNotTransformImage } from "node_modules/astro/dist/core/errors/errors-data";
 
-interface EventInviteEmailProps {
-  eventDate: string;
-  eventTime: string;
-  rsvpLink: string;
+interface EventTodayEmailProps {
   recipientName?: string;
+  eventTime: string;
+  eventLocation: string;
+  buzzInLink: string;
+  cancelLink: string;
   userId?: string;
 }
 
-export default function EventInviteEmail({
-  eventDate,
-  eventTime,
-  rsvpLink,
+export default function EventTodayEmail({
   recipientName,
+  eventTime,
+  eventLocation,
+  buzzInLink,
+  cancelLink,
   userId,
-}: EventInviteEmailProps) {
-  const unsubscribeUrl = userId ? `https://sideprojectsaturday.com/unsubscribe/${userId}` : undefined;
+}: EventTodayEmailProps) {
+  const unsubscribeUrl = userId
+    ? `https://sideprojectsaturday.com/unsubscribe/${userId}`
+    : undefined;
   return (
     <Html>
       <Head />
-      <Preview>
-        🎉 You're invited to Side Project Saturday - {eventDate}!
-      </Preview>
+      <Preview>🚀 Side Project Saturday is TODAY! See you soon!</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
@@ -42,46 +45,67 @@ export default function EventInviteEmail({
           </Section>
           <Section style={content}>
             <Heading style={h2}>
-              {recipientName ? `Hey ${recipientName}!` : "Hey there!"}
+              {recipientName
+                ? `${recipientName}, it's happening TODAY!`
+                : "It's happening TODAY!"}
             </Heading>
             <Text style={text}>
-              You're invited to join us for another edition of Saturday morning
-              of building, creating, and connecting with fellow makers!
+              Can't wait to see you this morning! Here's what you need to know:
             </Text>
-            <Section style={eventDetails}>
-              <Text style={detailsHeader}>📅 This Saturday's Details</Text>
-              <Text style={detailsText}>
-                🗓️ <strong>Date:</strong> {eventDate}
-                <br />
+
+            <Section style={todayDetails}>
+              <Text style={todayHeader}>🎉 TODAY'S MEETUP</Text>
+              <Text style={todayText}>
                 🕘 <strong>Time:</strong> {eventTime}
                 <br />
-                📍 <strong>Location:</strong> 325 Gold Street, Brooklyn, NY
+                📍 <strong>Location:</strong> {eventLocation}
                 <br />
-                💻 <strong>Bring:</strong> Your laptop, current project,
-                creative energy & coffee/snacks!
+                🚪 <strong>Getting in:</strong> Use the buzz-in link below
+                <br />
+                💻 <strong>Don't forget:</strong> Your laptop & charger!
               </Text>
             </Section>
+
             <Section style={buttonContainer}>
-              <Button style={button} href={rsvpLink}>
-                🎯 RSVP for This Saturday
+              <Button style={button} href={buzzInLink}>
+                🚪 Buzz Me In!
               </Button>
             </Section>
-            <Section style={whatToExpect}>
-              <Text style={expectHeader}>🚀 What to Expect</Text>
-              <Text style={expectText}>
-                • <strong>9:00-9:30 AM:</strong> Arrive, grab a seat &
-                introductions
-                <br />• <strong>9:30-11:30 AM:</strong> Focused work time on
-                your projects
-                <br />• <strong>11:30 AM-12:00 PM:</strong> Demo what you built
-                & get feedback
-                <br />• <strong>All morning:</strong> Connect with other
-                builders, get unstuck, find collaborators
+
+            <Section style={arrivalInfo}>
+              <Text style={arrivalHeader}>📱 Arrival Instructions</Text>
+              <Text style={arrivalText}>
+                When you arrive at the building, click the "Buzz Me In" button
+                above from your phone to unlock the door (if that doesn't work,
+                press the buzzer by the door for 501). We're on the{" "}
+                <strong>5th floor</strong> - you can take the stairs or
+                elevator.
+                <br />
+                <br />☕ <strong>Coffee tip:</strong> Stop by{" "}
+                <Link
+                  href="https://maps.app.goo.gl/LV5ikTZKLBmMrm9r8"
+                  style={coffeeLink}
+                >
+                  Compilation Coffee
+                </Link>{" "}
+                on the corner before coming up - they make excellent coffee and
+                it's a great way to caffeinate before the session!
               </Text>
             </Section>
-            <Text style={encouragement}>
-              💡 Whether you're starting something new, continuing a project, or
-              just want to be around other creators - you belong here!
+
+            <Section style={cancelSection}>
+              <Text style={cancelHeader}>Can't make it after all?</Text>
+              <Text style={cancelText}>
+                Plans change, we get it! If you can't join us today, please
+                cancel your RSVP so we can update our headcount.
+              </Text>
+              <Link href={cancelLink} style={cancelLinkStyles}>
+                Cancel my RSVP
+              </Link>
+            </Section>
+
+            <Text style={seeYouSoon}>
+              ☕ See you in a few hours! Can't wait to see what you'll build!
             </Text>
           </Section>
           <Hr style={hr} />
@@ -93,7 +117,10 @@ export default function EventInviteEmail({
           </Text>
           {unsubscribeUrl && (
             <Text style={unsubscribeText}>
-              Don't want to receive event invites? <Link href={unsubscribeUrl} style={unsubscribeLink}>Unsubscribe</Link>
+              Don't want to receive event emails?{" "}
+              <Link href={unsubscribeUrl} style={unsubscribeLink}>
+                Unsubscribe
+              </Link>
             </Text>
           )}
         </Container>
@@ -167,13 +194,37 @@ const text = {
   textAlign: "center" as const,
 };
 
+const todayDetails = {
+  backgroundColor: "#fef3c7",
+  border: "2px solid #f59e0b",
+  borderRadius: "12px",
+  padding: "20px",
+  margin: "0 0 24px 0",
+};
+
+const todayHeader = {
+  color: "#92400e",
+  fontSize: "18px",
+  fontWeight: "700",
+  margin: "0 0 12px 0",
+  textAlign: "center" as const,
+};
+
+const todayText = {
+  color: "#92400e",
+  fontSize: "16px",
+  lineHeight: "24px",
+  margin: "0",
+  textAlign: "left" as const,
+};
+
 const buttonContainer = {
   margin: "0 0 32px 0",
   textAlign: "center" as const,
 };
 
 const button = {
-  background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
   borderRadius: "12px",
   color: "#ffffff",
   fontSize: "18px",
@@ -181,43 +232,20 @@ const button = {
   textDecoration: "none",
   padding: "16px 32px",
   display: "inline-block",
-  boxShadow: "0 6px 20px rgba(251, 191, 36, 0.4)",
+  boxShadow: "0 6px 20px rgba(16, 185, 129, 0.4)",
   transition: "all 0.3s ease",
+  cursor: "pointer",
 };
 
-const eventDetails = {
-  backgroundColor: "#fef3c7",
-  border: "2px solid #fbbf24",
-  borderRadius: "12px",
-  padding: "20px",
-  margin: "0 0 24px 0",
-};
-
-const detailsHeader = {
-  color: "#92400e",
-  fontSize: "18px",
-  fontWeight: "700",
-  margin: "0 0 12px 0",
-  textAlign: "center" as const,
-};
-
-const detailsText = {
-  color: "#92400e",
-  fontSize: "16px",
-  lineHeight: "24px",
-  margin: "0",
-  textAlign: "left" as const,
-};
-
-const whatToExpect = {
-  backgroundColor: "#f0f9ff",
+const arrivalInfo = {
+  backgroundColor: "#e0f2fe",
   border: "2px solid #0ea5e9",
   borderRadius: "12px",
   padding: "20px",
   margin: "0 0 24px 0",
 };
 
-const expectHeader = {
+const arrivalHeader = {
   color: "#075985",
   fontSize: "18px",
   fontWeight: "700",
@@ -225,15 +253,46 @@ const expectHeader = {
   textAlign: "center" as const,
 };
 
-const expectText = {
+const arrivalText = {
   color: "#075985",
   fontSize: "16px",
   lineHeight: "24px",
   margin: "0",
-  textAlign: "left" as const,
+  textAlign: "center" as const,
 };
 
-const encouragement = {
+const cancelSection = {
+  backgroundColor: "#f3f4f6",
+  border: "1px solid #d1d5db",
+  borderRadius: "12px",
+  padding: "20px",
+  margin: "0 0 24px 0",
+  textAlign: "center" as const,
+};
+
+const cancelHeader = {
+  color: "#374151",
+  fontSize: "16px",
+  fontWeight: "700",
+  margin: "0 0 8px 0",
+};
+
+const cancelText = {
+  color: "#6b7280",
+  fontSize: "14px",
+  lineHeight: "20px",
+  margin: "0 0 12px 0",
+};
+
+const cancelLinkStyles = {
+  color: "#ef4444",
+  fontSize: "14px",
+  fontWeight: "600",
+  textDecoration: "underline",
+  cursor: "pointer",
+};
+
+const seeYouSoon = {
   backgroundColor: "#f0fdf4",
   border: "1px solid #86efac",
   borderRadius: "8px",
@@ -242,7 +301,7 @@ const encouragement = {
   fontSize: "16px",
   textAlign: "center" as const,
   margin: "0",
-  fontStyle: "italic",
+  fontWeight: "600",
 };
 
 const hr = {
@@ -261,7 +320,6 @@ const footer = {
   fontWeight: "600",
 };
 
-
 const unsubscribeText = {
   color: "#6b7280",
   fontSize: "12px",
@@ -274,6 +332,12 @@ const unsubscribeText = {
 const unsubscribeLink = {
   color: "#6b7280",
   textDecoration: "underline",
+};
+
+const coffeeLink = {
+  color: "#0ea5e9",
+  textDecoration: "underline",
+  fontWeight: "600",
 };
 
 const hostedBy = {

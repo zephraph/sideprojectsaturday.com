@@ -56,10 +56,9 @@ export default function MagicLinkEmail({ magicLink }: MagicLinkEmailProps) {
 					<Text style={footer}>
 						Side Project Saturday - Where Brooklyn builds together 🏗️
 					</Text>
-					<Text style={altLink}>Link not working? Copy and paste:</Text>
-					<Link href={magicLink} style={link}>
-						{magicLink}
-					</Link>
+					<Text style={hostedBy}>
+						Hosted by <Link href="https://just-be.dev" style={hostedByLink}>just-be.dev</Link>
+					</Text>
 				</Container>
 			</Body>
 		</Html>
@@ -200,21 +199,17 @@ const footer = {
 	fontWeight: "600",
 };
 
-const altLink = {
-	color: "#6b7280",
+
+const hostedBy = {
+	color: "#9ca3af",
 	fontSize: "12px",
 	lineHeight: "18px",
-	margin: "0 0 8px 0",
+	margin: "0 0 16px 0",
 	padding: "0 48px",
 	textAlign: "center" as const,
 };
 
-const link = {
-	color: "#f59e0b",
-	fontSize: "12px",
-	lineHeight: "18px",
-	padding: "0 48px 32px 48px",
-	wordBreak: "break-all" as const,
-	textAlign: "center" as const,
-	display: "block",
+const hostedByLink = {
+	color: "#9ca3af",
+	textDecoration: "underline",
 };
