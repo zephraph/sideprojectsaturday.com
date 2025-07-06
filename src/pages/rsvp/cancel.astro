@@ -1,0 +1,166 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { auth, db } from "@/lib/auth";
+
+// Check if user is authenticated
+const session = await auth.api.getSession({
+  headers: Astro.request.headers,
+});
+
+// If not authenticated, redirect to login with callback
+if (!session?.user) {
+  const callbackURL = encodeURIComponent(Astro.url.pathname);
+  return Astro.redirect(`/login?callback=${callbackURL}`);
+}
+
+// If authenticated, get user's current RSVP status
+let userRsvped = false;
+
+if (session?.user) {
+  try {
+    db(Astro.locals.runtime.env);
+    
+    const user = await db.user.findUnique({
+      where: { id: session.user.id },
+      select: { rsvped: true },
+    });
+    
+    userRsvped = user?.rsvped || false;
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+  }
+}
+---
+
+<Layout title="Cancel RSVP - Side Project Saturday">
+  <div class="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center p-4">
+    <div class="max-w-md w-full">
+      <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">
+          Cancel RSVP
+        </h1>
+        
+        {!userRsvped ? (
+          <!-- Not RSVP'd -->
+          <div class="text-center">
+            <div class="text-6xl mb-4">❓</div>
+            <h2 class="text-2xl font-bold text-gray-700 mb-4">
+              No RSVP to Cancel
+            </h2>
+            <p class="text-gray-600 mb-6">
+              You're not currently RSVP'd for any upcoming events.
+            </p>
+            <a 
+              href="/rsvp"
+              class="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+            >
+              RSVP for Next Event
+            </a>
+          </div>
+        ) : (
+          <!-- Cancel RSVP Section -->
+          <div id="cancel-section">
+            <div class="text-center">
+              <div class="text-6xl mb-4">😔</div>
+              <h2 class="text-2xl font-bold text-gray-800 mb-4">
+                Cancel Your RSVP
+              </h2>
+              <p class="text-gray-600 mb-6">
+                We're sorry you can't make it! Your spot will be made available to others.
+              </p>
+              
+              <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                <p class="text-yellow-800 text-sm">
+                  ⚠️ This will remove you from the attendee list for the next event
+                </p>
+              </div>
+              
+              <button
+                id="cancel-button"
+                class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 mb-4"
+              >
+                Yes, Cancel My RSVP
+              </button>
+              
+              <a 
+                href="/rsvp"
+                class="inline-block text-gray-600 hover:text-gray-800 text-sm underline"
+              >
+                Actually, keep my RSVP
+              </a>
+              
+              <div id="cancel-status" class="mt-4 text-sm"></div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Cancel RSVP button handling
+  const cancelButton = document.getElementById('cancel-button') as HTMLButtonElement;
+  const cancelStatus = document.getElementById('cancel-status') as HTMLDivElement;
+  
+  if (cancelButton) {
+    cancelButton.addEventListener('click', async () => {
+      cancelButton.disabled = true;
+      cancelButton.textContent = '🔄 Canceling...';
+      cancelStatus.textContent = 'Canceling your RSVP...';
+      cancelStatus.className = 'mt-4 text-sm text-blue-600';
+      
+      try {
+        const formData = new FormData();
+        formData.append('rsvped', 'false');
+        
+        const response = await fetch('/api/rsvp-toggle', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (response.ok) {
+          // Show success state
+          document.getElementById('cancel-section')!.innerHTML = `
+            <div class="text-center">
+              <div class="text-6xl mb-4">✅</div>
+              <h2 class="text-2xl font-bold text-gray-700 mb-4">
+                RSVP Canceled
+              </h2>
+              <p class="text-gray-600 mb-4">
+                Your RSVP has been canceled. We hope to see you at a future Side Project Saturday!
+              </p>
+              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <p class="text-blue-800 text-sm">
+                  💙 You're always welcome back - just RSVP again anytime
+                </p>
+              </div>
+              <div class="space-y-3">
+                <a 
+                  href="/rsvp"
+                  class="block bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                >
+                  RSVP Again
+                </a>
+                <a 
+                  href="/"
+                  class="block text-gray-600 hover:text-gray-800 text-sm underline"
+                >
+                  Back to Home
+                </a>
+              </div>
+            </div>
+          `;
+        } else {
+          throw new Error('Failed to cancel RSVP');
+        }
+      } catch (error) {
+        console.error('Cancel RSVP error:', error);
+        cancelStatus.textContent = 'Failed to cancel RSVP. Please try again.';
+        cancelStatus.className = 'mt-4 text-sm text-red-600 font-medium';
+        cancelButton.textContent = 'Yes, Cancel My RSVP';
+        cancelButton.disabled = false;
+      }
+    });
+  }
+</script>
