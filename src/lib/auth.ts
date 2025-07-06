@@ -22,11 +22,6 @@ export const auth = betterAuth({
   database: prismaAdapter(db, {
     provider: "sqlite",
   }),
-  emailAndPassword: {
-    enabled: true,
-    autoSignIn: true,
-    disableSignUp: true,
-  },
   plugins: [
     admin(),
     magicLink({

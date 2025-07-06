@@ -14,28 +14,30 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Get form data
     const formData = await request.formData();
-    const rsvpedForNextEvent = formData.get("rsvpedForNextEvent") === "true";
+    const rsvped = formData.get("rsvped") === "true";
 
     // Get the database instance with proper env
     const runtime = locals.runtime;
     if (!runtime?.env) {
-      return new Response("Database environment not available", { status: 500 });
+      return new Response("Database environment not available", {
+        status: 500,
+      });
     }
-    
+
     // Initialize the database with runtime env
     db(runtime.env);
 
     // Update user RSVP status in database
     await db.user.update({
       where: { id: session.user.id },
-      data: { rsvpedForNextEvent },
+      data: { rsvped },
     });
 
     // Return updated RSVP section HTML
-    const statusText = rsvpedForNextEvent ? "✅ You're RSVP'd!" : "❌ Not RSVP'd";
-    const buttonText = rsvpedForNextEvent ? "Cancel RSVP" : "RSVP Now";
-    const nextValue = rsvpedForNextEvent ? "false" : "true";
-    
+    const statusText = rsvped ? "✅ You're RSVP'd!" : "❌ Not RSVP'd";
+    const buttonText = rsvped ? "Cancel RSVP" : "RSVP Now";
+    const nextValue = rsvped ? "false" : "true";
+
     const html = `
       <div id="rsvp-section" class="bg-green-50 border border-green-200 rounded-md p-3">
         <div class="text-sm font-medium text-green-800 mb-2">
@@ -45,14 +47,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
           <span class="text-green-700 text-sm">
             ${statusText}
           </span>
-          <form 
+          <form
             hx-post="/api/rsvp-toggle"
             hx-target="#rsvp-section"
             hx-swap="outerHTML"
           >
             <input
               type="hidden"
-              name="rsvpedForNextEvent"
+              name="rsvped"
               value="${nextValue}"
             />
             <button

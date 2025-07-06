@@ -1,4 +1,3 @@
-
 generator client {
   provider               = "prisma-client"
   runtime                = "workerd"
@@ -19,19 +18,18 @@ model User {
   email         String   @unique
   emailVerified Boolean  @default(false)
   name          String?
-  image         String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   sessions Session[]
   accounts Account[]
 
-  role                    String?
-  banned                  Boolean?
-  banReason               String?
-  banExpires              DateTime?
-  interestedInFutureEvents Boolean @default(true)
-  rsvpedForNextEvent      Boolean @default(false)
+  role       String?
+  banned     Boolean?
+  banReason  String?
+  banExpires DateTime?
+  subscribed Boolean   @default(true)
+  rsvped     Boolean   @default(false)
 
   @@map("user")
 }
@@ -79,7 +77,6 @@ model Account {
   idToken               String?
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
-  password              String?
 
   @@unique([provider, providerAccountId])
   @@map("account")

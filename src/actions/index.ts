@@ -54,7 +54,7 @@ export const server = {
   toggleFutureEventInterest: defineAction({
     accept: "form",
     input: z.object({
-      interestedInFutureEvents: z.boolean(),
+      subscribed: z.boolean(),
     }),
     handler: async (input, context) => {
       try {
@@ -76,12 +76,12 @@ export const server = {
         // Update user preference in database
         await db.user.update({
           where: { id: session.user.id },
-          data: { interestedInFutureEvents: input.interestedInFutureEvents },
+          data: { subscribed: input.subscribed },
         });
 
         return {
           success: true,
-          message: input.interestedInFutureEvents
+          message: input.subscribed
             ? "You'll receive future event invites!"
             : "You've unsubscribed from future event invites.",
         };
@@ -95,7 +95,7 @@ export const server = {
   toggleNextEventRsvp: defineAction({
     accept: "form",
     input: z.object({
-      rsvpedForNextEvent: z.boolean(),
+      rsvped: z.boolean(),
     }),
     handler: async (input, context) => {
       try {
@@ -113,19 +113,19 @@ export const server = {
         if (!runtime?.env) {
           throw new Error("Database environment not available.");
         }
-        
+
         // Initialize the database with runtime env
         db(runtime.env);
 
         // Update user RSVP status in database
         await db.user.update({
           where: { id: session.user.id },
-          data: { rsvpedForNextEvent: input.rsvpedForNextEvent },
+          data: { rsvped: input.rsvped },
         });
 
         return {
           success: true,
-          message: input.rsvpedForNextEvent 
+          message: input.rsvped
             ? "You're RSVP'd for the next event!"
             : "You've cancelled your RSVP for the next event.",
         };

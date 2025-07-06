@@ -14,28 +14,32 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Get form data
     const formData = await request.formData();
-    const interestedInFutureEvents = formData.get("interestedInFutureEvents") === "true";
+    const subscribed = formData.get("subscribed") === "true";
 
     // Get the database instance with proper env
     const runtime = locals.runtime;
     if (!runtime?.env) {
-      return new Response("Database environment not available", { status: 500 });
+      return new Response("Database environment not available", {
+        status: 500,
+      });
     }
-    
+
     // Initialize the database with runtime env
     db(runtime.env);
 
     // Update user subscription preference in database
     await db.user.update({
       where: { id: session.user.id },
-      data: { interestedInFutureEvents },
+      data: { subscribed },
     });
 
     // Return updated subscription section HTML
-    const statusText = interestedInFutureEvents ? "📧 Subscribed to future events" : "🔕 Unsubscribed from future events";
-    const buttonText = interestedInFutureEvents ? "Unsubscribe" : "Subscribe";
-    const nextValue = interestedInFutureEvents ? "false" : "true";
-    
+    const statusText = subscribed
+      ? "📧 Subscribed to future events"
+      : "🔕 Unsubscribed from future events";
+    const buttonText = subscribed ? "Unsubscribe" : "Subscribe";
+    const nextValue = subscribed ? "false" : "true";
+
     const html = `
       <div id="subscription-section" class="bg-purple-50 border border-purple-200 rounded-md p-3">
         <div class="text-sm font-medium text-purple-800 mb-2">
@@ -45,14 +49,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
           <span class="text-purple-700 text-sm">
             ${statusText}
           </span>
-          <form 
+          <form
             hx-post="/api/subscription-toggle"
             hx-target="#subscription-section"
             hx-swap="outerHTML"
           >
             <input
               type="hidden"
-              name="interestedInFutureEvents"
+              name="subscribed"
               value="${nextValue}"
             />
             <button
@@ -71,6 +75,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   } catch (error) {
     console.error("Subscription toggle error:", error);
-    return new Response("Failed to update subscription preference", { status: 500 });
+    return new Response("Failed to update subscription preference", {
+      status: 500,
+    });
   }
 };
