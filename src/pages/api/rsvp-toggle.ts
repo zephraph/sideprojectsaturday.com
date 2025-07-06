@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro";
+import { experimental_AstroContainer as AstroContainer } from "astro/container";
 import { auth, db } from "../../lib/auth";
 import { sendRsvpConfirmation } from "../../lib/email-utils";
+import RsvpSection from "../../components/RsvpSection.astro";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -58,7 +60,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
             userName: session.user.name || undefined,
             userId: session.user.id,
             eventDate: new Date(nextEvent.eventDate),
-            baseUrl: runtime.env.BETTER_AUTH_BASE_URL || "https://sideprojectsaturday.com",
+            baseUrl:
+              runtime.env.BETTER_AUTH_BASE_URL ||
+              "https://sideprojectsaturday.com",
           });
         }
       } catch (emailError) {
@@ -67,40 +71,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
     }
 
-    // Return updated RSVP section HTML
-    const statusText = rsvped ? "✅ You're RSVP'd!" : "❌ Not RSVP'd";
-    const buttonText = rsvped ? "Cancel RSVP" : "RSVP Now";
-    const nextValue = rsvped ? "false" : "true";
-
-    const html = `
-      <div id="rsvp-section" class="bg-green-50 border border-green-200 rounded-md p-3">
-        <div class="text-sm font-medium text-green-800 mb-2">
-          Next Event RSVP
-        </div>
-        <div class="flex items-center justify-between">
-          <span class="text-green-700 text-sm">
-            ${statusText}
-          </span>
-          <form
-            hx-post="/api/rsvp-toggle"
-            hx-target="#rsvp-section"
-            hx-swap="outerHTML"
-          >
-            <input
-              type="hidden"
-              name="rsvped"
-              value="${nextValue}"
-            />
-            <button
-              type="submit"
-              class="text-xs text-green-600 hover:text-green-800 font-medium underline cursor-pointer"
-            >
-              ${buttonText}
-            </button>
-          </form>
-        </div>
-      </div>
-    `;
+    // Create Astro container and render the component
+    const container = await AstroContainer.create();
+    const html = await container.renderToString(RsvpSection, {
+      props: { rsvped },
+    });
 
     return new Response(html, {
       headers: { "Content-Type": "text/html" },
