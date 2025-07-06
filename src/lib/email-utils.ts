@@ -44,7 +44,7 @@ export async function sendRsvpConfirmation({
         recipientName: userName,
         eventDate: eventDateStr,
         eventTime: "9:00 AM - 12:00 PM",
-        cancelLink: `${baseUrl}/cancel-rsvp`,
+        cancelLink: `${baseUrl}/rsvp/cancel`,
         calendarLink: calendar.googleCalendarUrl,
         userId: userId,
       }),

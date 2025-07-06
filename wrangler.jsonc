@@ -10,6 +10,13 @@
   "vars": {
     "BETTER_AUTH_BASE_URL": "https://sideprojectsaturday.just-be.workers.dev"
   },
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "c97de9abf5db4bc094fb750747b4e4e4",
+      "preview_id": "c97de9abf5db4bc094fb750747b4e4e4"
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",

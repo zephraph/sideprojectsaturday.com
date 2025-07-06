@@ -4,7 +4,7 @@ import { auth } from "@/lib/auth";
 
 const MagicLinkRequestSchema = z.object({
   email: z.email("Invalid email address"),
-  callbackURL: z.url().optional(),
+  callbackURL: z.enum(["/buzz", "/rsvp", "/rsvp/cancel"]).optional(),
 });
 
 export const POST: APIRoute = async ({ request }) => {
