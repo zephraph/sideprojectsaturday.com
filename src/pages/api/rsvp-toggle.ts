@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { auth, db } from "../../lib/auth";
+import { sendRsvpConfirmation } from "../../lib/email-utils";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -32,6 +33,39 @@ export const POST: APIRoute = async ({ request, locals }) => {
       where: { id: session.user.id },
       data: { rsvped },
     });
+
+    // Send RSVP confirmation email when user RSVPs (not when canceling)
+    if (rsvped) {
+      try {
+        // Get the next scheduled event
+        const nextEvent = await db.event.findFirst({
+          where: {
+            eventDate: {
+              gte: new Date(),
+            },
+            status: {
+              in: ["scheduled", "inprogress"],
+            },
+          },
+          orderBy: {
+            eventDate: "asc",
+          },
+        });
+
+        if (nextEvent) {
+          await sendRsvpConfirmation({
+            userEmail: session.user.email,
+            userName: session.user.name || undefined,
+            userId: session.user.id,
+            eventDate: new Date(nextEvent.eventDate),
+            baseUrl: runtime.env.BETTER_AUTH_BASE_URL || "https://sideprojectsaturday.com",
+          });
+        }
+      } catch (emailError) {
+        console.error("Failed to send RSVP confirmation email:", emailError);
+        // Don't fail the RSVP if email fails
+      }
+    }
 
     // Return updated RSVP section HTML
     const statusText = rsvped ? "✅ You're RSVP'd!" : "❌ Not RSVP'd";
