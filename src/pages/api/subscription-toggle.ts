@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
-import { auth, db } from "../../lib/auth";
+import { auth, db } from "@/lib/auth";
+import resend from "@/lib/resend";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -32,6 +33,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
       where: { id: session.user.id },
       data: { subscribed },
     });
+
+    // Update Resend contact subscription status
+    try {
+      await resend.contacts.update({
+        email: session.user.email,
+        audienceId: runtime.env.RESEND_AUDIENCE_ID,
+        unsubscribed: !subscribed,
+      });
+    } catch (error) {
+      console.error("Failed to update Resend contact:", error);
+      // Don't fail the request if Resend update fails
+    }
 
     // Return updated subscription section HTML
     const statusText = subscribed
