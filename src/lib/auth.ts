@@ -32,7 +32,7 @@ export const auth = betterAuth({
     magicLink({
       async sendMagicLink({ email, url }) {
         await resend.emails.send({
-          from: "hello@sideprojectsaturday.com",
+          from: "noreply@sideprojectsaturday.com",
           to: email,
           subject: "Sign in to Side Project Saturday",
           react: MagicLinkEmail({ magicLink: url }),
@@ -43,7 +43,7 @@ export const auth = betterAuth({
   emailVerification: {
     async sendVerificationEmail({ user, url }) {
       await resend.emails.send({
-        from: "hello@sideprojectsaturday.com",
+        from: "noreply@sideprojectsaturday.com",
         to: user.email,
         subject: "Verify your email address",
         react: VerificationEmail({ verificationUrl: url, username: user.name }),
