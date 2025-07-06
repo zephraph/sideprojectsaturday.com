@@ -93,3 +93,20 @@ model Verification {
   @@unique([identifier, value])
   @@map("verification")
 }
+
+model Event {
+  id        String      @id @default(cuid())
+  eventDate DateTime    // The Saturday date of the event
+  status    EventStatus @default(scheduled)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("event")
+}
+
+enum EventStatus {
+  scheduled
+  inprogress
+  canceled
+  completed
+}
