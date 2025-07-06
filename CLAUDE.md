@@ -19,7 +19,7 @@ mise fmt                   # Format code with Biome
 mise emails                # Preview email templates with react-email
 
 # Database
-mise migrate:create name="migration_name"  # Create new migration
+mise migrate:create migration_name  # Create new migration
 mise migrate:dev           # Apply migrations locally
 mise migrate:prod          # Apply migrations to production
 mise gen:better-auth       # Generate better-auth types
@@ -47,7 +47,7 @@ mise open:deployment       # Open Cloudflare dashboard
 
 1. **Edge-First Architecture**: Everything runs on Cloudflare Workers edge runtime. Database access uses Prisma's D1 adapter for edge compatibility.
 
-2. **Authentication Flow**: 
+2. **Authentication Flow**:
    - Magic link only (no passwords)
    - Server actions in `src/actions/index.ts` handle auth mutations
    - Auth state managed via middleware in `src/middleware.ts`
@@ -80,7 +80,7 @@ Database migrations are managed by Prisma but require manual SQL application to 
 - **Database Access**: Always use Prisma client from `src/lib/auth.ts` which is configured for D1
 - **Email Templates**: Three main templates in `src/emails/`:
   - `MagicLinkEmail.tsx`: Authentication magic links
-  - `VerificationEmail.tsx`: New user email verification  
+  - `VerificationEmail.tsx`: New user email verification
   - `EventInviteEmail.tsx`: Event invitation emails
 
 ## Deployment
@@ -100,3 +100,7 @@ The app deploys to Cloudflare using Alchemy deployment system configured in `alc
 4. **Database Changes**: Always create migrations with `mise migrate:create` and apply with `mise migrate:dev`
 5. **Authentication**: All auth flows go through better-auth magic links - no password authentication
 6. **Styling**: Uses Tailwind v4 with the new Vite plugin for improved performance
+
+## Code Organization and Best Practices
+
+- **Import Paths**: Prefer prefixing esm import paths with `@` which points to the src directory instead of deeply nested relative imports. So `@/lib/auth` instead of `../../lib/auth`
