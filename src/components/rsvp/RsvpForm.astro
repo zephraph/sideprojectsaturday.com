@@ -1,0 +1,36 @@
+---
+export interface Props {
+  eventDateStr: string | null;
+}
+
+const { eventDateStr } = Astro.props;
+---
+
+<div class="text-center">
+  <div class="text-6xl mb-4">🚀</div>
+  <h2 class="text-2xl font-bold text-gray-800 mb-4">
+    Join Us This Saturday!
+  </h2>
+  {eventDateStr && (
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
+      <p class="text-amber-800 font-medium">
+        📅 {eventDateStr}
+      </p>
+      <p class="text-amber-700 text-sm">
+        9:00 AM - 12:00 PM • Brooklyn, NY
+      </p>
+    </div>
+  )}
+  <p class="text-gray-600 mb-6">
+    Ready to spend Saturday morning building alongside fellow creators?
+  </p>
+
+  <button
+    id="rsvp-button"
+    class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
+  >
+    🎯 RSVP Now
+  </button>
+
+  <div id="rsvp-status" class="mt-4 text-sm"></div>
+</div>

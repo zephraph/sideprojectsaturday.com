@@ -1,6 +1,9 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { auth, db } from "@/lib/auth";
+import RsvpAlreadyConfirmed from "@/components/rsvp/RsvpAlreadyConfirmed.astro";
+import RsvpForm from "@/components/rsvp/RsvpForm.astro";
+import NoUpcomingEvents from "@/components/rsvp/NoUpcomingEvents.astro";
 
 // Check if user is authenticated
 const session = await auth.api.getSession({
@@ -68,69 +71,13 @@ const eventDateStr = nextEvent
           <!-- RSVP Section -->
           <div id="rsvp-section">
             {userRsvped ? (
-              <div class="text-center">
-                <div class="text-6xl mb-4">✅</div>
-                <h2 class="text-2xl font-bold text-green-700 mb-4">
-                  You're Already RSVP'd!
-                </h2>
-                <p class="text-gray-600 mb-4">
-                  You're all set for <strong>{eventDateStr}</strong>
-                </p>
-                <p class="text-sm text-gray-500 mb-6">
-                  Check your email for the confirmation with event details and calendar invite.
-                </p>
-                <a
-                  href="/rsvp/cancel"
-                  class="inline-block bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-4 rounded-lg transition-colors"
-                >
-                  Cancel RSVP
-                </a>
-              </div>
+              <RsvpAlreadyConfirmed eventDateStr={eventDateStr!} />
             ) : (
-              <div class="text-center">
-                <div class="text-6xl mb-4">🚀</div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">
-                  Join Us This Saturday!
-                </h2>
-                {eventDateStr && (
-                  <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6">
-                    <p class="text-amber-800 font-medium">
-                      📅 {eventDateStr}
-                    </p>
-                    <p class="text-amber-700 text-sm">
-                      9:00 AM - 12:00 PM • Brooklyn, NY
-                    </p>
-                  </div>
-                )}
-                <p class="text-gray-600 mb-6">
-                  Ready to spend Saturday morning building alongside fellow creators?
-                </p>
-
-                <button
-                  id="rsvp-button"
-                  class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
-                >
-                  🎯 RSVP Now
-                </button>
-
-                <div id="rsvp-status" class="mt-4 text-sm"></div>
-              </div>
+              <RsvpForm eventDateStr={eventDateStr} />
             )}
           </div>
         ) : (
-          <!-- No Event Available -->
-          <div class="text-center">
-            <div class="text-6xl mb-4">📅</div>
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">
-              No Upcoming Events
-            </h2>
-            <p class="text-gray-600 mb-4">
-              There are no Side Project Saturday events scheduled at the moment.
-            </p>
-            <p class="text-sm text-gray-500">
-              Check back soon or follow us for updates!
-            </p>
-          </div>
+          <NoUpcomingEvents />
         )}
       </div>
     </div>
@@ -160,6 +107,7 @@ const eventDateStr = nextEvent
 
         if (response.ok) {
           // Show success state
+          // Show success state - keeping inline for dynamic insertion
           document.getElementById('rsvp-section')!.innerHTML = `
             <div class="text-center">
               <div class="text-6xl mb-4">🎉</div>
