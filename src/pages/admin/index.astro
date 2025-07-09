@@ -16,9 +16,10 @@ const users = await db.user.findMany({
         emailVerified: true,
         createdAt: true,
     },
-    orderBy: {
-        createdAt: "desc",
-    },
+    orderBy: [
+        { rsvped: "desc" },
+        { updatedAt: "desc" },
+    ],
 });
 
 // Get current week's Saturday
