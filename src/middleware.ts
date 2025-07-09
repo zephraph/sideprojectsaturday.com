@@ -2,32 +2,35 @@ import { defineMiddleware } from "astro:middleware";
 import { auth, db } from "./lib/auth";
 
 export const onRequest = defineMiddleware(async (context, next) => {
-	db(context.locals.runtime.env);
-	// Initialize locals
-	context.locals.user = null;
-	context.locals.session = null;
+  db(context.locals.runtime.env);
+  // Initialize locals
+  context.locals.user = null;
+  context.locals.session = null;
 
-	try {
-		// Get session from Better Auth
-		const session = await auth.api.getSession({
-			headers: context.request.headers,
-		});
+  try {
+    // Get session from Better Auth
+    const session = await auth.api.getSession({
+      headers: context.request.headers,
+    });
 
-		if (session) {
-			context.locals.user = session.user;
-			context.locals.session = session.session;
-		}
-	} catch (error) {
-		// Handle any auth errors gracefully
-		console.error("Auth middleware error:", error);
-	}
+    if (session) {
+      context.locals.user = session.user;
+      context.locals.session = session.session;
+    }
+  } catch (error) {
+    // Handle any auth errors gracefully
+    console.error("Auth middleware error:", error);
+  }
 
-	// Protect admin routes
-	if (context.url.pathname.startsWith("/admin")) {
-		if (!context.locals.user || context.locals.user.role !== "admin") {
-			return new Response("Unauthorized", { status: 401 });
-		}
-	}
+  // Protect admin routes
+  if (
+    context.url.pathname.startsWith("/admin") ||
+    context.url.pathname.startsWith("/api/admin")
+  ) {
+    if (!context.locals.user || context.locals.user.role !== "admin") {
+      return new Response("Unauthorized", { status: 401 });
+    }
+  }
 
-	return next();
+  return next();
 });

@@ -55,14 +55,6 @@ function parseCSV(csvData: string): ParsedUser[] {
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
-	// Check if user is admin
-	if (!locals.user || locals.user.role !== "admin") {
-		return new Response(JSON.stringify({ error: "Unauthorized" }), {
-			status: 401,
-			headers: { "Content-Type": "application/json" },
-		});
-	}
-
 	try {
 		const body = await request.json();
 		const parseResult = ImportUsersSchema.safeParse(body);
