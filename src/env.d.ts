@@ -1,16 +1,25 @@
 /// <reference types="astro/client" />
 /// <reference types="@cloudflare/workers-types" />
 
+import type { worker } from "../alchemy.run";
+
+export type WorkerEnv = worker.Env;
+
 declare module "cloudflare:workers" {
-	export { env } from "@cloudflare/workers-types";
+  namespace Cloudflare {
+    export interface Env extends WorkerEnv {}
+  }
 }
 
-declare namespace App {
-	interface Locals {
-		runtime: {
-			env: Env;
-		};
-		user: import("better-auth").User | null;
-		session: import("better-auth").Session | null;
-	}
+declare global {
+  export interface Env extends WorkerEnv {}
+  namespace App {
+    interface Locals {
+      runtime: {
+        env: WorkerEnv;
+      };
+      user: import("better-auth").User | null;
+      session: import("better-auth").Session | null;
+    }
+  }
 }
