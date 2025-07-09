@@ -2,7 +2,7 @@
 import "../styles/global.css";
 
 export interface Props {
-  title?: string;
+    title?: string;
 }
 
 const { title = "Side Project Saturday" } = Astro.props;
@@ -10,34 +10,42 @@ const { title = "Side Project Saturday" } = Astro.props;
 
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="generator" content={Astro.generator} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <title>{title}</title>
-  </head>
-  <body>
-    <!-- Launch announcement banner -->
-    <div class="bg-warning text-warning-content text-center py-2 px-4 text-sm sticky top-0 z-50">
-      <p class="font-medium">🚧 New site just launched, still ironing out some kinks, check back soon 🚧</p>
-    </div>
-    <slot />
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta name="generator" content={Astro.generator} />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+        <title>{title}</title>
+    </head>
+    <body>
+        <!-- Launch announcement banner -->
+        <div
+            class="bg-warning text-warning-content text-center py-2 px-4 text-sm sticky top-0 z-50"
+        >
+            <p class="font-medium">
+                🚧 New site just launched, report bugs <a
+                    class="link"
+                    href="https://github.com/zephraph/sideprojectsaturday.com/issues/new"
+                    >here</a
+                > 🚧
+            </p>
+        </div>
+        <slot />
+    </body>
 </html>
 
 <style>
-  html,
-  body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-  }
+    html,
+    body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+    }
 </style>
