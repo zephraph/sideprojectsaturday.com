@@ -22,5 +22,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
 		console.error("Auth middleware error:", error);
 	}
 
+	// Protect admin routes
+	if (context.url.pathname.startsWith("/admin")) {
+		if (!context.locals.user || context.locals.user.role !== "admin") {
+			return new Response("Unauthorized", { status: 401 });
+		}
+	}
+
 	return next();
 });

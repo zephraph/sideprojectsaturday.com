@@ -3,9 +3,11 @@ import {
   Astro,
   D1Database,
   KVNamespace,
+  Queue,
   Workflow,
   Worker,
 } from "alchemy/cloudflare";
+import type { UserEventMessage } from "@/services/user-event-consumer";
 
 const app = await alchemy("sideprojectsaturday", {
   password: process.env.ALCHEMY_SECRET as string,
@@ -17,12 +19,37 @@ export const db = await D1Database("sps-db", {
 
 export const kv = await KVNamespace("sps-kv");
 
+export const userEventQueue = await Queue<UserEventMessage>("sps-user-event");
+
 export const eventWorkflow = new Workflow("event-management", {
   className: "EventManagementWorkflow",
 });
 
+export const userEventWorker = await Worker("user-event-worker", {
+  entrypoint: "./src/services/user-event-consumer.ts",
+  compatibilityFlags: ["nodejs_compat_v2"],
+  bindings: {
+    DB: db,
+    KV: kv,
+    RESEND_API_KEY: alchemy.secret(process.env.RESEND_API_KEY as string),
+    RESEND_AUDIENCE_ID: alchemy.secret(
+      process.env.RESEND_AUDIENCE_ID as string,
+    ),
+  },
+  eventSources: [
+    {
+      queue: userEventQueue,
+      settings: {
+        batchSize: 1,
+        maxConcurrency: 1,
+        retryDelay: 15,
+      },
+    },
+  ],
+});
+
 export const eventWorker = await Worker("event-worker", {
-  entrypoint: "./src/workflows/event-management.tsx",
+  entrypoint: "./src/services/event-management.tsx",
   compatibilityFlags: ["nodejs_compat_v2"],
   bindings: {
     DB: db,
@@ -45,6 +72,9 @@ export const worker = await Astro("sideprojectsaturday", {
   ],
   bindings: {
     RESEND_API_KEY: alchemy.secret(process.env.RESEND_API_KEY as string),
+    RESEND_AUDIENCE_ID: alchemy.secret(
+      process.env.RESEND_AUDIENCE_ID as string,
+    ),
     BETTER_AUTH_BASE_URL: process.env.PROD_URL as string,
     SWITCHBOT_TOKEN: alchemy.secret(process.env.SWITCHBOT_TOKEN as string),
     SWITCHBOT_KEY: alchemy.secret(process.env.SWITCHBOT_KEY as string),
@@ -53,6 +83,7 @@ export const worker = await Astro("sideprojectsaturday", {
     ),
     DB: db,
     KV: kv,
+    USER_EVENT_QUEUE: userEventQueue,
   },
 });
 
