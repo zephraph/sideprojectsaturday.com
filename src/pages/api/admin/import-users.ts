@@ -123,32 +123,43 @@ export const POST: APIRoute = async ({ request, locals }) => {
 			);
 		}
 
-		// Create users in database
-		const createdUsers = await Promise.all(
-			newUsers.map(user =>
-				db.user.create({
-					data: {
-						email: user.email,
-						name: user.name,
-						emailVerified: true, // Set as verified for batch imports
-						subscribed: true,
-						rsvped: false,
-					},
+		// Create users in database using batch processing
+		const createdUsers = [];
+		const BATCH_SIZE = 50; // Process in batches of 50 to avoid SQL variable limits
+		
+		for (let i = 0; i < newUsers.length; i += BATCH_SIZE) {
+			const batch = newUsers.slice(i, i + BATCH_SIZE);
+			const batchCreatedUsers = await Promise.all(
+				batch.map(user =>
+					db.user.create({
+						data: {
+							email: user.email,
+							name: user.name,
+							emailVerified: true, // Set as verified for batch imports
+							subscribed: true,
+							rsvped: false,
+						},
+					}),
+				),
+			);
+			createdUsers.push(...batchCreatedUsers);
+		}
+
+		// Queue all users for contact creation (without welcome emails) in batches
+		const QUEUE_BATCH_SIZE = 25; // Smaller batches for queue operations
+		
+		for (let i = 0; i < createdUsers.length; i += QUEUE_BATCH_SIZE) {
+			const batch = createdUsers.slice(i, i + QUEUE_BATCH_SIZE);
+			const queuePromises = batch.map(user =>
+				queueUserEvent(locals.runtime.env, {
+					type: "user_create",
+					email: user.email,
+					name: user.name || undefined,
+					sendWelcomeEmail: false, // Don't send welcome emails for batch imports
 				}),
-			),
-		);
-
-		// Queue all users for contact creation (without welcome emails)
-		const queuePromises = createdUsers.map(user =>
-			queueUserEvent(locals.runtime.env, {
-				type: "user_create",
-				email: user.email,
-				name: user.name || undefined,
-				sendWelcomeEmail: false, // Don't send welcome emails for batch imports
-			}),
-		);
-
-		await Promise.all(queuePromises);
+			);
+			await Promise.all(queuePromises);
+		}
 
 		return new Response(
 			JSON.stringify({ 

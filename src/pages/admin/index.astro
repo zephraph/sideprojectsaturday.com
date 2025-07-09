@@ -1,6 +1,7 @@
 ---
 import Layout from "@/layouts/Layout.astro";
 import { db } from "@/lib/auth";
+import { getCurrentWeekSaturdayDate } from "@/lib/date-utils";
 
 db(Astro.locals.runtime.env);
 
@@ -21,12 +22,7 @@ const users = await db.user.findMany({
 });
 
 // Get current week's Saturday
-const today = new Date();
-const dayOfWeek = today.getDay();
-const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7;
-const currentWeekSaturday = new Date(today);
-currentWeekSaturday.setDate(today.getDate() + daysUntilSaturday);
-currentWeekSaturday.setHours(0, 0, 0, 0);
+const currentWeekSaturday = getCurrentWeekSaturdayDate();
 
 // Check if current week has an event
 const currentWeekEvent = await db.event.findFirst({
@@ -64,20 +60,25 @@ const activeBreaks = await db.break.findMany({
                     <a class="btn btn-ghost text-xl">Admin Dashboard</a>
                 </div>
                 <div class="flex-none">
-                    <div class="dropdown dropdown-end">
-                        <div tabindex="0" role="button" class="btn btn-ghost">
-                            {
-                                Astro.locals.user?.name ||
-                                    Astro.locals.user?.email
-                            }
+                    <div class="flex items-center gap-2">
+                        <a href="/admin/import" class="btn btn-primary btn-sm">
+                            Import Users
+                        </a>
+                        <div class="dropdown dropdown-end">
+                            <div tabindex="0" role="button" class="btn btn-ghost">
+                                {
+                                    Astro.locals.user?.name ||
+                                        Astro.locals.user?.email
+                                }
+                            </div>
+                            <ul
+                                tabindex="0"
+                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+                            >
+                                <li><a href="/">Home</a></li>
+                                <li><a href="/auth/sign-out">Sign Out</a></li>
+                            </ul>
                         </div>
-                        <ul
-                            tabindex="0"
-                            class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
-                        >
-                            <li><a href="/">Home</a></li>
-                            <li><a href="/auth/sign-out">Sign Out</a></li>
-                        </ul>
                     </div>
                 </div>
             </div>
@@ -213,59 +214,6 @@ const activeBreaks = await db.break.findMany({
                     </div>
                 </div>
 
-                <!-- CSV Import Section -->
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body">
-                        <h2 class="card-title text-2xl mb-6">Import Users from CSV</h2>
-                        
-                        <div class="alert alert-info mb-4">
-                            <div>
-                                <p class="font-semibold">CSV Format Requirements:</p>
-                                <ul class="list-disc list-inside text-sm mt-2">
-                                    <li>Must have an "email" column (required)</li>
-                                    <li>May have a "name" column (optional)</li>
-                                    <li>Column order doesn't matter</li>
-                                    <li>Users with existing emails will be skipped</li>
-                                    <li>Imported users will have verified emails but no welcome email</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        <form id="csvImportForm" hx-post="/api/admin/import-users" hx-ext="json-enc" hx-swap="none">
-                            <div class="form-control">
-                                <label class="label">
-                                    <span class="label-text">Upload CSV File</span>
-                                </label>
-                                <input 
-                                    type="file" 
-                                    accept=".csv" 
-                                    class="file-input file-input-bordered" 
-                                    id="csvFile"
-                                    required 
-                                />
-                            </div>
-                            
-                            <div class="form-control mt-4">
-                                <label class="label">
-                                    <span class="label-text">CSV Preview</span>
-                                </label>
-                                <textarea 
-                                    name="csvData" 
-                                    class="textarea textarea-bordered h-32" 
-                                    placeholder="CSV content will appear here..."
-                                    readonly
-                                    id="csvPreview"
-                                ></textarea>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary mt-4" id="importBtn" disabled>
-                                Import Users
-                            </button>
-                        </form>
-
-                        <div id="importResult" class="mt-4"></div>
-                    </div>
-                </div>
 
                 <!-- Users Section -->
                 <div class="card bg-base-100 shadow-xl">
@@ -400,59 +348,5 @@ const activeBreaks = await db.break.findMany({
                 },
             );
 
-            // CSV file handling
-            document.getElementById('csvFile').addEventListener('change', function(e) {
-                const file = e.target.files[0];
-                const preview = document.getElementById('csvPreview');
-                const importBtn = document.getElementById('importBtn');
-                
-                if (file && file.type === 'text/csv') {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const csvContent = e.target.result;
-                        preview.value = csvContent;
-                        importBtn.disabled = false;
-                    };
-                    reader.readAsText(file);
-                } else {
-                    preview.value = '';
-                    importBtn.disabled = true;
-                }
-            });
-
-            // Handle import response
-            document.getElementById('csvImportForm').addEventListener('htmx:afterRequest', function(e) {
-                const result = document.getElementById('importResult');
-                
-                if (e.detail.successful) {
-                    const response = JSON.parse(e.detail.xhr.response);
-                    result.innerHTML = `
-                        <div class="alert alert-success">
-                            <div>
-                                <p class="font-semibold">Import Successful!</p>
-                                <p>Created: ${response.created} users</p>
-                                <p>Skipped: ${response.skipped} existing users</p>
-                                <p>Total processed: ${response.total} users</p>
-                            </div>
-                        </div>
-                    `;
-                    // Reset form
-                    this.reset();
-                    document.getElementById('csvPreview').value = '';
-                    document.getElementById('importBtn').disabled = true;
-                    // Reload page to show new users
-                    setTimeout(() => location.reload(), 2000);
-                } else {
-                    const error = e.detail.xhr.responseJSON?.error || 'Import failed';
-                    result.innerHTML = `
-                        <div class="alert alert-error">
-                            <div>
-                                <p class="font-semibold">Import Failed</p>
-                                <p>${error}</p>
-                            </div>
-                        </div>
-                    `;
-                }
-            });
         </script>
 </Layout>
