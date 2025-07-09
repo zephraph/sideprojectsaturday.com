@@ -1,8 +1,6 @@
 import type { APIRoute } from "astro";
 import { auth, db } from "@/lib/auth";
 import resend from "@/lib/resend";
-import { experimental_AstroContainer as AstroContainer } from "astro/container";
-import SubscriptionSection from "@/components/SubscriptionSection.astro";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -55,18 +53,38 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const buttonText = subscribed ? "Unsubscribe" : "Subscribe";
     const nextValue = subscribed ? "false" : "true";
 
-    // Use Astro Container API to render the component
-    const container = await AstroContainer.create();
-    const html = await container.renderToString(SubscriptionSection, {
-      props: {
-        subscribed,
-        statusText,
-        buttonText,
-        nextValue,
-      },
-    });
+    // Generate HTML response directly
+    const html = `
+      <div id="subscription-section" class="bg-purple-50 border border-purple-200 rounded-md p-3">
+        <div class="text-sm font-medium text-purple-800 mb-2">
+          Event Notifications
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-purple-700 text-sm">
+            ${statusText}
+          </span>
+          <form
+            hx-post="/api/subscription-toggle"
+            hx-target="#subscription-section"
+            hx-swap="outerHTML"
+          >
+            <input
+              type="hidden"
+              name="subscribed"
+              value="${nextValue}"
+            />
+            <button
+              type="submit"
+              class="text-xs text-purple-600 hover:text-purple-800 font-medium underline cursor-pointer"
+            >
+              ${buttonText}
+            </button>
+          </form>
+        </div>
+      </div>
+    `;
 
-    return new Response(html, {
+    return new Response(html.trim(), {
       headers: { "Content-Type": "text/html" },
     });
   } catch (error) {
