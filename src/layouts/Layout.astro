@@ -1,5 +1,11 @@
 ---
 import "../styles/global.css";
+
+export interface Props {
+  title?: string;
+}
+
+const { title = "Side Project Saturday" } = Astro.props;
 ---
 
 <!doctype html>
@@ -16,7 +22,7 @@ import "../styles/global.css";
       rel="stylesheet"
     />
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-    <title>Side Project Saturday</title>
+    <title>{title}</title>
   </head>
   <body>
     <slot />
