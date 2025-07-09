@@ -20,6 +20,10 @@ run = "astro dev"
 description = "Build for production"
 run = "astro build"
 
+[tasks.typecheck]
+description = "Typecheck code with TypeScript"
+run = "tsc --noEmit"
+
 [tasks.preview]
 description = "Preview production build locally"
 run = "wrangler dev ./dist/_worker.js"
