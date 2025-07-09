@@ -110,3 +110,14 @@ enum EventStatus {
   canceled
   completed
 }
+
+model Break {
+  id        String   @id @default(cuid())
+  startDate DateTime
+  endDate   DateTime
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("break")
+}

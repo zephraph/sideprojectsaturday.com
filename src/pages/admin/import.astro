@@ -1,0 +1,154 @@
+---
+import Layout from "@/layouts/Layout.astro";
+---
+
+<Layout title="CSV Import - Admin">
+	<div class="min-h-screen bg-base-200">
+		<div class="navbar bg-base-100 shadow-lg">
+			<div class="flex-1">
+				<a href="/admin" class="btn btn-ghost text-xl">Admin Dashboard</a>
+			</div>
+			<div class="flex-none">
+				<div class="dropdown dropdown-end">
+					<div tabindex="0" role="button" class="btn btn-ghost">
+						{
+							Astro.locals.user?.name ||
+								Astro.locals.user?.email
+						}
+					</div>
+					<ul
+						tabindex="0"
+						class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+					>
+						<li><a href="/">Home</a></li>
+						<li><a href="/admin">Admin</a></li>
+						<li><a href="/auth/sign-out">Sign Out</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="container mx-auto px-4 py-8">
+			<div class="card bg-base-100 shadow-xl">
+				<div class="card-body">
+					<h1 class="card-title text-3xl mb-6">Import Users from CSV</h1>
+					
+					<div class="alert alert-info mb-4">
+						<div>
+							<p class="font-semibold">CSV Format Requirements:</p>
+							<ul class="list-disc list-inside text-sm mt-2">
+								<li>Must have an "email" column (required)</li>
+								<li>May have a "name" column (optional)</li>
+								<li>Column order doesn't matter</li>
+								<li>Users with existing emails will be skipped</li>
+								<li>Imported users will have verified emails but no welcome email</li>
+							</ul>
+						</div>
+					</div>
+
+					<form id="csvImportForm" hx-post="/api/admin/import-users" hx-ext="json-enc" hx-swap="none">
+						<div class="form-control">
+							<label class="label">
+								<span class="label-text">Upload CSV File</span>
+							</label>
+							<input 
+								type="file" 
+								accept=".csv" 
+								class="file-input file-input-bordered" 
+								id="csvFile"
+								required 
+							/>
+						</div>
+						
+						<div class="form-control mt-4">
+							<label class="label">
+								<span class="label-text">CSV Preview</span>
+							</label>
+							<textarea 
+								name="csvData" 
+								class="textarea textarea-bordered h-32" 
+								placeholder="CSV content will appear here..."
+								readonly
+								id="csvPreview"
+							></textarea>
+						</div>
+
+						<button type="submit" class="btn btn-primary mt-4" id="importBtn" disabled>
+							Import Users
+						</button>
+					</form>
+
+					<div id="importResult" class="mt-4"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"></script>
+	<script>
+		// Parse JSON error responses
+		document.body.addEventListener(
+			"htmx:responseError",
+			function (evt) {
+				try {
+					evt.detail.xhr.responseJSON = JSON.parse(
+						evt.detail.xhr.response,
+					);
+				} catch (e) {}
+			},
+		);
+
+		// CSV file handling
+		document.getElementById('csvFile').addEventListener('change', function(e) {
+			const file = e.target.files[0];
+			const preview = document.getElementById('csvPreview');
+			const importBtn = document.getElementById('importBtn');
+			
+			if (file && file.type === 'text/csv') {
+				const reader = new FileReader();
+				reader.onload = function(e) {
+					const csvContent = e.target.result;
+					preview.value = csvContent;
+					importBtn.disabled = false;
+				};
+				reader.readAsText(file);
+			} else {
+				preview.value = '';
+				importBtn.disabled = true;
+			}
+		});
+
+		// Handle import response
+		document.getElementById('csvImportForm').addEventListener('htmx:afterRequest', function(e) {
+			const result = document.getElementById('importResult');
+			
+			if (e.detail.successful) {
+				const response = JSON.parse(e.detail.xhr.response);
+				result.innerHTML = `
+					<div class="alert alert-success">
+						<div>
+							<p class="font-semibold">Import Successful!</p>
+							<p>Created: ${response.created} users</p>
+							<p>Skipped: ${response.skipped} existing users</p>
+							<p>Total processed: ${response.total} users</p>
+						</div>
+					</div>
+				`;
+				// Reset form
+				this.reset();
+				document.getElementById('csvPreview').value = '';
+				document.getElementById('importBtn').disabled = true;
+			} else {
+				const error = e.detail.xhr.responseJSON?.error || 'Import failed';
+				result.innerHTML = `
+					<div class="alert alert-error">
+						<div>
+							<p class="font-semibold">Import Failed</p>
+							<p>${error}</p>
+						</div>
+					</div>
+				`;
+			}
+		});
+	</script>
+</Layout>

@@ -24,7 +24,7 @@
 		"@biomejs/biome": "^2.0.6",
 		"@types/react": "^19.1.8",
 		"@types/react-dom": "^19.1.6",
-		"alchemy": "^0.43.0",
+		"alchemy": "^0.45.0",
 		"daisyui": "^5.0.43",
 		"tsx": "^4.20.3",
 		"typescript": "^5.8.3",

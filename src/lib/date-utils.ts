@@ -15,6 +15,20 @@ export function getNextSaturdayDate(): Date {
 }
 
 /**
+ * Get the current week's Saturday date (at midnight)
+ * If today is Saturday, returns today. Otherwise returns the coming Saturday.
+ */
+export function getCurrentWeekSaturdayDate(): Date {
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7;
+    const currentWeekSaturday = new Date(today);
+    currentWeekSaturday.setDate(today.getDate() + daysUntilSaturday);
+    currentWeekSaturday.setHours(0, 0, 0, 0);
+    return currentWeekSaturday;
+}
+
+/**
  * Get the next Saturday as a formatted string
  */
 export function getNextSaturdayFormatted(): string {
