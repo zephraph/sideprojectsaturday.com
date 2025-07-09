@@ -25,6 +25,10 @@ const { title = "Side Project Saturday" } = Astro.props;
     <title>{title}</title>
   </head>
   <body>
+    <!-- Launch announcement banner -->
+    <div class="bg-warning text-warning-content text-center py-2 px-4 text-sm sticky top-0 z-50">
+      <p class="font-medium">🚧 New site just launched, still ironing out some kinks, check back soon 🚧</p>
+    </div>
     <slot />
   </body>
 </html>

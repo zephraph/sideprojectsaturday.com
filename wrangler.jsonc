@@ -7,9 +7,7 @@
     "nodejs_compat_populate_process_env"
   ],
   "assets": { "directory": "dist", "binding": "ASSETS" },
-  "vars": {
-    "BETTER_AUTH_BASE_URL": "https://sideprojectsaturday.just-be.workers.dev"
-  },
+  "vars": { "BETTER_AUTH_BASE_URL": "https://sideprojectsaturday.com" },
   "kv_namespaces": [
     {
       "binding": "KV",
