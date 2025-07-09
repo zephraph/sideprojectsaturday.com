@@ -12,28 +12,31 @@ import {
   Text,
 } from "@react-email/components";
 
-interface EventInviteEmailProps {
+interface RsvpConfirmationEmailProps {
+  recipientName?: string;
   eventDate: string;
   eventTime: string;
-  rsvpLink: string;
-  recipientName?: string;
+  cancelLink: string;
+  calendarLink?: string;
   userId?: string;
 }
 
-export default function EventInviteEmail({
+export default function RsvpConfirmationEmail({
+  recipientName,
   eventDate,
   eventTime,
-  rsvpLink,
-  recipientName,
+  cancelLink,
+  calendarLink,
   userId,
-}: EventInviteEmailProps) {
-  const unsubscribeUrl = userId ? `https://sideprojectsaturday.com/unsubscribe/${userId}` : undefined;
+}: RsvpConfirmationEmailProps) {
+  const unsubscribeUrl = userId
+    ? `https://sideprojectsaturday.com/unsubscribe/${userId}`
+    : undefined;
+    
   return (
     <Html>
       <Head />
-      <Preview>
-        🎉 You're invited to Side Project Saturday - {eventDate}!
-      </Preview>
+      <Preview>✅ You're confirmed for Side Project Saturday - {eventDate}!</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
@@ -41,15 +44,17 @@ export default function EventInviteEmail({
             <Text style={subtitle}>Brooklyn's Creative Morning Meetup</Text>
           </Section>
           <Section style={content}>
+            <div style={confirmationIcon}>✅</div>
             <Heading style={h2}>
-              {recipientName ? `Hey ${recipientName}!` : "Hey there!"}
+              {recipientName ? `${recipientName}, you're all set!` : "You're all set!"}
             </Heading>
             <Text style={text}>
-              You're invited to join us for another edition of Saturday morning
-              of building, creating, and connecting with fellow makers!
+              Your RSVP for this Saturday's Side Project Saturday has been confirmed. 
+              We can't wait to see what you'll build!
             </Text>
+            
             <Section style={eventDetails}>
-              <Text style={detailsHeader}>📅 This Saturday's Details</Text>
+              <Text style={detailsHeader}>📅 Event Details</Text>
               <Text style={detailsText}>
                 🗓️ <strong>Date:</strong> {eventDate}
                 <br />
@@ -57,31 +62,47 @@ export default function EventInviteEmail({
                 <br />
                 📍 <strong>Location:</strong> 325 Gold Street, Brooklyn, NY
                 <br />
-                💻 <strong>Bring:</strong> Your laptop, current project,
-                creative energy & coffee/snacks!
+                🏢 <strong>Floor:</strong> 5th Floor
               </Text>
             </Section>
-            <Section style={buttonContainer}>
-              <Button style={button} href={rsvpLink}>
-                🎯 RSVP for This Saturday
-              </Button>
-            </Section>
-            <Section style={whatToExpect}>
-              <Text style={expectHeader}>🚀 What to Expect</Text>
-              <Text style={expectText}>
-                • <strong>9:00-9:30 AM:</strong> Arrive, grab a seat &
-                introductions
-                <br />• <strong>9:30-11:30 AM:</strong> Focused work time on
-                your projects
-                <br />• <strong>11:30 AM-12:00 PM:</strong> Demo what you built
-                & get feedback
-                <br />• <strong>All morning:</strong> Connect with other
-                builders, get unstuck, find collaborators
+
+            {calendarLink && (
+              <Section style={buttonContainer}>
+                <Button style={button} href={calendarLink}>
+                  📅 Add to Calendar
+                </Button>
+              </Section>
+            )}
+
+            <Section style={reminders}>
+              <Text style={remindersHeader}>🎒 What to Bring</Text>
+              <Text style={remindersText}>
+                • Your laptop & charger
+                <br />
+                • Current project or idea to work on
+                <br />
+                • Coffee or your preferred morning beverage
+                <br />
+                • Good vibes and willingness to connect!
               </Text>
             </Section>
-            <Text style={encouragement}>
-              💡 Whether you're starting something new, continuing a project, or
-              just want to be around other creators - you belong here!
+
+            <Section style={dayOfInfo}>
+              <Text style={dayOfHeader}>📱 Day of the Event</Text>
+              <Text style={dayOfText}>
+                • We'll send you a reminder email Saturday morning
+                <br />
+                • That email will include a link to buzz into the building
+                <br />
+                • Doors open at 9 AM sharp!
+              </Text>
+            </Section>
+
+            <Text style={cantMakeIt}>
+              Plans changed? No worries! You can{" "}
+              <Link href={cancelLink} style={cancelLinkStyle}>
+                cancel your RSVP here
+              </Link>.
             </Text>
           </Section>
           <Hr style={hr} />
@@ -93,7 +114,10 @@ export default function EventInviteEmail({
           </Text>
           {unsubscribeUrl && (
             <Text style={unsubscribeText}>
-              Don't want to receive event invites? <Link href={unsubscribeUrl} style={unsubscribeLink}>Unsubscribe</Link>
+              Don't want to receive event emails?{" "}
+              <Link href={unsubscribeUrl} style={unsubscribeLink}>
+                Unsubscribe
+              </Link>
             </Text>
           )}
         </Container>
@@ -150,6 +174,12 @@ const content = {
   padding: "32px 48px",
 };
 
+const confirmationIcon = {
+  fontSize: "64px",
+  textAlign: "center" as const,
+  marginBottom: "16px",
+};
+
 const h2 = {
   color: "#1f2937",
   fontSize: "24px",
@@ -168,21 +198,20 @@ const text = {
 };
 
 const buttonContainer = {
-  margin: "0 0 32px 0",
+  margin: "0 0 24px 0",
   textAlign: "center" as const,
 };
 
 const button = {
-  background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
+  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
   borderRadius: "12px",
   color: "#ffffff",
-  fontSize: "18px",
+  fontSize: "16px",
   fontWeight: "700",
   textDecoration: "none",
-  padding: "16px 32px",
+  padding: "14px 28px",
   display: "inline-block",
-  boxShadow: "0 6px 20px rgba(251, 191, 36, 0.4)",
-  transition: "all 0.3s ease",
+  boxShadow: "0 6px 20px rgba(16, 185, 129, 0.4)",
 };
 
 const eventDetails = {
@@ -209,15 +238,15 @@ const detailsText = {
   textAlign: "left" as const,
 };
 
-const whatToExpect = {
-  backgroundColor: "#f0f9ff",
+const reminders = {
+  backgroundColor: "#e0f2fe",
   border: "2px solid #0ea5e9",
   borderRadius: "12px",
   padding: "20px",
   margin: "0 0 24px 0",
 };
 
-const expectHeader = {
+const remindersHeader = {
   color: "#075985",
   fontSize: "18px",
   fontWeight: "700",
@@ -225,7 +254,7 @@ const expectHeader = {
   textAlign: "center" as const,
 };
 
-const expectText = {
+const remindersText = {
   color: "#075985",
   fontSize: "16px",
   lineHeight: "24px",
@@ -233,16 +262,42 @@ const expectText = {
   textAlign: "left" as const,
 };
 
-const encouragement = {
+const dayOfInfo = {
   backgroundColor: "#f0fdf4",
-  border: "1px solid #86efac",
-  borderRadius: "8px",
-  padding: "16px",
+  border: "2px solid #86efac",
+  borderRadius: "12px",
+  padding: "20px",
+  margin: "0 0 24px 0",
+};
+
+const dayOfHeader = {
+  color: "#166534",
+  fontSize: "18px",
+  fontWeight: "700",
+  margin: "0 0 12px 0",
+  textAlign: "center" as const,
+};
+
+const dayOfText = {
   color: "#166534",
   fontSize: "16px",
-  textAlign: "center" as const,
+  lineHeight: "24px",
   margin: "0",
-  fontStyle: "italic",
+  textAlign: "left" as const,
+};
+
+const cantMakeIt = {
+  color: "#6b7280",
+  fontSize: "14px",
+  lineHeight: "20px",
+  margin: "0",
+  textAlign: "center" as const,
+};
+
+const cancelLinkStyle = {
+  color: "#ef4444",
+  textDecoration: "underline",
+  fontWeight: "600",
 };
 
 const hr = {
@@ -260,7 +315,6 @@ const footer = {
   textAlign: "center" as const,
   fontWeight: "600",
 };
-
 
 const unsubscribeText = {
   color: "#6b7280",

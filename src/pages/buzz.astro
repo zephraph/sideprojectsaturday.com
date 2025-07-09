@@ -1,0 +1,275 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { auth } from "@/lib/auth";
+
+// Check if user is authenticated
+const session = await auth.api.getSession({
+    headers: Astro.request.headers,
+});
+
+// If not authenticated, redirect to login with callback
+if (!session?.user) {
+    const callbackURL = encodeURIComponent(Astro.url.pathname);
+    return Astro.redirect(`/login?callback=${callbackURL}`);
+}
+---
+
+<Layout title="Buzz In - Side Project Saturday">
+    <div
+        class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4"
+    >
+        <div class="max-w-md w-full">
+            <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+                <!-- Loading State -->
+                <div id="loading-state" class="block">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-6">
+                        🏢 Building Entry
+                    </h1>
+                    <div class="mb-6">
+                        <div class="loader"></div>
+                    </div>
+                    <p class="text-gray-600">Opening door...</p>
+                </div>
+
+                <!-- Success State -->
+                <div id="success-state" class="hidden">
+                    <div class="mb-6">
+                        <div class="success-icon">✅</div>
+                    </div>
+                    <h2 class="text-2xl font-bold text-green-700 mb-4">
+                        Door Opened!
+                    </h2>
+                    <p class="text-gray-600 mb-6">
+                        Come on up to the 5th floor. Take the elevator or
+                        stairs.
+                    </p>
+                    <div id="countdown" class="text-sm text-gray-500 mb-4">
+                    </div>
+                    <button
+                        id="open-again-button"
+                        class="hidden w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
+                        onclick="window.location.reload()"
+                    >
+                        🚪 Open Door Again
+                    </button>
+                </div>
+
+                <!-- Locked State -->
+                <div id="locked-state" class="hidden">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-6">
+                        🏢 Building Entry
+                    </h1>
+                    <div class="mb-6">
+                        <div class="lock-container">
+                            <div class="lock-icon">🔒</div>
+                        </div>
+                    </div>
+                    <h2 class="text-xl font-semibold text-red-700 mb-4">
+                        No Active Event
+                    </h2>
+                    <p class="text-gray-600 mb-4">
+                        The door can only be opened during Side Project Saturday
+                        events.
+                    </p>
+                    <p class="text-sm text-gray-500">
+                        Events run Saturdays 9 AM - 12 PM
+                    </p>
+                </div>
+
+                <!-- Error State -->
+                <div id="error-state" class="hidden">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-6">
+                        🏢 Building Entry
+                    </h1>
+                    <div class="mb-6">
+                        <div class="error-icon">❌</div>
+                    </div>
+                    <h2 class="text-xl font-semibold text-red-700 mb-4">
+                        Error Opening Door
+                    </h2>
+                    <p class="text-gray-600 mb-4">
+                        Something went wrong. Please try again or contact
+                        support.
+                    </p>
+                    <button
+                        class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95"
+                        onclick="window.location.reload()"
+                    >
+                        🔄 Try Again
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
+
+<style>
+    .loader {
+        width: 60px;
+        height: 60px;
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #10b981;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    .success-icon {
+        font-size: 5rem;
+        animation: success-bounce 0.5s ease;
+    }
+
+    @keyframes success-bounce {
+        0% {
+            transform: scale(0);
+        }
+        50% {
+            transform: scale(1.2);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+
+    .lock-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .lock-icon {
+        font-size: 4rem;
+        color: #dc2626;
+    }
+
+    .lock-icon.animate {
+        animation: lock-shake 1.5s ease-in-out 1;
+    }
+
+    @keyframes lock-shake {
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+        10%,
+        30%,
+        50%,
+        70%,
+        90% {
+            transform: translateX(-10px);
+        }
+        20%,
+        40%,
+        60%,
+        80% {
+            transform: translateX(10px);
+        }
+    }
+
+    .error-icon {
+        font-size: 4rem;
+        animation: error-shake 0.5s ease;
+    }
+
+    @keyframes error-shake {
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+        25% {
+            transform: translateX(-10px);
+        }
+        75% {
+            transform: translateX(10px);
+        }
+    }
+</style>
+
+<script>
+    // State elements
+    const loadingState = document.getElementById("loading-state");
+    const successState = document.getElementById("success-state");
+    const lockedState = document.getElementById("locked-state");
+    const errorState = document.getElementById("error-state");
+    const countdown = document.getElementById("countdown");
+    const openAgainButton = document.getElementById("open-again-button");
+
+    // Show/hide states
+    function showState(state) {
+        [loadingState, successState, lockedState, errorState].forEach((el) => {
+            el.classList.add("hidden");
+        });
+        state.classList.remove("hidden");
+    }
+
+    // Automatically call the buzz API on page load
+    async function buzzDoor() {
+        try {
+            const response = await fetch("/api/buzz", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const result = await response.json();
+
+            if (response.status === 403) {
+                // No active event
+                showState(lockedState);
+                startLockAnimation();
+            } else if (result.success) {
+                // Door opened successfully
+                showState(successState);
+                startCountdown();
+            } else {
+                // Error opening door
+                showState(errorState);
+            }
+        } catch (error) {
+            console.error("Buzz error:", error);
+            showState(errorState);
+        }
+    }
+
+    // Lock animation
+    function startLockAnimation() {
+        const lockIcon = document.querySelector(".lock-icon");
+        if (lockIcon) {
+            lockIcon.classList.add("animate");
+            // Remove animation class after animation completes (1.5s)
+            setTimeout(() => {
+                lockIcon.classList.remove("animate");
+            }, 800);
+        }
+    }
+
+    // Countdown timer
+    function startCountdown() {
+        let seconds = 10;
+
+        const updateCountdown = () => {
+            if (seconds > 0) {
+                countdown.textContent = `Button available in ${seconds} seconds...`;
+                seconds--;
+                setTimeout(updateCountdown, 1000);
+            } else {
+                countdown.classList.add("hidden");
+                openAgainButton.classList.remove("hidden");
+            }
+        };
+
+        updateCountdown();
+    }
+
+    // Call buzz API on page load
+    buzzDoor();
+</script>

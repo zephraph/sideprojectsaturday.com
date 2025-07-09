@@ -1,6 +1,13 @@
 ---
 import { actions } from "astro:actions";
 import Layout from "../layouts/Layout.astro";
+import BackgroundDecorations from "../components/BackgroundDecorations.astro";
+import AuthenticatedUserSection from "../components/AuthenticatedUserSection.astro";
+import MagicLinkSentSection from "../components/MagicLinkSentSection.astro";
+import RegistrationFormSection from "../components/RegistrationFormSection.astro";
+import NextEventCard from "../components/NextEventCard.astro";
+import { db } from "../lib/auth";
+import { getNextSaturdayFormatted, getNextSaturdayDate, getDayRange } from "@/lib/date-utils";
 
 // Handle action results
 const magicLinkResult = Astro.getActionResult(actions.sendMagicLink);
@@ -10,325 +17,123 @@ const signOutResult = Astro.getActionResult(actions.signOut);
 const user = Astro.locals.user;
 const session = Astro.locals.session;
 
-// Calculate next Saturday
-function getNextSaturday() {
-	const now = new Date();
-	const daysUntilSaturday = (6 - now.getDay()) % 7 || 7;
-	const nextSaturday = new Date(now);
-	nextSaturday.setDate(now.getDate() + daysUntilSaturday);
+// If user is authenticated, fetch their rsvped and subscribed status
+let userWithPreferences = null;
+if (user) {
+    try {
+        db(Astro.locals.runtime.env);
+        const dbUser = await db.user.findUnique({
+            where: { id: user.id },
+            select: { rsvped: true, subscribed: true },
+        });
 
-	return nextSaturday.toLocaleDateString("en-US", {
-		weekday: "long",
-		year: "numeric",
-		month: "long",
-		day: "numeric",
-	});
+        userWithPreferences = {
+            ...user,
+            rsvped: dbUser?.rsvped ?? false,
+            subscribed: dbUser?.subscribed ?? true,
+        };
+    } catch (error) {
+        console.error("Error fetching user preferences:", error);
+        userWithPreferences = {
+            ...user,
+            rsvped: false,
+            subscribed: true,
+        };
+    }
 }
 
-const nextEventDate = getNextSaturday();
+const nextEventDate = getNextSaturdayFormatted();
+const nextSaturdayDate = getNextSaturdayDate();
+const { start, end } = getDayRange(nextSaturdayDate);
+
+// Check if there's a scheduled event for next Saturday
+let hasEvent = false;
+try {
+    db(Astro.locals.runtime.env);
+    const event = await db.event.findFirst({
+        where: {
+            eventDate: {
+                gte: start,
+                lt: end,
+            },
+            status: "scheduled",
+        },
+    });
+    hasEvent = !!event;
+} catch (error) {
+    console.error("Error checking for event:", error);
+}
 
 // Redirect after successful sign out
 if (signOutResult && !signOutResult.error) {
-	return Astro.redirect("/");
+    return Astro.redirect("/");
 }
 ---
 
 <Layout>
-  <div
-    class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden -mt-16"
-    style={{
-      background:
-        "linear-gradient(135deg, #fff8e7 0%, #ffeaa7 20%, #ffb347 35%, #87ceeb 60%, #4fc3f7 80%, #0288d1 100%)",
-    }}
-  >
-    <!-- Morning light overlay for west-facing window -->
     <div
-      class="absolute inset-0 pointer-events-none"
-      style={{
-        background:
-          "linear-gradient(45deg, rgba(255,255,255,0.4) 0%, rgba(255,248,220,0.3) 30%, rgba(255,235,179,0.2) 50%, transparent 70%)",
-      }}
+        class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden -mt-16"
+        style={{
+            background:
+                "linear-gradient(135deg, #fff8e7 0%, #ffeaa7 20%, #ffb347 35%, #87ceeb 60%, #4fc3f7 80%, #0288d1 100%)",
+        }}
     >
-    </div>
+        <BackgroundDecorations />
 
-    <!-- Soft morning glow -->
-    <div
-      class="absolute inset-0 pointer-events-none"
-      style={{
-        background:
-          "radial-gradient(ellipse at 20% 30%, rgba(255,255,255,0.5) 0%, rgba(255,248,220,0.3) 40%, transparent 70%)",
-      }}
-    >
-    </div>
+        <h1
+            class="text-6xl md:text-7xl font-extrabold text-center relative z-10 mb-2 text-white font-sans tracking-tight"
+            style={{
+                textShadow:
+                    "2px 2px 4px rgba(0,0,0,0.8), 0px 0px 8px rgba(0,0,0,0.6)",
+            }}
+        >
+            Side Project Saturday
+        </h1>
 
-    <!-- Window overlay on top -->
-    <div
-      class="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat"
-      style={{
-        backgroundImage: "url(/window.svg)",
-      }}
-    >
-    </div>
+        {
+            !user && (
+                <>
+                    <h2
+                        class="text-3xl md:text-4xl font-bold text-center relative z-10 mb-8 text-amber-400 font-sans"
+                        style={{
+                            textShadow:
+                                "0 0 15px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.6), 2px 2px 6px rgba(0,0,0,0.7), 0px 0px 4px rgba(0,0,0,0.5)",
+                        }}
+                    >
+                        9am to noon
+                    </h2>
 
-    <!-- Plant in bottom left corner -->
-    <div
-      class="absolute -bottom-3 xl:-bottom-5 xl:left-10 lg:left-8 left-4 pointer-events-none h-full w-42 xl:w-52"
-    >
-      <svg
-        viewBox="0 0 212 597.28"
-        class="h-full w-full object-contain object-bottom-left"
-        xmlns="http://www.w3.org/2000/svg"
-        preserveAspectRatio="xMinYMax meet"
-      >
-        <defs>
-          <style>
-            .cls-1 {
-              fill: none;
+                    <p
+                        class="text-xl md:text-2xl font-medium text-center relative z-10 mb-8 text-white font-sans"
+                        style={{
+                            textShadow:
+                                "2px 2px 4px rgba(0,0,0,0.8), 0px 0px 8px rgba(0,0,0,0.6)",
+                        }}
+                    >
+                        Brooklyn, NY
+                    </p>
+                </>
+            )
+        }
+
+        <div
+            class={`backdrop-blur-sm rounded-lg p-6 shadow-xl relative z-10 w-md mx-4 border border-white/30 ${user ? "mt-6" : ""}`}
+            style={{
+                background: "rgba(255,255,255,0.85)",
+            }}
+        >
+            <NextEventCard nextEventDate={nextEventDate} />
+            {
+                userWithPreferences && session ? (
+                    <AuthenticatedUserSection user={userWithPreferences} hasEvent={hasEvent} />
+                ) : magicLinkResult && !magicLinkResult.error ? (
+                    <MagicLinkSentSection
+                        message={magicLinkResult.data.message}
+                    />
+                ) : (
+                    <RegistrationFormSection error={magicLinkResult?.error} />
+                )
             }
-            .cls-1, .cls-2 {
-              stroke-width: 0px;
-            }
-            .cls-3 {
-              stroke: #231f20;
-              stroke-miterlimit: 10;
-            }
-            .cls-3, .cls-2 {
-              fill: #231f20;
-            }
-          </style>
-        </defs>
-        
-        <!-- Plant parts that sway -->
-        <g class="plant-sway" style="transform-origin: 50% 85%">
-          <path class="cls-2" d="m124.75,218.75c2.64-5.23,4.09-8.8,7.5-13.75,2.36-.32,1.19.61-.5,2.75l1,.25c-7.92,12.67-8.38,26.79-8,41.25.41.8,3.13-2.78,4.5-4.75,2.1,2.64,2.06-2.99,4-1.5-6.21,9.38-10.83,10.56-8.75,23l-.25,35.75,9-14.75c.06.45-.21,1.29.25,1.5l7.25-1.5c-6.34,3.25-5.51.65-7.5,3.25-4.07,5.32-11.46,27.9-9.25,35.75,15.22-11.11,11.03-4.78.25,3.75-.51,24.59.76,8.71,8.5,2,1.34-1.16,1.92-.68,2-.75.92-.32,3.31-3.58,4.75-1,.25.45.12.5.25,1-10,4.2-16.95,23.71-18.5,33.75l-1.19,14.38,1.94,1.87,9.75-7c-1.01,3.55.16,1.23,2,2.5-4.83,2.31-8.83,5.9-12.5,9.75v62.5h-8.5c-1.03-7.84,3.5-19.58-2.5-25.25-4.89-4.62-9.48-.93-10-5,18.11.46,12.73,11.27,13.5-13.25l-.5-13.5c-.67-3.43-9-14.98-11.25-18.75,4.43-3.25,9.37,11.55,13.25,14.25l1.5-45c-.11-.56-5.4-9.09-6-9.75l1-2c1.91,2.15,4.11,4.08,5.75,6.5,1.56-14.22,2.07-28.13-4.25-41.75-.67-1.43-4.89-8.62-5.5-9.25,1.36.54,1.62.94,1.5-1,3.06,4.91,7.08,9.38,9.5,14.75-.64-9.34.86-44.84,0-48.5-.05-.2-2.34-3.12-2.5-3.25,1.79-2.25,1.35-2.65,0-5,1.35.87,2.49,1.38,3.5,2.75-.91-19.78,6.51-43.86-9.5-59.25,1.1.41,2.26,1.03,3.5.5,2.03,2.69,4.65,5.03,6,8.25l1-.5c.21-7.46.16-14.58-1-21.75,9.55-5.07.39,21.09,4.5,25.5l.5.75c2.66-5.35,6.35-11.34,11.5-17.25,1.27-1.46,3.28-4.61,3.99-4.26.4.2.22,1.39,0,2.38-2.48,3.16-5.13,6.93-7.7,11.32-2.4,4.12-4.29,8.02-5.77,11.54"/>
-          <path class="cls-2" d="m126.75,74.5c-5.42,30.49-3.99,61.47-3.5,92.25,3.99-10.42,8.15-20.71,14-30.25.03-.05.97-.45,1-.5-.02,1.68.28.62,1,.5,6.38-1.04,12.39-2.19,18.5-4.5-17.44,7.93-15.55,1.05-22,11.75-9.91,16.45-11.6,36.02-11.5,54.75-4.11-4.41,5.05-30.57-4.5-25.5-.38-2.37-.87-5.21-1.5-7.5-.07-1.68-.3-2.24,1.5-2l.5-13,1.5-.25,1-56,1-1c-1.44-5.14,3.54-19.54-.5-13.75.35-1.94.87-5.49,1-6,.9-3.49.34,1.1,2.5,1Z"/>
-          <path class="cls-2" d="m120.25,150.5c.44-12.43-.82-24.16-5.5-35.75-7.42-18.38-8.01-10.47-21.5-16.25,5.36,2.05,12.5.49,16.25,4.5.75-1.11-.33-1.31-.25-2.5,5.11,6.07,7.91,13.7,10,21.25h1c.16-13.99.49-28.41,3-42.25,4.04-5.79-.94,8.61.5,13.75l-1,1-1,56-1.5.25Z"/>
-          <path class="cls-2" d="m116.25,243c1.35,2.35,1.79,2.75,0,5-.36-.28-3.03-1.59-3.25-1.5-1.56.6,1.01,8.67-7.75-7.25,5.22.39,7.02,1.18,11,3.75Z"/>
-          <g>
-            <path class="cls-2" d="m93.25,419.5c.12,1.39-.05,2.69-.5,4-6.71,19.37-41.07,17.44-55.5-11.25,17.67-6.98,43.42-10.13,56,7.25Z"/>
-            <path class="cls-2" d="m92.75,423.5c.45-1.31.62-2.61.5-4,1.39.26,4.19-1.07,7-1,.52,4.07,5.11.38,10,5"/>
-          </g>
-          <g>
-            <path class="cls-2" d="m152.75,113c-.49.83-1,1.65-1.5,2.5-1.99,3.38-4.08,6.53-6,10-2.12,3.57-4.81,6.93-7,10.5-.03.05-.97.45-1,.5-25.18-37.97,26.94-86.2,61.5-95.75,3.33,34.56-6.7,75.66-41,91.25-6.11,2.31-12.12,3.46-18.5,4.5,2.2-3.55,3.98-7.36,6-11,1.99-3.35,4.02-6.62,6-10,.49-.83,1-1.65,1.5-2.5"/>
-            <g>
-              <path class="cls-2" d="m155.25,108.5c8.23-13.78,15.07-27.87,24.5-41-7.96,13.79-16.41,27.29-24.5,41Z"/>
-              <path class="cls-2" d="m139.25,136.5c-.72.12-1.02,1.18-1-.5,2.19-3.57,4.88-6.93,7-10.5-2.02,3.64-3.8,7.45-6,11Z"/>
-              <path class="cls-2" d="m145.25,125.5c1.92-3.47,4.01-6.62,6-10-1.98,3.38-4.01,6.65-6,10Z"/>
-              <path class="cls-2" d="m152.75,113c.85-1.45,1.61-2.99,2.5-4.5-.84,1.41-1.63,3.02-2.5,4.5Z"/>
-              <path class="cls-2" d="m151.25,115.5c.5-.85,1.01-1.67,1.5-2.5-.5.85-1.01,1.67-1.5,2.5Z"/>
-            </g>
-          </g>
-          <line class="cls-1" x1="124.25" y1="198.5" x2="124.75" y2="218.75"/>
-          <g>
-            <path class="cls-2" d="m212,121c-1.97,7.07-5.07,15.77-10.08,25.13-5.87,10.98-12.5,19.37-17.99,25.35-3.42,2.47-9.65,6.31-18.35,8.16-7.78,1.66-13.52,3.51-17.52,2.82l-11.82-.46c-2.08-35.88,46.37-55.46,75.75-61"/>
-            <path class="cls-2" d="m132.75,208l-1-.25c1.69-2.14,2.86-3.07.5-2.75"/>
-          </g>
-          <path class="cls-2" d="m109.25,100.5c-.08,1.19,1,1.39.25,2.5-3.75-4.01-10.89-2.45-16.25-4.5-23.32-9.99-34.39-42.88-35-66.25-.09-3.36.7-24.1,3.25-24.25,29.58,14.94,55.03,43.67,51.25,78.75-.51,4.7-3.2,9.08-3.5,13.75Z"/>
-          <path class="cls-2" d="m113.75,187c-1.24.53-2.4-.09-3.5-.5-16.4-6.07-18.4,2.31-38.25-1.5-24.86-4.77-49.39-28.22-59.25-51.25,15.45-.16,37.81,3.36,52.75,8.75,16.55,5.97,39.65,21.03,43.25,39.25,2.46,1.6,3.35,3.05,5,5.25Z"/>
-          <path class="cls-2" d="m109.25,285c.12,1.94-.14,1.54-1.5,1-1-1.02-2.36-1.83-3.25-3-32.49,4.19-70.98-33.74-73-66,28.97,9.01,77.7,26.17,74.25,63.25,1.51,1.35,2.45,3.06,3.5,4.75Z"/>
-          <path class="cls-2" d="m126.75,74.5c-2.16.1-1.6-4.49-2.5-1-18.04-21.79,2.8-63.27,26.25-73.5,10.89,23.45,9.41,52.46-13,68.5-1.19.85-10.06,5.97-10.75,6Z"/>
-          <path class="cls-2" d="m134.75,331c1.68-1.43,4.03-1.98,5.5-3.75,4.71-28.98,39.11-34.16,63.25-32.75-5.67,27.58-34.21,46.38-61.5,35.5-.63,0-1.53.7-2.25,1"/>
-          <path class="cls-2" d="m133.75,376.5c-1.84-1.27-3.01,1.05-2-2.5l1.5-1.25c6.21-22.66,39.32-23.06,58-18.5-10.52,22.43-34.37,38.22-57.5,22.25Z"/>
-          <path class="cls-2" d="m111.75,330.5l-1,2c-1.11-1.21-2.74-2.15-3.75-3.5-25.92,10.9-45.11-20.48-45.75-42.75,16.73,4.84,44.75,19.69,45,39,2.71,1.14,3.73,3.26,5.5,5.25Z"/>
-          <path class="cls-2" d="m140.75,287l-7.25,1.5c-.46-.21-.19-1.05-.25-1.5-.26-1.8.03-8.72.5-10.75,1.68-7.24,24.45-37.89,33.75-40.75,2.21,20.79-8.06,41.91-26.75,51.5Z"/>
-          <path class="cls-2" d="m119.75,163.5c-1.8-.24-1.57.32-1.5,2-2.75-9.91-8.86-22.18-16.75-29-21.43,1.51-32.82-20.55-34.25-39.25,12.82,3.19,34.55,21.86,34,35.5,9.25,7.94,15.42,19.06,18.5,30.75Z"/>
-        </g>
-        
-        <!-- Pot that stays stationary -->
-        <g>
-          <path class="cls-3" d="m89.21,478.32h12.75"/>
-          <path class="cls-3" d="m66.98,582.52c-16.78-25.42-24.77-57.15-22.49-87.47q1.09-18.89,3-22.24c.76.31,13.65,2.14,16.24,2.5"/>
-          <path class="cls-3" d="m177.68,472.32c3.25,20.65,5.19,54.94-10.56,90.66-3.33,7.54-7.07,14.3-10.93,20.3"/>
-          <path class="cls-3" d="m179.43,491.06c.56,7.77-.08,22.53-1,30.49-1.75,15.2-7.55,34.67-14.49,48.23"/>
-          <path class="cls-3" d="m177.68,472.32c4.19-1.34,9.74-11.32,10.67-13.01,1.63-3.66,3.24-8.6,3.57-14.53,0-.02,0-.03,0-.05.12-2.14-1.91-3.75-3.98-3.21-1.62.42-3.27.83-4.95,1.22-4.33,1.02-8.5,1.86-12.49,2.55-4.04.19-8.12.37-12.24.51-8.08.28-16.02.46-23.82.54-5.85.19-14.28.32-24.49,0-3.49-.11-6.04-.24-11-.5-18.31-.96-32.61-2.12-38.1-2.59-5.07-.43-11.73-1.02-19.58-1.82-2.55-.04-4.52-.52-5.92-.99-.58-.2-1.21-.44-1.81-.7-1.49-.63-3.07.68-2.76,2.27.4,2.02.8,4.04,1.19,6.07,1.18,6.98,9.68,25.9,15.49,24.74.76.31,9.93,45.62,12.52,45.98,3.41.61,1.32,53.41,5.04,53.88,1.96,5.41,1.21,8.47,1.96,9.84l89.21.76"/>
-        </g>
-        <line class="cls-3" x1="66.98" y1="582.52" x2="156.19" y2="583.28"/>
-      </svg>
+        </div>
     </div>
-
-    <h1
-      class="text-6xl md:text-7xl font-extrabold text-center relative z-10 mb-2 text-white font-sans tracking-tight"
-      style={{
-        textShadow: "2px 2px 4px rgba(0,0,0,0.8), 0px 0px 8px rgba(0,0,0,0.6)",
-      }}
-    >
-      Side Project Saturday
-    </h1>
-
-    <h2
-      class="text-3xl md:text-4xl font-bold text-center relative z-10 mb-8 text-amber-400 font-sans"
-      style={{
-        textShadow:
-          "0 0 15px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.6), 2px 2px 6px rgba(0,0,0,0.7), 0px 0px 4px rgba(0,0,0,0.5)",
-      }}
-    >
-      9am to noon
-    </h2>
-
-    <p
-      class="text-xl md:text-2xl font-medium text-center relative z-10 mb-8 text-white font-sans"
-      style={{
-        textShadow: "2px 2px 4px rgba(0,0,0,0.8), 0px 0px 8px rgba(0,0,0,0.6)",
-      }}
-    >
-      Brooklyn, NY
-    </p>
-
-    <div
-      class="backdrop-blur-sm rounded-lg p-6 shadow-xl relative z-10 w-md mx-4 border border-white/30"
-      style={{
-        background: "rgba(255,255,255,0.85)",
-      }}
-    >
-      <!-- Next Event Date -->
-      <div class="bg-gray-50/50 border border-gray-200/50 rounded-lg p-4 mb-4 pulse-glow">
-        <div class="text-center">
-          <div class="text-sm font-medium text-gray-600 mb-1">Next Event</div>
-          <div class="text-lg font-bold text-amber-600">
-            {nextEventDate}
-          </div>
-        </div>
-      </div>
-
-      {user && session ? (
-        <!-- Authenticated User State -->
-        <div>
-          <h3 class="text-xl font-bold text-gray-800 mb-3 text-center">
-            Welcome back, {user.name || user.email}!
-          </h3>
-          <div class="space-y-3">
-            <div class="bg-green-50 border border-green-200 rounded-md p-3">
-              <div class="text-sm font-medium text-green-800">
-                Registration Status
-              </div>
-              <div class="text-green-700">✅ Confirmed for next event</div>
-            </div>
-
-            <div class="bg-blue-50 border border-blue-200 rounded-md p-3">
-              <div class="text-sm font-medium text-blue-800">Event Details</div>
-              <div class="text-blue-700 text-sm mt-1">
-                📍 Location: 325 Gold Street, Brooklyn, NY Studio 501<br />
-                ⏰ Time: 9:00 AM - 12:00 PM<br />
-              </div>
-            </div>
-
-            <div class="bg-amber-50 border border-amber-200 rounded-md p-3">
-              <div class="text-sm font-medium text-amber-800">What to Bring</div>
-              <div class="text-amber-700 text-sm mt-1">
-                💻 Your laptop<br />
-                💡 A project idea<br />
-                ☕ Good vibes!
-              </div>
-            </div>
-
-            <form method="POST" action={actions.signOut}>
-              <button
-                type="submit"
-                class="w-full text-gray-600 font-medium py-2 px-4 rounded-md border border-gray-300 hover:bg-gray-50 transition-all"
-              >
-                Sign Out
-              </button>
-            </form>
-          </div>
-        </div>
-      ) : magicLinkResult && !magicLinkResult.error ? (
-        <!-- Magic Link Sent State -->
-        <div>
-          <h3 class="text-xl font-bold text-gray-800 mb-3 text-center">
-            Check your email!
-          </h3>
-          <div class="bg-green-50 border border-green-200 rounded-md p-4 mb-4">
-            <p class="text-green-700 text-center">
-              {magicLinkResult.data.message}
-            </p>
-          </div>
-          <p class="text-gray-600 text-sm text-center mb-4">
-            The magic link will expire in 5 minutes. Check your spam folder if you don't see it.
-          </p>
-          <form method="GET" action="/">
-            <button
-              type="submit"
-              class="w-full text-gray-600 font-medium py-2 px-4 rounded-md border border-gray-300 hover:bg-gray-50 transition-all"
-            >
-              ← Back to Registration
-            </button>
-          </form>
-        </div>
-      ) : (
-        <!-- Magic Link Registration Form -->
-        <div>
-          <h3 class="text-xl font-bold text-gray-800 mb-3 text-center">
-            Join Side Project Saturday
-          </h3>
-
-          <!-- Show errors -->
-          {magicLinkResult?.error && (
-            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-              <p class="text-red-700 text-sm">
-                {magicLinkResult.error.message || "Failed to send magic link. Please try again."}
-              </p>
-            </div>
-          )}
-
-          <!-- Magic Link Form -->
-          <form method="POST" action={actions.sendMagicLink}>
-            <div class="flex flex-col gap-3">
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter your email"
-                required
-                class="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white text-amber-950"
-              />
-              <button
-                type="submit"
-                class="text-white font-semibold py-2 px-4 rounded-md transition-all hover:scale-105 cursor-pointer shadow-lg"
-                style={{
-                  background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
-                  boxShadow: "0 4px 12px rgba(251, 191, 36, 0.4)",
-                }}
-              >
-                Let's build!
-              </button>
-            </div>
-          </form>
-
-          <p class="text-gray-500 text-xs text-center mt-4">
-            New users will be registered. Existing users will be signed in.
-          </p>
-        </div>
-      )}
-    </div>
-  </div>
 </Layout>
-
-<style>
-  @keyframes pulse-glow {
-    0%, 100% {
-      box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);
-    }
-    50% {
-      box-shadow: 0 0 25px rgba(251, 191, 36, 0.4);
-    }
-  }
-
-  @keyframes gentle-sway {
-    0%, 100% {
-      transform: rotate(0deg);
-    }
-    25% {
-      transform: rotate(0.5deg);
-    }
-    75% {
-      transform: rotate(-0.5deg);
-    }
-  }
-
-  .pulse-glow {
-    animation: pulse-glow 3s ease-in-out infinite;
-  }
-
-  .plant-sway {
-    animation: gentle-sway 8s ease-in-out infinite;
-  }
-</style>

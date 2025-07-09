@@ -1,6 +1,5 @@
 import {
   Body,
-  Button,
   Container,
   Head,
   Heading,
@@ -12,28 +11,19 @@ import {
   Text,
 } from "@react-email/components";
 
-interface EventInviteEmailProps {
-  eventDate: string;
-  eventTime: string;
-  rsvpLink: string;
-  recipientName?: string;
+interface WelcomeEmailProps {
+  username: string;
   userId?: string;
 }
 
-export default function EventInviteEmail({
-  eventDate,
-  eventTime,
-  rsvpLink,
-  recipientName,
-  userId,
-}: EventInviteEmailProps) {
-  const unsubscribeUrl = userId ? `https://sideprojectsaturday.com/unsubscribe/${userId}` : undefined;
+export default function WelcomeEmail({ username, userId }: WelcomeEmailProps) {
+  const unsubscribeUrl = userId
+    ? `https://sideprojectsaturday.com/unsubscribe/${userId}`
+    : undefined;
   return (
     <Html>
       <Head />
-      <Preview>
-        🎉 You're invited to Side Project Saturday - {eventDate}!
-      </Preview>
+      <Preview>🎉 Welcome to Side Project Saturday!</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={header}>
@@ -41,47 +31,31 @@ export default function EventInviteEmail({
             <Text style={subtitle}>Brooklyn's Creative Morning Meetup</Text>
           </Section>
           <Section style={content}>
-            <Heading style={h2}>
-              {recipientName ? `Hey ${recipientName}!` : "Hey there!"}
-            </Heading>
+            <Heading style={h2}>Welcome to the community, {username}!</Heading>
             <Text style={text}>
-              You're invited to join us for another edition of Saturday morning
-              of building, creating, and connecting with fellow makers!
+              We're thrilled to have you join our Saturday morning community of
+              builders, creators, and dreamers in Brooklyn. You're now part of
+              something special!
             </Text>
-            <Section style={eventDetails}>
-              <Text style={detailsHeader}>📅 This Saturday's Details</Text>
+            <Section style={scheduleDetails}>
+              <Text style={detailsHeader}>📅 How It Works</Text>
               <Text style={detailsText}>
-                🗓️ <strong>Date:</strong> {eventDate}
+                🗓️ <strong>When:</strong> Saturdays from 9:00 AM - 12:00 PM
                 <br />
-                🕘 <strong>Time:</strong> {eventTime}
+                📧 <strong>Invites:</strong> Event invites go out the Wednesday
+                before
                 <br />
-                📍 <strong>Location:</strong> 325 Gold Street, Brooklyn, NY
+                💻 <strong>What to bring:</strong> Your laptop, ideas & good
+                vibes!
                 <br />
-                💻 <strong>Bring:</strong> Your laptop, current project,
-                creative energy & coffee/snacks!
+                🤝 <strong>What to expect:</strong> A welcoming space to work on
+                your projects alongside fellow creators
               </Text>
             </Section>
-            <Section style={buttonContainer}>
-              <Button style={button} href={rsvpLink}>
-                🎯 RSVP for This Saturday
-              </Button>
-            </Section>
-            <Section style={whatToExpect}>
-              <Text style={expectHeader}>🚀 What to Expect</Text>
-              <Text style={expectText}>
-                • <strong>9:00-9:30 AM:</strong> Arrive, grab a seat &
-                introductions
-                <br />• <strong>9:30-11:30 AM:</strong> Focused work time on
-                your projects
-                <br />• <strong>11:30 AM-12:00 PM:</strong> Demo what you built
-                & get feedback
-                <br />• <strong>All morning:</strong> Connect with other
-                builders, get unstuck, find collaborators
-              </Text>
-            </Section>
-            <Text style={encouragement}>
-              💡 Whether you're starting something new, continuing a project, or
-              just want to be around other creators - you belong here!
+            <Text style={nextSteps}>
+              🚀 <strong>What's next?</strong> Keep an eye on your inbox for our
+              next event invite! We'll let you know all the details including
+              the exact date and location.
             </Text>
           </Section>
           <Hr style={hr} />
@@ -91,11 +65,19 @@ export default function EventInviteEmail({
           <Text style={hostedBy}>
             Hosted by <Link href="https://just-be.dev" style={hostedByLink}>just-be.dev</Link>
           </Text>
-          {unsubscribeUrl && (
-            <Text style={unsubscribeText}>
-              Don't want to receive event invites? <Link href={unsubscribeUrl} style={unsubscribeLink}>Unsubscribe</Link>
-            </Text>
-          )}
+          <Text style={unsubscribeText}>
+            {unsubscribeUrl ? (
+              <>
+                You can update your preferences or{" "}
+                <Link href={unsubscribeUrl} style={unsubscribeLink}>
+                  unsubscribe
+                </Link>{" "}
+                anytime.
+              </>
+            ) : (
+              "You can update your preferences or unsubscribe anytime from your dashboard."
+            )}
+          </Text>
         </Container>
       </Body>
     </Html>
@@ -167,25 +149,7 @@ const text = {
   textAlign: "center" as const,
 };
 
-const buttonContainer = {
-  margin: "0 0 32px 0",
-  textAlign: "center" as const,
-};
-
-const button = {
-  background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)",
-  borderRadius: "12px",
-  color: "#ffffff",
-  fontSize: "18px",
-  fontWeight: "700",
-  textDecoration: "none",
-  padding: "16px 32px",
-  display: "inline-block",
-  boxShadow: "0 6px 20px rgba(251, 191, 36, 0.4)",
-  transition: "all 0.3s ease",
-};
-
-const eventDetails = {
+const scheduleDetails = {
   backgroundColor: "#fef3c7",
   border: "2px solid #fbbf24",
   borderRadius: "12px",
@@ -209,40 +173,16 @@ const detailsText = {
   textAlign: "left" as const,
 };
 
-const whatToExpect = {
-  backgroundColor: "#f0f9ff",
-  border: "2px solid #0ea5e9",
+const nextSteps = {
+  backgroundColor: "#dcfce7",
+  border: "2px solid #16a34a",
   borderRadius: "12px",
-  padding: "20px",
-  margin: "0 0 24px 0",
-};
-
-const expectHeader = {
-  color: "#075985",
-  fontSize: "18px",
-  fontWeight: "700",
-  margin: "0 0 12px 0",
-  textAlign: "center" as const,
-};
-
-const expectText = {
-  color: "#075985",
-  fontSize: "16px",
-  lineHeight: "24px",
-  margin: "0",
-  textAlign: "left" as const,
-};
-
-const encouragement = {
-  backgroundColor: "#f0fdf4",
-  border: "1px solid #86efac",
-  borderRadius: "8px",
   padding: "16px",
   color: "#166534",
   fontSize: "16px",
+  lineHeight: "24px",
   textAlign: "center" as const,
   margin: "0",
-  fontStyle: "italic",
 };
 
 const hr = {
@@ -260,7 +200,6 @@ const footer = {
   textAlign: "center" as const,
   fontWeight: "600",
 };
-
 
 const unsubscribeText = {
   color: "#6b7280",

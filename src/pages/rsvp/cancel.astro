@@ -1,0 +1,75 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { auth, db } from "@/lib/auth";
+import CancelSuccess from "@/components/rsvp/CancelSuccess.astro";
+import CancelError from "@/components/rsvp/CancelError.astro";
+import NoRsvpToCancel from "@/components/rsvp/NoRsvpToCancel.astro";
+
+type CancelState = "success" | "error" | "no-rsvp";
+
+// Check if user is authenticated
+const session = await auth.api.getSession({
+    headers: Astro.request.headers,
+});
+
+// If not authenticated, redirect to login with callback
+if (!session?.user) {
+    const callbackURL = encodeURIComponent(Astro.url.pathname);
+    return Astro.redirect(`/login?callback=${callbackURL}`);
+}
+
+// Process cancellation
+let state: CancelState = "no-rsvp";
+
+try {
+    db(Astro.locals.runtime.env);
+
+    const user = await db.user.findUnique({
+        where: { id: session.user.id },
+        select: { rsvped: true },
+    });
+
+    if (user?.rsvped) {
+        try {
+            await db.user.update({
+                where: { id: session.user.id },
+                data: { rsvped: false },
+            });
+            state = "success";
+        } catch (error) {
+            console.error("Error canceling RSVP:", error);
+            state = "error";
+        }
+    }
+} catch (error) {
+    console.error("Error fetching user data:", error);
+    state = "error";
+}
+---
+
+<Layout title="Cancel RSVP - Side Project Saturday">
+    <div
+        class="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center p-4"
+    >
+        <div class="max-w-md w-full">
+            <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">
+                    Cancel RSVP
+                </h1>
+
+                {state === "success" && <CancelSuccess />}
+                {state === "error" && <CancelError />}
+                {state === "no-rsvp" && <NoRsvpToCancel />}
+
+                <div class="mt-6">
+                    <a
+                        href="/"
+                        class="text-gray-600 hover:text-gray-800 text-sm underline"
+                    >
+                        ← Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</Layout>
