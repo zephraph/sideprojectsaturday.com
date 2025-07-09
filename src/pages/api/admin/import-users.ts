@@ -3,181 +3,164 @@ import { db, queueUserEvent } from "@/lib/auth";
 import { z } from "zod";
 
 const ImportUsersSchema = z.object({
-	csvData: z.string(),
+  csvData: z.string(),
 });
 
 interface ParsedUser {
-	email: string;
-	name?: string;
+  email: string;
+  name?: string;
 }
 
 function parseCSV(csvData: string): ParsedUser[] {
-	const lines = csvData.trim().split('\n');
-	if (lines.length < 2) {
-		throw new Error('CSV must have at least a header row and one data row');
-	}
+  const lines = csvData.trim().split("\n");
+  if (lines.length < 2) {
+    throw new Error("CSV must have at least a header row and one data row");
+  }
 
-	const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
-	
-	// Find email column (required)
-	const emailIndex = headers.findIndex(h => h === 'email');
-	if (emailIndex === -1) {
-		throw new Error('CSV must have an "email" column');
-	}
+  const headers = lines[0].split(",").map((h) => h.trim().toLowerCase());
 
-	// Find name column (optional)
-	const nameIndex = headers.findIndex(h => h === 'name');
+  // Find email column (required)
+  const emailIndex = headers.findIndex((h) => h === "email");
+  if (emailIndex === -1) {
+    throw new Error('CSV must have an "email" column');
+  }
 
-	const users: ParsedUser[] = [];
-	
-	for (let i = 1; i < lines.length; i++) {
-		const values = lines[i].split(',').map(v => v.trim());
-		
-		if (values.length < headers.length) {
-			continue; // Skip incomplete rows
-		}
+  // Find name column (optional)
+  const nameIndex = headers.findIndex((h) => h === "name");
 
-		const email = values[emailIndex];
-		if (!email || !email.includes('@')) {
-			continue; // Skip invalid emails
-		}
+  const users: ParsedUser[] = [];
 
-		const user: ParsedUser = { email };
-		
-		if (nameIndex !== -1 && values[nameIndex]) {
-			user.name = values[nameIndex];
-		}
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(",").map((v) => v.trim());
 
-		users.push(user);
-	}
+    if (values.length < headers.length) {
+      continue; // Skip incomplete rows
+    }
 
-	return users;
+    const email = values[emailIndex];
+    if (!email || !email.includes("@")) {
+      continue; // Skip invalid emails
+    }
+
+    const user: ParsedUser = { email };
+
+    if (nameIndex !== -1 && values[nameIndex]) {
+      user.name = values[nameIndex];
+    }
+
+    users.push(user);
+  }
+
+  return users;
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
-	try {
-		const body = await request.json();
-		const parseResult = ImportUsersSchema.safeParse(body);
+  try {
+    const body = await request.json();
+    const parseResult = ImportUsersSchema.safeParse(body);
 
-		if (!parseResult.success) {
-			return new Response(
-				JSON.stringify({ error: "Invalid request", details: parseResult.error.flatten() }),
-				{
-					status: 400,
-					headers: { "Content-Type": "application/json" },
-				},
-			);
-		}
+    if (!parseResult.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Invalid request",
+          details: parseResult.error.flatten(),
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
 
-		const { csvData } = parseResult.data;
+    const { csvData } = parseResult.data;
 
-		// Parse CSV
-		let parsedUsers: ParsedUser[];
-		try {
-			parsedUsers = parseCSV(csvData);
-		} catch (error) {
-			return new Response(
-				JSON.stringify({ error: error instanceof Error ? error.message : "Failed to parse CSV" }),
-				{
-					status: 400,
-					headers: { "Content-Type": "application/json" },
-				},
-			);
-		}
+    // Parse CSV
+    let parsedUsers: ParsedUser[];
+    try {
+      parsedUsers = parseCSV(csvData);
+    } catch (error) {
+      return new Response(
+        JSON.stringify({
+          error: error instanceof Error ? error.message : "Failed to parse CSV",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
 
-		if (parsedUsers.length === 0) {
-			return new Response(
-				JSON.stringify({ error: "No valid users found in CSV" }),
-				{
-					status: 400,
-					headers: { "Content-Type": "application/json" },
-				},
-			);
-		}
+    if (parsedUsers.length === 0) {
+      return new Response(
+        JSON.stringify({ error: "No valid users found in CSV" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
 
-		db(locals.runtime.env);
+    db(locals.runtime.env);
 
-		// Get existing users to avoid duplicates
-		const existingEmails = await db.user.findMany({
-			where: {
-				email: {
-					in: parsedUsers.map(u => u.email),
-				},
-			},
-			select: { email: true },
-		});
+    const upsertResults = [];
+    const BATCH_SIZE = 10; // Process in batches to avoid SQL variable limits
 
-		const existingEmailSet = new Set(existingEmails.map(u => u.email));
-		const newUsers = parsedUsers.filter(u => !existingEmailSet.has(u.email));
+    for (let i = 0; i < parsedUsers.length; i += BATCH_SIZE) {
+      const batch = parsedUsers.slice(i, i + BATCH_SIZE);
+      const batchResults = await Promise.all(
+        batch.map((user) =>
+          db.user.upsert({
+            where: { email: user.email },
+            update: {
+              name: user.name, // Update name if provided
+              // Keep existing subscribed/rsvped/emailVerified values
+            },
+            create: {
+              email: user.email,
+              name: user.name,
+              emailVerified: true, // Set as verified for batch imports
+              subscribed: true,
+              rsvped: false,
+            },
+          }),
+        ),
+      );
+      upsertResults.push(...batchResults);
+    }
 
-		if (newUsers.length === 0) {
-			return new Response(
-				JSON.stringify({ 
-					message: "All users already exist", 
-					skipped: parsedUsers.length 
-				}),
-				{
-					status: 200,
-					headers: { "Content-Type": "application/json" },
-				},
-			);
-		}
+    // Queue all users for contact creation (without welcome emails) in batches
+    // Note: This will queue both new and existing users, but that's okay for contact sync
+    const QUEUE_BATCH_SIZE = 25; // Smaller batches for queue operations
 
-		// Create users in database using batch processing
-		const createdUsers = [];
-		const BATCH_SIZE = 50; // Process in batches of 50 to avoid SQL variable limits
-		
-		for (let i = 0; i < newUsers.length; i += BATCH_SIZE) {
-			const batch = newUsers.slice(i, i + BATCH_SIZE);
-			const batchCreatedUsers = await Promise.all(
-				batch.map(user =>
-					db.user.create({
-						data: {
-							email: user.email,
-							name: user.name,
-							emailVerified: true, // Set as verified for batch imports
-							subscribed: true,
-							rsvped: false,
-						},
-					}),
-				),
-			);
-			createdUsers.push(...batchCreatedUsers);
-		}
+    for (let i = 0; i < upsertResults.length; i += QUEUE_BATCH_SIZE) {
+      const batch = upsertResults.slice(i, i + QUEUE_BATCH_SIZE);
+      const queuePromises = batch.map((user) =>
+        queueUserEvent(locals.runtime.env, {
+          type: "user_create",
+          email: user.email,
+          name: user.name || undefined,
+          sendWelcomeEmail: false, // Don't send welcome emails for batch imports
+        }),
+      );
+      await Promise.all(queuePromises);
+    }
 
-		// Queue all users for contact creation (without welcome emails) in batches
-		const QUEUE_BATCH_SIZE = 25; // Smaller batches for queue operations
-		
-		for (let i = 0; i < createdUsers.length; i += QUEUE_BATCH_SIZE) {
-			const batch = createdUsers.slice(i, i + QUEUE_BATCH_SIZE);
-			const queuePromises = batch.map(user =>
-				queueUserEvent(locals.runtime.env, {
-					type: "user_create",
-					email: user.email,
-					name: user.name || undefined,
-					sendWelcomeEmail: false, // Don't send welcome emails for batch imports
-				}),
-			);
-			await Promise.all(queuePromises);
-		}
-
-		return new Response(
-			JSON.stringify({ 
-				success: true, 
-				created: createdUsers.length,
-				skipped: parsedUsers.length - newUsers.length,
-				total: parsedUsers.length 
-			}),
-			{
-				status: 200,
-				headers: { "Content-Type": "application/json" },
-			},
-		);
-	} catch (error) {
-		console.error("Error importing users:", error);
-		return new Response(JSON.stringify({ error: "Failed to import users" }), {
-			status: 500,
-			headers: { "Content-Type": "application/json" },
-		});
-	}
+    return new Response(
+      JSON.stringify({
+        success: true,
+        processed: upsertResults.length,
+        total: parsedUsers.length,
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  } catch (error) {
+    console.error("Error importing users:", error);
+    return new Response(JSON.stringify({ error: "Failed to import users" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 };

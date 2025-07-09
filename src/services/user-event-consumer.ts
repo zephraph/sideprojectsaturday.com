@@ -1,4 +1,4 @@
-import { Resend } from "resend";
+import { getResend } from "@/lib/resend";
 import WelcomeEmail from "@/emails/WelcomeEmail";
 
 export interface UserCreateEvent {
@@ -24,7 +24,8 @@ export default {
     env: Env,
     ctx: ExecutionContext,
   ): Promise<void> {
-    const resend = new Resend(env.RESEND_API_KEY);
+    // Use centralized Resend instance (mock in development, real in production)
+    const resend = getResend(env);
 
     for (const message of batch.messages) {
       try {

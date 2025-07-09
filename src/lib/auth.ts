@@ -23,55 +23,62 @@ export const queueUserEvent = (env: Env, message: UserEventMessage) => {
 };
 
 // Function to create auth with environment context
-export const createAuth = (env?: Env) => betterAuth({
-  basePath: "/auth",
-  baseURL: process.env.BETTER_AUTH_BASE_URL ?? "http://localhost:4433",
-  database: prismaAdapter(db, {
-    provider: "sqlite",
-  }),
-  plugins: [
-    admin(),
-    magicLink({
-      async sendMagicLink({ email, url }) {
+export const createAuth = (env?: Env) =>
+  betterAuth({
+    basePath: "/auth",
+    baseURL: process.env.BETTER_AUTH_BASE_URL ?? "http://localhost:4433",
+    database: prismaAdapter(db, {
+      provider: "sqlite",
+    }),
+    plugins: [
+      admin(),
+      magicLink({
+        async sendMagicLink({ email, url }) {
+          if (process.env.NODE_ENV === "development") {
+            console.log("magic link:", url);
+          }
+          await resend.emails.send({
+            from: "noreply@sideprojectsaturday.com",
+            to: email,
+            subject: "Sign in to Side Project Saturday",
+            react: MagicLinkEmail({ magicLink: url }),
+          });
+        },
+      }),
+    ],
+    emailVerification: {
+      async sendVerificationEmail({ user, url }) {
         await resend.emails.send({
           from: "noreply@sideprojectsaturday.com",
-          to: email,
-          subject: "Sign in to Side Project Saturday",
-          react: MagicLinkEmail({ magicLink: url }),
+          to: user.email,
+          subject: "Verify your email address",
+          react: VerificationEmail({
+            verificationUrl: url,
+            username: user.name,
+          }),
         });
       },
-    }),
-  ],
-  emailVerification: {
-    async sendVerificationEmail({ user, url }) {
-      await resend.emails.send({
-        from: "noreply@sideprojectsaturday.com",
-        to: user.email,
-        subject: "Verify your email address",
-        react: VerificationEmail({ verificationUrl: url, username: user.name }),
-      });
-    },
-    sendOnSignUp: true,
-    async onEmailVerification(user, request) {
-      // Queue the contact creation and welcome email instead of doing it directly
-      if (env) {
-        try {
-          await queueUserEvent(env, {
-            type: "user_create",
-            email: user.email,
-            name: user.name || undefined,
-            sendWelcomeEmail: true,
-          });
-        } catch (error) {
-          // Log error but don't fail the verification process
-          console.error("Failed to queue user event:", error);
+      sendOnSignUp: true,
+      async onEmailVerification(user, request) {
+        // Queue the contact creation and welcome email instead of doing it directly
+        if (env) {
+          try {
+            await queueUserEvent(env, {
+              type: "user_create",
+              email: user.email,
+              name: user.name || undefined,
+              sendWelcomeEmail: true,
+            });
+          } catch (error) {
+            // Log error but don't fail the verification process
+            console.error("Failed to queue user event:", error);
+          }
         }
-      }
+      },
+      autoSignInAfterVerification: true,
+      expiresIn: 60 * 60 * 5, // 5 hours
     },
-    autoSignInAfterVerification: true,
-    expiresIn: 60 * 60 * 5, // 5 hours
-  },
-});
+  });
 
 // Default auth instance for compatibility
 export const auth = createAuth();

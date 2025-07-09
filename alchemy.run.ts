@@ -6,6 +6,7 @@ import {
   Queue,
   Workflow,
   Worker,
+  WranglerJson,
 } from "alchemy/cloudflare";
 import type { UserEventMessage } from "@/services/user-event-consumer";
 
@@ -75,6 +76,7 @@ export const worker = await Astro("sideprojectsaturday", {
     RESEND_AUDIENCE_ID: alchemy.secret(
       process.env.RESEND_AUDIENCE_ID as string,
     ),
+    ADMIN_EMAIL: alchemy.secret(process.env.ADMIN_EMAIL as string),
     BETTER_AUTH_BASE_URL: process.env.PROD_URL as string,
     SWITCHBOT_TOKEN: alchemy.secret(process.env.SWITCHBOT_TOKEN as string),
     SWITCHBOT_KEY: alchemy.secret(process.env.SWITCHBOT_KEY as string),
@@ -85,6 +87,24 @@ export const worker = await Astro("sideprojectsaturday", {
     KV: kv,
     USER_EVENT_QUEUE: userEventQueue,
   },
+});
+
+WranglerJson("wrangler.jsonc", {
+  worker,
+  transform: {
+    wrangler(config) {
+      config.queues = {
+        consumers: [],
+        producers: [
+          {
+            queue: userEventQueue.name,
+            binding: "USER_EVENT_QUEUE",
+          }
+        ]
+      }
+      return config;
+    }
+  }
 });
 
 console.log({

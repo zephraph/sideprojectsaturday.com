@@ -27,7 +27,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     context.url.pathname.startsWith("/admin") ||
     context.url.pathname.startsWith("/api/admin")
   ) {
-    if (!context.locals.user || context.locals.user.role !== "admin") {
+    if (
+      !context.locals.user ||
+      (context.locals.user.role !== "admin" &&
+        context.locals.user.email !== process.env.ADMIN_EMAIL)
+    ) {
       return new Response("Unauthorized", { status: 401 });
     }
   }

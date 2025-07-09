@@ -88,7 +88,7 @@ const activeBreaks = await db.break.findMany({
                 <div class="card bg-base-100 shadow-xl">
                     <div class="card-body">
                         <h2 class="card-title text-2xl mb-6">Event Management</h2>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             <!-- Schedule Current Week -->
                             <div class="card bg-base-200">
@@ -249,12 +249,11 @@ const activeBreaks = await db.break.findMany({
                                                         name="role"
                                                         hx-post="/api/admin/update-role"
                                                         hx-trigger="change"
+                                                        hx-ext="json-enc"
                                                         hx-confirm={`Are you sure you want to change ${user.email}'s role?`}
-                                                        hx-vals={JSON.stringify(
-                                                            { userId: user.id },
-                                                        )}
-                                                        hx-headers='{ "Content-Type": "application/json" }'
                                                         hx-swap="none"
+                                                        data-user-id={user.id}
+                                                        hx-vals="js:{userId: event.target.dataset.userId, role: event.target.value}"
                                                         hx-on:before-request="this.dataset.previousValue = this.value"
                                                         hx-on:response-error="this.value = this.dataset.previousValue; alert(event.detail.xhr.responseJSON?.error || 'Failed to update role')"
                                                     >
