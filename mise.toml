@@ -62,7 +62,8 @@ description = "Create new migration"
 run = '''
 MIGRATION_OUTPUT=$(wrangler d1 migrations create sps-db {{arg(name="migration_name")}})
 MIGRATION_FILE=$(echo "$MIGRATION_OUTPUT" | grep -o "prisma/migrations/[0-9]*_.*\.sql" | head -1)
-prisma migrate diff --from-empty --to-schema-datamodel ./prisma/schema.prisma --script --output "$MIGRATION_FILE"
+LATEST_D1_DB=$(find .wrangler/state/v3/d1/miniflare-D1DatabaseObject -name "*.sqlite" -type f -exec ls -t {} + 2>/dev/null | head -1)
+prisma migrate diff --from-url "file:$LATEST_D1_DB" --to-schema-datamodel ./prisma/schema.prisma --script --output "$MIGRATION_FILE"
 '''
 
 [tasks."migrate:dev"]
