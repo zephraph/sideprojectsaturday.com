@@ -77,3 +77,15 @@ run = ["prisma generate", "wrangler d1 migrations apply DB --local"]
 [tasks."migrate:prod"]
 description = "Apply migrations to production"
 run = ["prisma generate", "wrangler d1 migrations apply DB --remote"]
+
+[tasks."split-out"]
+description = "Cherry-pick a commit to main and create a PR"
+run = "bash scripts/cherry-pick-to-main.sh {{arg(name=\"commit\")}}"
+
+[tasks."move-commit"]
+description = "Move a commit from current branch to target branch"
+run = "bash scripts/move-commit.sh {{arg(name=\"commit\")}} {{arg(name=\"target_branch\")}}"
+
+[tasks."cleanup-worktrees"]
+description = "Clean up merged worktrees (use --force to clean all)"
+run = "bash scripts/cleanup-worktrees.sh {{arg(name=\"flags\", default=\"\")}}"

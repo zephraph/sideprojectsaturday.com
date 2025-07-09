@@ -26,3 +26,6 @@ pnpm-debug.log*
 .vscode/settings.json
 .wrangler
 .claude/*.local.json
+
+# worktrees
+.worktrees/
