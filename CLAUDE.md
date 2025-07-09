@@ -104,3 +104,7 @@ The app deploys to Cloudflare using Alchemy deployment system configured in `alc
 ## Code Organization and Best Practices
 
 - **Import Paths**: Prefer prefixing esm import paths with `@` which points to the src directory instead of deeply nested relative imports. So `@/lib/auth` instead of `../../lib/auth`
+
+## Utility Patterns
+
+- **Date Calculations**: If you need to calculate a date, add that logic in @src/lib/date-utils.ts. Make sure you check it first to see if what you need already exists.
