@@ -7,6 +7,7 @@ import MagicLinkSentSection from "../components/MagicLinkSentSection.astro";
 import RegistrationFormSection from "../components/RegistrationFormSection.astro";
 import NextEventCard from "../components/NextEventCard.astro";
 import { db } from "../lib/auth";
+import { getNextSaturdayFormatted, getNextSaturdayDate, getDayRange } from "@/lib/date-utils";
 
 // Handle action results
 const magicLinkResult = Astro.getActionResult(actions.sendMagicLink);
@@ -41,22 +42,27 @@ if (user) {
     }
 }
 
-// Calculate next Saturday
-function getNextSaturday() {
-    const now = new Date();
-    const daysUntilSaturday = (6 - now.getDay()) % 7 || 7;
-    const nextSaturday = new Date(now);
-    nextSaturday.setDate(now.getDate() + daysUntilSaturday);
+const nextEventDate = getNextSaturdayFormatted();
+const nextSaturdayDate = getNextSaturdayDate();
+const { start, end } = getDayRange(nextSaturdayDate);
 
-    return nextSaturday.toLocaleDateString("en-US", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric",
+// Check if there's a scheduled event for next Saturday
+let hasEvent = false;
+try {
+    db(Astro.locals.runtime.env);
+    const event = await db.event.findFirst({
+        where: {
+            eventDate: {
+                gte: start,
+                lt: end,
+            },
+            status: "scheduled",
+        },
     });
+    hasEvent = !!event;
+} catch (error) {
+    console.error("Error checking for event:", error);
 }
-
-const nextEventDate = getNextSaturday();
 
 // Redirect after successful sign out
 if (signOutResult && !signOutResult.error) {
@@ -84,28 +90,34 @@ if (signOutResult && !signOutResult.error) {
             Side Project Saturday
         </h1>
 
-        <h2
-            class="text-3xl md:text-4xl font-bold text-center relative z-10 mb-8 text-amber-400 font-sans"
-            style={{
-                textShadow:
-                    "0 0 15px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.6), 2px 2px 6px rgba(0,0,0,0.7), 0px 0px 4px rgba(0,0,0,0.5)",
-            }}
-        >
-            9am to noon
-        </h2>
+        {
+            !user && (
+                <>
+                    <h2
+                        class="text-3xl md:text-4xl font-bold text-center relative z-10 mb-8 text-amber-400 font-sans"
+                        style={{
+                            textShadow:
+                                "0 0 15px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.6), 2px 2px 6px rgba(0,0,0,0.7), 0px 0px 4px rgba(0,0,0,0.5)",
+                        }}
+                    >
+                        9am to noon
+                    </h2>
 
-        <p
-            class="text-xl md:text-2xl font-medium text-center relative z-10 mb-8 text-white font-sans"
-            style={{
-                textShadow:
-                    "2px 2px 4px rgba(0,0,0,0.8), 0px 0px 8px rgba(0,0,0,0.6)",
-            }}
-        >
-            Brooklyn, NY
-        </p>
+                    <p
+                        class="text-xl md:text-2xl font-medium text-center relative z-10 mb-8 text-white font-sans"
+                        style={{
+                            textShadow:
+                                "2px 2px 4px rgba(0,0,0,0.8), 0px 0px 8px rgba(0,0,0,0.6)",
+                        }}
+                    >
+                        Brooklyn, NY
+                    </p>
+                </>
+            )
+        }
 
         <div
-            class="backdrop-blur-sm rounded-lg p-6 shadow-xl relative z-10 w-md mx-4 border border-white/30"
+            class={`backdrop-blur-sm rounded-lg p-6 shadow-xl relative z-10 w-md mx-4 border border-white/30 ${user ? "mt-6" : ""}`}
             style={{
                 background: "rgba(255,255,255,0.85)",
             }}
@@ -113,7 +125,7 @@ if (signOutResult && !signOutResult.error) {
             <NextEventCard nextEventDate={nextEventDate} />
             {
                 userWithPreferences && session ? (
-                    <AuthenticatedUserSection user={userWithPreferences} />
+                    <AuthenticatedUserSection user={userWithPreferences} hasEvent={hasEvent} />
                 ) : magicLinkResult && !magicLinkResult.error ? (
                     <MagicLinkSentSection
                         message={magicLinkResult.data.message}

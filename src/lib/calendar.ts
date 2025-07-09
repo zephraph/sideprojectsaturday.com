@@ -1,12 +1,11 @@
+import { getEventStartTime, getEventEndTime } from "@/lib/date-utils";
+
 /**
  * Generate calendar event data for Side Project Saturday
  */
 export function generateCalendarEvent(eventDate: Date) {
-  const startTime = new Date(eventDate);
-  startTime.setHours(9, 0, 0, 0); // 9 AM
-  
-  const endTime = new Date(eventDate);
-  endTime.setHours(12, 0, 0, 0); // 12 PM
+  const startTime = getEventStartTime(eventDate);
+  const endTime = getEventEndTime(eventDate);
 
   const formatDateTime = (date: Date) => {
     return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
