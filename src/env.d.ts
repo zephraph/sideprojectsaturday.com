@@ -1,9 +1,10 @@
 /// <reference types="astro/client" />
 /// <reference types="@cloudflare/workers-types" />
 
-import type { worker } from "../alchemy.run";
+import type { worker, eventWorker } from "../alchemy.run";
 
 export type WorkerEnv = worker.Env;
+export type WorkflowEnv = eventWorker.Env;
 
 declare module "cloudflare:workers" {
   namespace Cloudflare {
@@ -18,7 +19,7 @@ declare global {
       runtime: {
         env: WorkerEnv;
       };
-      user: import("better-auth").User | null;
+      user: (import("better-auth").User & { role: "admin" | "user" }) | null;
       session: import("better-auth").Session | null;
     }
   }

@@ -6,20 +6,13 @@ import {
 import { Resend } from "resend";
 import EventInviteEmail from "@/emails/EventInviteEmail";
 import EventTodayEmail from "@/emails/EventTodayEmail";
-
-interface EventWorkflowEnv {
-  DB: D1Database;
-  KV: KVNamespace;
-  RESEND_API_KEY: string;
-  RESEND_AUDIENCE_ID: string;
-  BETTER_AUTH_BASE_URL: string;
-}
+import type { WorkflowEnv } from "@/env";
 
 interface EventWorkflowParams {
   scheduledDate: string; // ISO date string for the event date
 }
 
-export class EventManagementWorkflow extends WorkflowEntrypoint<EventWorkflowEnv> {
+export class EventManagementWorkflow extends WorkflowEntrypoint<WorkflowEnv> {
   async run(
     event: WorkflowEvent<EventWorkflowParams>,
     step: WorkflowStep,
@@ -192,7 +185,7 @@ export class EventManagementWorkflow extends WorkflowEntrypoint<EventWorkflowEnv
 }
 
 export default {
-  scheduled(_: ScheduledController, env: Env, _ctx: ExecutionContext) {
+  scheduled(_: ScheduledController, env: WorkflowEnv, _ctx: ExecutionContext) {
     // Get current UTC time
     const now = new Date();
 
