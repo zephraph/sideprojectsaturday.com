@@ -77,27 +77,33 @@ try {
 ---
 
 <Layout title="RSVP - Side Project Saturday">
-  <div class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4">
-    <div class="max-w-md w-full">
-      <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">
-          🎉 RSVP for Side Project Saturday
-        </h1>
+	<div
+		class="min-h-screen bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center p-4"
+	>
+		<div class="max-w-md w-full">
+			<div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+				<h1 class="text-3xl font-bold text-gray-800 mb-6">
+					🎉 RSVP for Side Project Saturday
+				</h1>
 
-        {state === "already-rsvped" && <RsvpAlreadyConfirmed eventDateStr={eventDateStr} />}
-        {state === "success" && <RsvpSuccess eventDateStr={eventDateStr} />}
-        {state === "error" && <RsvpError />}
-        {state === "no-event" && <NoUpcomingEvents />}
-        
-        <div class="mt-6">
-          <a
-            href="/"
-            class="text-gray-600 hover:text-gray-800 text-sm underline"
-          >
-            ← Back to Dashboard
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
+				{
+					state === "already-rsvped" && (
+						<RsvpAlreadyConfirmed eventDateStr={eventDateStr} />
+					)
+				}
+				{state === "success" && <RsvpSuccess eventDateStr={eventDateStr} />}
+				{state === "error" && <RsvpError />}
+				{state === "no-event" && <NoUpcomingEvents />}
+
+				<div class="mt-6">
+					<a
+						href="/"
+						class="text-gray-600 hover:text-gray-800 text-sm underline"
+					>
+						← Back to Dashboard
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
 </Layout>

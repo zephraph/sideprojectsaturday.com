@@ -16,13 +16,15 @@ const { error } = Astro.props;
 	</h3>
 
 	<!-- Show errors -->
-	{error && (
-		<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-			<p class="text-red-700 text-sm">
-				{error.message || "Failed to send magic link. Please try again."}
-			</p>
-		</div>
-	)}
+	{
+		error && (
+			<div class="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+				<p class="text-red-700 text-sm">
+					{error.message || "Failed to send magic link. Please try again."}
+				</p>
+			</div>
+		)
+	}
 
 	<!-- Magic Link Form -->
 	<form method="POST" action={actions.sendMagicLink}>

@@ -7,20 +7,19 @@ const { eventDateStr } = Astro.props;
 ---
 
 <div class="text-center">
-  <div class="text-6xl mb-4">✅</div>
-  <h2 class="text-2xl font-bold text-green-700 mb-4">
-    You're Already RSVP'd!
-  </h2>
-  <p class="text-gray-600 mb-4">
-    You're all set for <strong>{eventDateStr}</strong>
-  </p>
-  <p class="text-sm text-gray-500 mb-6">
-    Check your email for the confirmation with event details and calendar invite.
-  </p>
-  <a
-    href="/rsvp/cancel"
-    class="inline-block bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-4 rounded-lg transition-colors"
-  >
-    Cancel RSVP
-  </a>
+	<div class="text-6xl mb-4">✅</div>
+	<h2 class="text-2xl font-bold text-green-700 mb-4">You're Already RSVP'd!</h2>
+	<p class="text-gray-600 mb-4">
+		You're all set for <strong>{eventDateStr}</strong>
+	</p>
+	<p class="text-sm text-gray-500 mb-6">
+		Check your email for the confirmation with event details and calendar
+		invite.
+	</p>
+	<a
+		href="/rsvp/cancel"
+		class="inline-block bg-red-100 hover:bg-red-200 text-red-700 font-medium py-2 px-4 rounded-lg transition-colors"
+	>
+		Cancel RSVP
+	</a>
 </div>
