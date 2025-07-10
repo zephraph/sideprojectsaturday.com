@@ -75,69 +75,69 @@ if (signOutResult && !signOutResult.error) {
 ---
 
 <Layout>
-    <div
-        class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden -mt-16"
-        style={{
-            background:
-                "linear-gradient(135deg, #fff8e7 0%, #ffeaa7 20%, #ffb347 35%, #87ceeb 60%, #4fc3f7 80%, #0288d1 100%)",
-        }}
-    >
-        <BackgroundDecorations />
+	<div
+		class="min-h-screen flex flex-col items-center justify-center relative overflow-hidden -mt-16"
+		style={{
+			background:
+				"linear-gradient(135deg, #fff8e7 0%, #ffeaa7 20%, #ffb347 35%, #87ceeb 60%, #4fc3f7 80%, #0288d1 100%)",
+		}}
+	>
+		<BackgroundDecorations />
 
-        <h1
-            class="text-6xl md:text-7xl font-extrabold text-center relative z-10 mb-2 text-white font-sans tracking-tight"
-            style={{
-                textShadow:
-                    "2px 2px 4px rgba(0,0,0,0.8), 0px 0px 8px rgba(0,0,0,0.6)",
-            }}
-        >
-            Side Project Saturday
-        </h1>
+		<h1
+			class="text-6xl md:text-7xl font-extrabold text-center relative z-10 mb-2 text-white font-sans tracking-tight"
+			style={{
+				textShadow: "2px 2px 4px rgba(0,0,0,0.8), 0px 0px 8px rgba(0,0,0,0.6)",
+			}}
+		>
+			Side Project Saturday
+		</h1>
 
-        {
-            !user && (
-                <>
-                    <h2
-                        class="text-3xl md:text-4xl font-bold text-center relative z-10 mb-8 text-amber-400 font-sans"
-                        style={{
-                            textShadow:
-                                "0 0 15px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.6), 2px 2px 6px rgba(0,0,0,0.7), 0px 0px 4px rgba(0,0,0,0.5)",
-                        }}
-                    >
-                        9am to noon
-                    </h2>
+		{
+			!user && (
+				<>
+					<h2
+						class="text-3xl md:text-4xl font-bold text-center relative z-10 mb-8 text-amber-400 font-sans"
+						style={{
+							textShadow:
+								"0 0 15px rgba(251, 191, 36, 0.8), 0 0 30px rgba(251, 191, 36, 0.6), 2px 2px 6px rgba(0,0,0,0.7), 0px 0px 4px rgba(0,0,0,0.5)",
+						}}
+					>
+						9am to noon
+					</h2>
 
-                    <p
-                        class="text-xl md:text-2xl font-medium text-center relative z-10 mb-8 text-white font-sans"
-                        style={{
-                            textShadow:
-                                "2px 2px 4px rgba(0,0,0,0.8), 0px 0px 8px rgba(0,0,0,0.6)",
-                        }}
-                    >
-                        Brooklyn, NY
-                    </p>
-                </>
-            )
-        }
+					<p
+						class="text-xl md:text-2xl font-medium text-center relative z-10 mb-8 text-white font-sans"
+						style={{
+							textShadow:
+								"2px 2px 4px rgba(0,0,0,0.8), 0px 0px 8px rgba(0,0,0,0.6)",
+						}}
+					>
+						Brooklyn, NY
+					</p>
+				</>
+			)
+		}
 
-        <div
-            class={`backdrop-blur-sm rounded-lg p-6 shadow-xl relative z-10 w-md mx-4 border border-white/30 ${user ? "mt-6" : ""}`}
-            style={{
-                background: "rgba(255,255,255,0.85)",
-            }}
-        >
-            <NextEventCard nextEventDate={nextEventDate} />
-            {
-                userWithPreferences && session ? (
-                    <AuthenticatedUserSection user={userWithPreferences} hasEvent={hasEvent} />
-                ) : magicLinkResult && !magicLinkResult.error ? (
-                    <MagicLinkSentSection
-                        message={magicLinkResult.data.message}
-                    />
-                ) : (
-                    <RegistrationFormSection error={magicLinkResult?.error} />
-                )
-            }
-        </div>
-    </div>
+		<div
+			class={`backdrop-blur-sm rounded-lg p-6 shadow-xl relative z-10 w-md mx-4 border border-white/30 ${user ? "mt-6" : ""}`}
+			style={{
+				background: "rgba(255,255,255,0.85)",
+			}}
+		>
+			<NextEventCard {nextEventDate} />
+			{
+				userWithPreferences && session ? (
+					<AuthenticatedUserSection
+						user={userWithPreferences}
+						hasEvent={hasEvent}
+					/>
+				) : magicLinkResult && !magicLinkResult.error ? (
+					<MagicLinkSentSection message={magicLinkResult.data.message} />
+				) : (
+					<RegistrationFormSection error={magicLinkResult?.error} />
+				)
+			}
+		</div>
+	</div>
 </Layout>

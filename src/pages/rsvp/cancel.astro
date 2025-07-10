@@ -48,28 +48,26 @@ try {
 ---
 
 <Layout title="Cancel RSVP - Side Project Saturday">
-    <div
-        class="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center p-4"
-    >
-        <div class="max-w-md w-full">
-            <div class="bg-white rounded-2xl shadow-xl p-8 text-center">
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">
-                    Cancel RSVP
-                </h1>
+	<div
+		class="min-h-screen bg-gradient-to-br from-red-50 to-orange-100 flex items-center justify-center p-4"
+	>
+		<div class="max-w-md w-full">
+			<div class="bg-white rounded-2xl shadow-xl p-8 text-center">
+				<h1 class="text-3xl font-bold text-gray-800 mb-6">Cancel RSVP</h1>
 
-                {state === "success" && <CancelSuccess />}
-                {state === "error" && <CancelError />}
-                {state === "no-rsvp" && <NoRsvpToCancel />}
+				{state === "success" && <CancelSuccess />}
+				{state === "error" && <CancelError />}
+				{state === "no-rsvp" && <NoRsvpToCancel />}
 
-                <div class="mt-6">
-                    <a
-                        href="/"
-                        class="text-gray-600 hover:text-gray-800 text-sm underline"
-                    >
-                        ← Back to Dashboard
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
+				<div class="mt-6">
+					<a
+						href="/"
+						class="text-gray-600 hover:text-gray-800 text-sm underline"
+					>
+						← Back to Dashboard
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
 </Layout>

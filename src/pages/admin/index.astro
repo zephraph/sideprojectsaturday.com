@@ -52,298 +52,322 @@ const activeBreaks = await db.break.findMany({
 ---
 
 <Layout title="Admin - Side Project Saturday">
-        <div class="min-h-screen bg-base-200">
-            <div class="navbar bg-base-100 shadow-lg">
-                <div class="flex-1">
-                    <a class="btn btn-ghost text-xl">Admin Dashboard</a>
-                </div>
-                <div class="flex-none">
-                    <div class="flex items-center gap-2">
-                        <a href="/admin/import" class="btn btn-primary btn-sm">
-                            Import Users
-                        </a>
-                        <div class="dropdown dropdown-end">
-                            <div tabindex="0" role="button" class="btn btn-ghost">
-                                {
-                                    Astro.locals.user?.name ||
-                                        Astro.locals.user?.email
-                                }
-                            </div>
-                            <ul
-                                tabindex="0"
-                                class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
-                            >
-                                <li><a href="/">Home</a></li>
-                                <li><a href="/auth/sign-out">Sign Out</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
+	<div class="min-h-screen bg-base-200">
+		<div class="navbar bg-base-100 shadow-lg">
+			<div class="flex-1">
+				<a class="btn btn-ghost text-xl">Admin Dashboard</a>
+			</div>
+			<div class="flex-none">
+				<div class="flex items-center gap-2">
+					<a href="/admin/import" class="btn btn-primary btn-sm">
+						Import Users
+					</a>
+					<div class="dropdown dropdown-end">
+						<div tabindex="0" role="button" class="btn btn-ghost">
+							{Astro.locals.user?.name || Astro.locals.user?.email}
+						</div>
+						<ul
+							tabindex="0"
+							class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+						>
+							<li><a href="/">Home</a></li>
+							<li><a href="/auth/sign-out">Sign Out</a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
 
-            <div class="container mx-auto px-4 py-8 space-y-6">
-                <!-- Event Management Section -->
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body">
-                        <h2 class="card-title text-2xl mb-6">Event Management</h2>
+		<div class="container mx-auto px-4 py-8 space-y-6">
+			<!-- Event Management Section -->
+			<div class="card bg-base-100 shadow-xl">
+				<div class="card-body">
+					<h2 class="card-title text-2xl mb-6">Event Management</h2>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <!-- Schedule Current Week -->
-                            <div class="card bg-base-200">
-                                <div class="card-body">
-                                    <h3 class="card-title text-lg">Current Week Event</h3>
-                                    <p class="text-sm text-gray-600">
-                                        Saturday, {currentWeekSaturday.toLocaleDateString()}
-                                    </p>
-                                    {currentWeekEvent ? (
-                                        <div class="mt-2">
-                                            <div class={`badge ${currentWeekEvent.status === 'scheduled' ? 'badge-success' : 'badge-error'}`}>
-                                                {currentWeekEvent.status}
-                                            </div>
-                                            {currentWeekEvent.status === 'canceled' && (
-                                                <button
-                                                    class="btn btn-primary btn-sm mt-2"
-                                                    hx-post="/api/admin/reschedule-event"
-                                                    hx-ext="json-enc"
-                                                    hx-vals={JSON.stringify({ eventId: currentWeekEvent.id })}
-                                                    hx-swap="none"
-                                                    hx-on:htmx:after-request="if(event.detail.successful) location.reload()"
-                                                >
-                                                    Reschedule Event
-                                                </button>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <button
-                                            class="btn btn-primary btn-sm mt-2"
-                                            hx-post="/api/admin/schedule-event"
-                                            hx-ext="json-enc"
-                                            hx-vals={JSON.stringify({ eventDate: currentWeekSaturday.toISOString() })}
-                                            hx-swap="none"
-                                            hx-on:htmx:after-request="if(event.detail.successful) location.reload()"
-                                        >
-                                            Schedule Event
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+						<!-- Schedule Current Week -->
+						<div class="card bg-base-200">
+							<div class="card-body">
+								<h3 class="card-title text-lg">Current Week Event</h3>
+								<p class="text-sm text-gray-600">
+									Saturday, {currentWeekSaturday.toLocaleDateString()}
+								</p>
+								{
+									currentWeekEvent ? (
+										<div class="mt-2">
+											<div
+												class={`badge ${currentWeekEvent.status === "scheduled" ? "badge-success" : "badge-error"}`}
+											>
+												{currentWeekEvent.status}
+											</div>
+											{currentWeekEvent.status === "canceled" && (
+												<button
+													class="btn btn-primary btn-sm mt-2"
+													hx-post="/api/admin/reschedule-event"
+													hx-ext="json-enc"
+													hx-vals={JSON.stringify({
+														eventId: currentWeekEvent.id,
+													})}
+													hx-swap="none"
+													data-hx-on-htmx-after-request="if(event.detail.successful) location.reload()"
+												>
+													Reschedule Event
+												</button>
+											)}
+										</div>
+									) : (
+										<button
+											class="btn btn-primary btn-sm mt-2"
+											hx-post="/api/admin/schedule-event"
+											hx-ext="json-enc"
+											hx-vals={JSON.stringify({
+												eventDate: currentWeekSaturday.toISOString(),
+											})}
+											hx-swap="none"
+											data-hx-on-htmx-after-request="if(event.detail.successful) location.reload()"
+										>
+											Schedule Event
+										</button>
+									)
+								}
+							</div>
+						</div>
 
-                            <!-- Cancel Next Event -->
-                            <div class="card bg-base-200">
-                                <div class="card-body">
-                                    <h3 class="card-title text-lg">Next Scheduled Event</h3>
-                                    {nextEvent ? (
-                                        <>
-                                            <p class="text-sm text-gray-600">
-                                                {new Date(nextEvent.eventDate).toLocaleDateString()}
-                                            </p>
-                                            <button
-                                                class="btn btn-error btn-sm mt-2"
-                                                hx-post="/api/admin/cancel-event"
-                                                hx-ext="json-enc"
-                                                hx-vals={JSON.stringify({ eventId: nextEvent.id })}
-                                                hx-swap="none"
-                                                hx-confirm="Are you sure you want to cancel this event?"
-                                                hx-on:htmx:after-request="if(event.detail.successful) location.reload()"
-                                            >
-                                                Cancel Event
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <p class="text-sm text-gray-600">No upcoming events scheduled</p>
-                                    )}
-                                </div>
-                            </div>
+						<!-- Cancel Next Event -->
+						<div class="card bg-base-200">
+							<div class="card-body">
+								<h3 class="card-title text-lg">Next Scheduled Event</h3>
+								{
+									nextEvent ? (
+										<>
+											<p class="text-sm text-gray-600">
+												{new Date(nextEvent.eventDate).toLocaleDateString()}
+											</p>
+											<button
+												class="btn btn-error btn-sm mt-2"
+												hx-post="/api/admin/cancel-event"
+												hx-ext="json-enc"
+												hx-vals={JSON.stringify({ eventId: nextEvent.id })}
+												hx-swap="none"
+												hx-confirm="Are you sure you want to cancel this event?"
+												data-hx-on-htmx-after-request="if(event.detail.successful) location.reload()"
+											>
+												Cancel Event
+											</button>
+										</>
+									) : (
+										<p class="text-sm text-gray-600">
+											No upcoming events scheduled
+										</p>
+									)
+								}
+							</div>
+						</div>
 
-                            <!-- Schedule Break -->
-                            <div class="card bg-base-200">
-                                <div class="card-body">
-                                    <h3 class="card-title text-lg">Schedule Break</h3>
-                                    <form
-                                        hx-post="/api/admin/schedule-break"
-                                        hx-ext="json-enc"
-                                        hx-swap="none"
-                                        hx-on:htmx:after-request="if(event.detail.successful) { this.reset(); location.reload(); }"
-                                    >
-                                        <div class="form-control">
-                                            <label class="label">
-                                                <span class="label-text text-xs">Start Date</span>
-                                            </label>
-                                            <input type="date" name="startDate" class="input input-bordered input-sm" required />
-                                        </div>
-                                        <div class="form-control">
-                                            <label class="label">
-                                                <span class="label-text text-xs">End Date</span>
-                                            </label>
-                                            <input type="date" name="endDate" class="input input-bordered input-sm" required />
-                                        </div>
-                                        <div class="form-control">
-                                            <label class="label">
-                                                <span class="label-text text-xs">Reason (optional)</span>
-                                            </label>
-                                            <input type="text" name="reason" class="input input-bordered input-sm" placeholder="Holiday, vacation, etc." />
-                                        </div>
-                                        <button type="submit" class="btn btn-warning btn-sm mt-3 w-full">
-                                            Schedule Break
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
+						<!-- Schedule Break -->
+						<div class="card bg-base-200">
+							<div class="card-body">
+								<h3 class="card-title text-lg">Schedule Break</h3>
+								<form
+									hx-post="/api/admin/schedule-break"
+									hx-ext="json-enc"
+									hx-swap="none"
+									data-hx-on-htmx-after-request="if(event.detail.successful) { this.reset(); location.reload(); }"
+								>
+									<div class="form-control">
+										<label class="label">
+											<span class="label-text text-xs">Start Date</span>
+										</label>
+										<input
+											type="date"
+											name="startDate"
+											class="input input-bordered input-sm"
+											required
+										/>
+									</div>
+									<div class="form-control">
+										<label class="label">
+											<span class="label-text text-xs">End Date</span>
+										</label>
+										<input
+											type="date"
+											name="endDate"
+											class="input input-bordered input-sm"
+											required
+										/>
+									</div>
+									<div class="form-control">
+										<label class="label">
+											<span class="label-text text-xs">Reason (optional)</span>
+										</label>
+										<input
+											type="text"
+											name="reason"
+											class="input input-bordered input-sm"
+											placeholder="Holiday, vacation, etc."
+										/>
+									</div>
+									<button
+										type="submit"
+										class="btn btn-warning btn-sm mt-3 w-full"
+									>
+										Schedule Break
+									</button>
+								</form>
+							</div>
+						</div>
+					</div>
 
-                        <!-- Active Breaks -->
-                        {activeBreaks.length > 0 && (
-                            <div class="mt-6">
-                                <h3 class="text-lg font-semibold mb-2">Active Breaks</h3>
-                                <div class="space-y-2">
-                                    {activeBreaks.map((breakPeriod) => (
-                                        <div class="alert alert-warning">
-                                            <div>
-                                                <span class="font-semibold">
-                                                    {new Date(breakPeriod.startDate).toLocaleDateString()} - {new Date(breakPeriod.endDate).toLocaleDateString()}
-                                                </span>
-                                                {breakPeriod.reason && <span class="ml-2">({breakPeriod.reason})</span>}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
+					<!-- Active Breaks -->
+					{
+						activeBreaks.length > 0 && (
+							<div class="mt-6">
+								<h3 class="text-lg font-semibold mb-2">Active Breaks</h3>
+								<div class="space-y-2">
+									{activeBreaks.map((breakPeriod) => (
+										<div class="alert alert-warning">
+											<div>
+												<span class="font-semibold">
+													{new Date(breakPeriod.startDate).toLocaleDateString()}{" "}
+													- {new Date(breakPeriod.endDate).toLocaleDateString()}
+												</span>
+												{breakPeriod.reason && (
+													<span class="ml-2">({breakPeriod.reason})</span>
+												)}
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
+						)
+					}
+				</div>
+			</div>
 
+			<!-- Users Section -->
+			<div class="card bg-base-100 shadow-xl">
+				<div class="card-body">
+					<h2 class="card-title text-2xl mb-6">
+						Users ({users.length})
+					</h2>
 
-                <!-- Users Section -->
-                <div class="card bg-base-100 shadow-xl">
-                    <div class="card-body">
-                        <h2 class="card-title text-2xl mb-6">
-                            Users ({users.length})
-                        </h2>
+					<div class="overflow-x-auto">
+						<table class="table table-zebra w-full">
+							<thead>
+								<tr>
+									<th>Email</th>
+									<th>Name</th>
+									<th>Role</th>
+									<th>RSVP Status</th>
+									<th>Subscribed</th>
+									<th>Email Verified</th>
+									<th>Created</th>
+								</tr>
+							</thead>
+							<tbody>
+								{
+									users.map((user) => (
+										<tr>
+											<td class="font-medium">{user.email}</td>
+											<td>{user.name || "-"}</td>
+											<td>
+												<select
+													class="select select-bordered select-sm"
+													name="role"
+													hx-post="/api/admin/update-role"
+													hx-trigger="change"
+													hx-ext="json-enc"
+													hx-confirm={`Are you sure you want to change ${user.email}'s role?`}
+													hx-swap="none"
+													data-user-id={user.id}
+													hx-vals="js:{userId: event.target.dataset.userId, role: event.target.value}"
+													hx-on:before-request="this.dataset.previousValue = this.value"
+													hx-on:response-error="this.value = this.dataset.previousValue; alert(event.detail.xhr.responseJSON?.error || 'Failed to update role')"
+												>
+													<option
+														value="user"
+														selected={!user.role || user.role === "user"}
+													>
+														User
+													</option>
+													<option
+														value="admin"
+														selected={user.role === "admin"}
+													>
+														Admin
+													</option>
+												</select>
+											</td>
+											<td>
+												<input
+													type="checkbox"
+													class="checkbox checkbox-success"
+													checked={user.rsvped}
+													hx-post="/api/admin/update-user-field"
+													hx-trigger="change"
+													hx-ext="json-enc"
+													hx-swap="none"
+													name="dummy"
+													data-user-id={user.id}
+													data-field="rsvped"
+													hx-vals="js:{userId: event.target.dataset.userId, field: event.target.dataset.field, value: event.target.checked}"
+												/>
+											</td>
+											<td>
+												<input
+													type="checkbox"
+													class="checkbox checkbox-success"
+													checked={user.subscribed}
+													hx-post="/api/admin/update-user-field"
+													hx-trigger="change"
+													hx-ext="json-enc"
+													hx-swap="none"
+													name="dummy"
+													data-user-id={user.id}
+													data-field="subscribed"
+													hx-vals="js:{userId: event.target.dataset.userId, field: event.target.dataset.field, value: event.target.checked}"
+												/>
+											</td>
+											<td>
+												<div
+													class={`badge ${user.emailVerified ? "badge-success" : "badge-warning"}`}
+												>
+													{user.emailVerified ? "Yes" : "No"}
+												</div>
+											</td>
+											<td class="text-sm text-gray-500">
+												{new Date(user.createdAt).toLocaleDateString()}
+											</td>
+										</tr>
+									))
+								}
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-                        <div class="overflow-x-auto">
-                            <table class="table table-zebra w-full">
-                                <thead>
-                                    <tr>
-                                        <th>Email</th>
-                                        <th>Name</th>
-                                        <th>Role</th>
-                                        <th>RSVP Status</th>
-                                        <th>Subscribed</th>
-                                        <th>Email Verified</th>
-                                        <th>Created</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {
-                                        users.map((user) => (
-                                            <tr>
-                                                <td class="font-medium">
-                                                    {user.email}
-                                                </td>
-                                                <td>{user.name || "-"}</td>
-                                                <td>
-                                                    <select
-                                                        class="select select-bordered select-sm"
-                                                        name="role"
-                                                        hx-post="/api/admin/update-role"
-                                                        hx-trigger="change"
-                                                        hx-ext="json-enc"
-                                                        hx-confirm={`Are you sure you want to change ${user.email}'s role?`}
-                                                        hx-swap="none"
-                                                        data-user-id={user.id}
-                                                        hx-vals="js:{userId: event.target.dataset.userId, role: event.target.value}"
-                                                        hx-on:before-request="this.dataset.previousValue = this.value"
-                                                        hx-on:response-error="this.value = this.dataset.previousValue; alert(event.detail.xhr.responseJSON?.error || 'Failed to update role')"
-                                                    >
-                                                        <option
-                                                            value="user"
-                                                            selected={
-                                                                !user.role ||
-                                                                user.role ===
-                                                                    "user"
-                                                            }
-                                                        >
-                                                            User
-                                                        </option>
-                                                        <option
-                                                            value="admin"
-                                                            selected={
-                                                                user.role ===
-                                                                "admin"
-                                                            }
-                                                        >
-                                                            Admin
-                                                        </option>
-                                                    </select>
-                                                </td>
-                                                <td>
-                                                    <input
-                                                        type="checkbox"
-                                                        class="checkbox checkbox-success"
-                                                        checked={user.rsvped}
-                                                        hx-post="/api/admin/update-user-field"
-                                                        hx-trigger="change"
-                                                        hx-ext="json-enc"
-                                                        hx-swap="none"
-                                                        name="dummy"
-                                                        data-user-id={user.id}
-                                                        data-field="rsvped"
-                                                        hx-vals="js:{userId: event.target.dataset.userId, field: event.target.dataset.field, value: event.target.checked}"
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <input
-                                                        type="checkbox"
-                                                        class="checkbox checkbox-success"
-                                                        checked={user.subscribed}
-                                                        hx-post="/api/admin/update-user-field"
-                                                        hx-trigger="change"
-                                                        hx-ext="json-enc"
-                                                        hx-swap="none"
-                                                        name="dummy"
-                                                        data-user-id={user.id}
-                                                        data-field="subscribed"
-                                                        hx-vals="js:{userId: event.target.dataset.userId, field: event.target.dataset.field, value: event.target.checked}"
-                                                    />
-                                                </td>
-                                                <td>
-                                                    <div
-                                                        class={`badge ${user.emailVerified ? "badge-success" : "badge-warning"}`}
-                                                    >
-                                                        {user.emailVerified
-                                                            ? "Yes"
-                                                            : "No"}
-                                                    </div>
-                                                </td>
-                                                <td class="text-sm text-gray-500">
-                                                    {new Date(
-                                                        user.createdAt,
-                                                    ).toLocaleDateString()}
-                                                </td>
-                                            </tr>
-                                        ))
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+	<script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"></script>
+	<script>
+		// Parse JSON error responses
+		document.body.addEventListener("htmx:responseError", function (evt) {
+			try {
+				evt.detail.xhr.responseJSON = JSON.parse(evt.detail.xhr.response);
+			} catch (e) {}
+		});
 
-        <script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"></script>
-        <script>
-            // Parse JSON error responses
-            document.body.addEventListener(
-                "htmx:responseError",
-                function (evt) {
-                    try {
-                        evt.detail.xhr.responseJSON = JSON.parse(
-                            evt.detail.xhr.response,
-                        );
-                    } catch (e) {}
-                },
-            );
-
-        </script>
+		// Handle data-hx-on-htmx-after-request attributes
+		document.addEventListener("DOMContentLoaded", function () {
+			document
+				.querySelectorAll("[data-hx-on-htmx-after-request]")
+				.forEach(function (el) {
+					const handler = el.getAttribute("data-hx-on-htmx-after-request");
+					el.addEventListener("htmx:afterRequest", function (event) {
+						eval(handler);
+					});
+				});
+		});
+	</script>
 </Layout>

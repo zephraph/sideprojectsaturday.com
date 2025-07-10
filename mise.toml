@@ -42,8 +42,8 @@ description = "Destroy Cloudflare resources"
 run = "tsx alchemy.run.ts --destroy"
 
 [tasks.fmt]
-description = "Format code with Biome"
-run = "biome check --write --unsafe ."
+description = "Format code with Prettier and Biome"
+run = ["prettier --write '**/*.astro'", "biome check --write --unsafe ."]
 
 [tasks.emails]
 description = "Preview email templates with react-email"
