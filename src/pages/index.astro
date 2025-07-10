@@ -1,13 +1,17 @@
 ---
 import { actions } from "astro:actions";
-import Layout from "../layouts/Layout.astro";
-import BackgroundDecorations from "../components/BackgroundDecorations.astro";
+import {
+	getDayRange,
+	getNextSaturdayDate,
+	getNextSaturdayFormatted,
+} from "@/lib/date-utils";
 import AuthenticatedUserSection from "../components/AuthenticatedUserSection.astro";
+import BackgroundDecorations from "../components/BackgroundDecorations.astro";
 import MagicLinkSentSection from "../components/MagicLinkSentSection.astro";
-import RegistrationFormSection from "../components/RegistrationFormSection.astro";
 import NextEventCard from "../components/NextEventCard.astro";
+import RegistrationFormSection from "../components/RegistrationFormSection.astro";
+import Layout from "../layouts/Layout.astro";
 import { db } from "../lib/auth";
-import { getNextSaturdayFormatted, getNextSaturdayDate, getDayRange } from "@/lib/date-utils";
 
 // Handle action results
 const magicLinkResult = Astro.getActionResult(actions.sendMagicLink);
@@ -20,26 +24,26 @@ const session = Astro.locals.session;
 // If user is authenticated, fetch their rsvped and subscribed status
 let userWithPreferences = null;
 if (user) {
-    try {
-        db(Astro.locals.runtime.env);
-        const dbUser = await db.user.findUnique({
-            where: { id: user.id },
-            select: { rsvped: true, subscribed: true },
-        });
+	try {
+		db(Astro.locals.runtime.env);
+		const dbUser = await db.user.findUnique({
+			where: { id: user.id },
+			select: { rsvped: true, subscribed: true },
+		});
 
-        userWithPreferences = {
-            ...user,
-            rsvped: dbUser?.rsvped ?? false,
-            subscribed: dbUser?.subscribed ?? true,
-        };
-    } catch (error) {
-        console.error("Error fetching user preferences:", error);
-        userWithPreferences = {
-            ...user,
-            rsvped: false,
-            subscribed: true,
-        };
-    }
+		userWithPreferences = {
+			...user,
+			rsvped: dbUser?.rsvped ?? false,
+			subscribed: dbUser?.subscribed ?? true,
+		};
+	} catch (error) {
+		console.error("Error fetching user preferences:", error);
+		userWithPreferences = {
+			...user,
+			rsvped: false,
+			subscribed: true,
+		};
+	}
 }
 
 const nextEventDate = getNextSaturdayFormatted();
@@ -49,24 +53,24 @@ const { start, end } = getDayRange(nextSaturdayDate);
 // Check if there's a scheduled event for next Saturday
 let hasEvent = false;
 try {
-    db(Astro.locals.runtime.env);
-    const event = await db.event.findFirst({
-        where: {
-            eventDate: {
-                gte: start,
-                lt: end,
-            },
-            status: "scheduled",
-        },
-    });
-    hasEvent = !!event;
+	db(Astro.locals.runtime.env);
+	const event = await db.event.findFirst({
+		where: {
+			eventDate: {
+				gte: start,
+				lt: end,
+			},
+			status: "scheduled",
+		},
+	});
+	hasEvent = !!event;
 } catch (error) {
-    console.error("Error checking for event:", error);
+	console.error("Error checking for event:", error);
 }
 
 // Redirect after successful sign out
 if (signOutResult && !signOutResult.error) {
-    return Astro.redirect("/");
+	return Astro.redirect("/");
 }
 ---
 

@@ -4,19 +4,19 @@ import { auth } from "@/lib/auth";
 
 // Check if user is already authenticated
 const session = await auth.api.getSession({
-  headers: Astro.request.headers,
+	headers: Astro.request.headers,
 });
 
 // If authenticated, redirect to home or callback URL
 if (session?.user) {
-  const url = new URL(Astro.request.url);
-  const callbackURL = url.searchParams.get('callback') || '/';
-  return Astro.redirect(callbackURL);
+	const url = new URL(Astro.request.url);
+	const callbackURL = url.searchParams.get("callback") || "/";
+	return Astro.redirect(callbackURL);
 }
 
 // Get callback URL from query params
 const url = new URL(Astro.request.url);
-const callbackURL = url.searchParams.get('callback');
+const callbackURL = url.searchParams.get("callback");
 ---
 
 <Layout title="Sign In - Side Project Saturday">

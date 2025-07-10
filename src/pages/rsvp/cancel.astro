@@ -1,49 +1,49 @@
 ---
+import CancelError from "@/components/rsvp/CancelError.astro";
+import CancelSuccess from "@/components/rsvp/CancelSuccess.astro";
+import NoRsvpToCancel from "@/components/rsvp/NoRsvpToCancel.astro";
 import Layout from "@/layouts/Layout.astro";
 import { auth, db } from "@/lib/auth";
-import CancelSuccess from "@/components/rsvp/CancelSuccess.astro";
-import CancelError from "@/components/rsvp/CancelError.astro";
-import NoRsvpToCancel from "@/components/rsvp/NoRsvpToCancel.astro";
 
 type CancelState = "success" | "error" | "no-rsvp";
 
 // Check if user is authenticated
 const session = await auth.api.getSession({
-    headers: Astro.request.headers,
+	headers: Astro.request.headers,
 });
 
 // If not authenticated, redirect to login with callback
 if (!session?.user) {
-    const callbackURL = encodeURIComponent(Astro.url.pathname);
-    return Astro.redirect(`/login?callback=${callbackURL}`);
+	const callbackURL = encodeURIComponent(Astro.url.pathname);
+	return Astro.redirect(`/login?callback=${callbackURL}`);
 }
 
 // Process cancellation
 let state: CancelState = "no-rsvp";
 
 try {
-    db(Astro.locals.runtime.env);
+	db(Astro.locals.runtime.env);
 
-    const user = await db.user.findUnique({
-        where: { id: session.user.id },
-        select: { rsvped: true },
-    });
+	const user = await db.user.findUnique({
+		where: { id: session.user.id },
+		select: { rsvped: true },
+	});
 
-    if (user?.rsvped) {
-        try {
-            await db.user.update({
-                where: { id: session.user.id },
-                data: { rsvped: false },
-            });
-            state = "success";
-        } catch (error) {
-            console.error("Error canceling RSVP:", error);
-            state = "error";
-        }
-    }
+	if (user?.rsvped) {
+		try {
+			await db.user.update({
+				where: { id: session.user.id },
+				data: { rsvped: false },
+			});
+			state = "success";
+		} catch (error) {
+			console.error("Error canceling RSVP:", error);
+			state = "error";
+		}
+	}
 } catch (error) {
-    console.error("Error fetching user data:", error);
-    state = "error";
+	console.error("Error fetching user data:", error);
+	state = "error";
 }
 ---
 

@@ -6,20 +6,17 @@ import { getCurrentWeekSaturdayDate } from "@/lib/date-utils";
 db(Astro.locals.runtime.env);
 
 const users = await db.user.findMany({
-    select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        subscribed: true,
-        rsvped: true,
-        emailVerified: true,
-        createdAt: true,
-    },
-    orderBy: [
-        { rsvped: "desc" },
-        { updatedAt: "desc" },
-    ],
+	select: {
+		id: true,
+		email: true,
+		name: true,
+		role: true,
+		subscribed: true,
+		rsvped: true,
+		emailVerified: true,
+		createdAt: true,
+	},
+	orderBy: [{ rsvped: "desc" }, { updatedAt: "desc" }],
 });
 
 // Get current week's Saturday
@@ -27,30 +24,30 @@ const currentWeekSaturday = getCurrentWeekSaturdayDate();
 
 // Check if current week has an event
 const currentWeekEvent = await db.event.findFirst({
-    where: {
-        eventDate: currentWeekSaturday,
-    },
+	where: {
+		eventDate: currentWeekSaturday,
+	},
 });
 
 // Get next scheduled event
 const nextEvent = await db.event.findFirst({
-    where: {
-        eventDate: { gte: new Date() },
-        status: "scheduled",
-    },
-    orderBy: {
-        eventDate: "asc",
-    },
+	where: {
+		eventDate: { gte: new Date() },
+		status: "scheduled",
+	},
+	orderBy: {
+		eventDate: "asc",
+	},
 });
 
 // Get active breaks
 const activeBreaks = await db.break.findMany({
-    where: {
-        endDate: { gte: new Date() },
-    },
-    orderBy: {
-        startDate: "asc",
-    },
+	where: {
+		endDate: { gte: new Date() },
+	},
+	orderBy: {
+		startDate: "asc",
+	},
 });
 ---
 

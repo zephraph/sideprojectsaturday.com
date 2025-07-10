@@ -4,13 +4,13 @@ import { auth } from "@/lib/auth";
 
 // Check if user is authenticated
 const session = await auth.api.getSession({
-    headers: Astro.request.headers,
+	headers: Astro.request.headers,
 });
 
 // If not authenticated, redirect to login with callback
 if (!session?.user) {
-    const callbackURL = encodeURIComponent(Astro.url.pathname);
-    return Astro.redirect(`/login?callback=${callbackURL}`);
+	const callbackURL = encodeURIComponent(Astro.url.pathname);
+	return Astro.redirect(`/login?callback=${callbackURL}`);
 }
 ---
 

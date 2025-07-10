@@ -1,58 +1,58 @@
 ---
+import UnsubscribeAlready from "../../components/UnsubscribeAlready.astro";
+import UnsubscribeError from "../../components/UnsubscribeError.astro";
+import UnsubscribeSuccess from "../../components/UnsubscribeSuccess.astro";
 import Layout from "../../layouts/Layout.astro";
 import { db } from "../../lib/auth";
-import UnsubscribeSuccess from "../../components/UnsubscribeSuccess.astro";
-import UnsubscribeError from "../../components/UnsubscribeError.astro";
-import UnsubscribeAlready from "../../components/UnsubscribeAlready.astro";
 
 // Get user ID from URL params
 const { id } = Astro.params;
 
 // Initialize state
 type UnsubscribeResult =
-  | { type: "success"; email: string }
-  | { type: "already_unsubscribed"; email: string }
-  | { type: "error"; message: string };
+	| { type: "success"; email: string }
+	| { type: "already_unsubscribed"; email: string }
+	| { type: "error"; message: string };
 
 let result: UnsubscribeResult;
 
 // Only process if we have an ID
 if (id) {
-  try {
-    // Get the database instance with proper env
-    const runtime = Astro.locals.runtime;
+	try {
+		// Get the database instance with proper env
+		const runtime = Astro.locals.runtime;
 
-    // Initialize the database with runtime env
-    db(runtime.env);
+		// Initialize the database with runtime env
+		db(runtime.env);
 
-    // Find the user and check their subscription status
-    const user = await db.user.findUnique({
-      where: { id: id },
-    });
+		// Find the user and check their subscription status
+		const user = await db.user.findUnique({
+			where: { id: id },
+		});
 
-    if (user) {
-      if (user.subscribed) {
-        // Update the user's subscription preference
-        await db.user.update({
-          where: { id: id },
-          data: { subscribed: false },
-        });
-        result = { type: "success", email: user.email };
-      } else {
-        result = { type: "already_unsubscribed", email: user.email };
-      }
-    } else {
-      result = { type: "error", message: "Invalid unsubscribe link" };
-    }
-  } catch (err) {
-    console.error("Unsubscribe error:", err);
-    result = {
-      type: "error",
-      message: "An error occurred while processing your request",
-    };
-  }
+		if (user) {
+			if (user.subscribed) {
+				// Update the user's subscription preference
+				await db.user.update({
+					where: { id: id },
+					data: { subscribed: false },
+				});
+				result = { type: "success", email: user.email };
+			} else {
+				result = { type: "already_unsubscribed", email: user.email };
+			}
+		} else {
+			result = { type: "error", message: "Invalid unsubscribe link" };
+		}
+	} catch (err) {
+		console.error("Unsubscribe error:", err);
+		result = {
+			type: "error",
+			message: "An error occurred while processing your request",
+		};
+	}
 } else {
-  result = { type: "error", message: "Invalid unsubscribe link" };
+	result = { type: "error", message: "Invalid unsubscribe link" };
 }
 ---
 

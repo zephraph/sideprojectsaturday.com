@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
-import { db } from "@/lib/auth";
 import { z } from "zod";
+import { db } from "@/lib/auth";
 
 const CancelEventSchema = z.object({
 	eventId: z.string(),
@@ -13,7 +13,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 		if (!parseResult.success) {
 			return new Response(
-				JSON.stringify({ error: "Invalid request", details: parseResult.error.flatten() }),
+				JSON.stringify({
+					error: "Invalid request",
+					details: parseResult.error.flatten(),
+				}),
 				{
 					status: 400,
 					headers: { "Content-Type": "application/json" },

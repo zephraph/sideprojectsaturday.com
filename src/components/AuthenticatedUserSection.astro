@@ -2,13 +2,13 @@
 import { actions } from "astro:actions";
 
 interface Props {
-    user: {
-        name?: string;
-        email: string;
-        subscribed?: boolean;
-        rsvped?: boolean;
-    };
-    hasEvent?: boolean;
+	user: {
+		name?: string;
+		email: string;
+		subscribed?: boolean;
+		rsvped?: boolean;
+	};
+	hasEvent?: boolean;
 }
 
 const { user, hasEvent = true } = Astro.props;

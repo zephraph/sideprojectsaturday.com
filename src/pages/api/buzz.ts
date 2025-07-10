@@ -1,8 +1,9 @@
-import type { APIRoute } from "astro";
-import { db } from "@/lib/auth";
 import { createHmac } from "node:crypto";
+import type { APIRoute } from "astro";
+import type { WorkerEnv } from "@/env";
+import { db } from "@/lib/auth";
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ locals }) => {
 	try {
 		const runtime = locals.runtime;
 		if (!runtime?.env) {
@@ -14,8 +15,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 		// Check if there's an active event
 		const today = new Date();
-		const todayStr = today.toISOString().split('T')[0];
-		
+		const todayStr = today.toISOString().split("T")[0];
+
 		const activeEvent = await db.event.findFirst({
 			where: {
 				eventDate: {
@@ -30,12 +31,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
 			return new Response(
 				JSON.stringify({
 					success: false,
-					message: "No active event found. The door can only be opened during events.",
+					message:
+						"No active event found. The door can only be opened during events.",
 				}),
 				{
 					status: 403,
 					headers: { "Content-Type": "application/json" },
-				}
+				},
 			);
 		}
 
@@ -50,7 +52,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 					parameter: "default",
 					commandType: "command",
 				}),
-			}
+			},
 		);
 
 		if (result.statusCode === 100) {
@@ -62,7 +64,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 				{
 					status: 200,
 					headers: { "Content-Type": "application/json" },
-				}
+				},
 			);
 		} else {
 			return new Response(
@@ -73,7 +75,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 				{
 					status: 500,
 					headers: { "Content-Type": "application/json" },
-				}
+				},
 			);
 		}
 	} catch (error) {
@@ -86,12 +88,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
 			{
 				status: 500,
 				headers: { "Content-Type": "application/json" },
-			}
+			},
 		);
 	}
 };
 
-async function switchbotRequest(env: any, path: string, args: RequestInit) {
+async function switchbotRequest(
+	env: WorkerEnv,
+	path: string,
+	args: RequestInit,
+) {
 	const token = env.SWITCHBOT_TOKEN;
 	const secret = env.SWITCHBOT_KEY;
 
@@ -104,14 +110,14 @@ async function switchbotRequest(env: any, path: string, args: RequestInit) {
 
 	const response = await fetch(`https://api.switch-bot.com/${path}`, {
 		headers: {
-			"Authorization": token,
-			"t": t.toString(),
-			"nonce": nonce.toString(),
-			"sign": sign,
+			Authorization: token,
+			t: t.toString(),
+			nonce: nonce.toString(),
+			sign: sign,
 			"Content-Type": "application/json",
 		},
 		...args,
 	});
-	
+
 	return response.json();
 }
