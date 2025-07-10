@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
-import { db } from "@/lib/auth";
 import { z } from "zod";
+import { db } from "@/lib/auth";
 
 const ScheduleEventSchema = z.object({
 	eventDate: z.string().transform((str) => new Date(str)),
@@ -13,7 +13,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 		if (!parseResult.success) {
 			return new Response(
-				JSON.stringify({ error: "Invalid request", details: parseResult.error.flatten() }),
+				JSON.stringify({
+					error: "Invalid request",
+					details: parseResult.error.flatten(),
+				}),
 				{
 					status: 400,
 					headers: { "Content-Type": "application/json" },
@@ -50,7 +53,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 		if (breaks.length > 0) {
 			return new Response(
-				JSON.stringify({ error: "Cannot schedule event during a break period" }),
+				JSON.stringify({
+					error: "Cannot schedule event during a break period",
+				}),
 				{
 					status: 400,
 					headers: { "Content-Type": "application/json" },

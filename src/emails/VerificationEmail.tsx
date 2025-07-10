@@ -77,7 +77,10 @@ export default function VerificationEmail({
 						Side Project Saturday - Where Brooklyn builds together 🏗️
 					</Text>
 					<Text style={hostedBy}>
-						Hosted by <Link href="https://just-be.dev" style={hostedByLink}>just-be.dev</Link>
+						Hosted by{" "}
+						<Link href="https://just-be.dev" style={hostedByLink}>
+							just-be.dev
+						</Link>
 					</Text>
 				</Container>
 			</Body>
@@ -241,7 +244,6 @@ const footer = {
 	textAlign: "center" as const,
 	fontWeight: "600",
 };
-
 
 const hostedBy = {
 	color: "#9ca3af",

@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
-import { db } from "@/lib/auth";
 import { z } from "zod";
+import { db } from "@/lib/auth";
 
 const UpdateUserFieldSchema = z.object({
 	userId: z.string(),
@@ -15,7 +15,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 		if (!parseResult.success) {
 			return new Response(
-				JSON.stringify({ error: "Invalid request", details: parseResult.error.flatten() }),
+				JSON.stringify({
+					error: "Invalid request",
+					details: parseResult.error.flatten(),
+				}),
 				{
 					status: 400,
 					headers: { "Content-Type": "application/json" },
@@ -38,9 +41,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
 		});
 	} catch (error) {
 		console.error("Error updating user field:", error);
-		return new Response(JSON.stringify({ error: "Failed to update user field" }), {
-			status: 500,
-			headers: { "Content-Type": "application/json" },
-		});
+		return new Response(
+			JSON.stringify({ error: "Failed to update user field" }),
+			{
+				status: 500,
+				headers: { "Content-Type": "application/json" },
+			},
+		);
 	}
 };

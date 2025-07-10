@@ -1,23 +1,23 @@
 ---
+import NoUpcomingEvents from "@/components/rsvp/NoUpcomingEvents.astro";
+import RsvpAlreadyConfirmed from "@/components/rsvp/RsvpAlreadyConfirmed.astro";
+import RsvpError from "@/components/rsvp/RsvpError.astro";
+import RsvpSuccess from "@/components/rsvp/RsvpSuccess.astro";
 import Layout from "@/layouts/Layout.astro";
 import { auth, db } from "@/lib/auth";
-import RsvpAlreadyConfirmed from "@/components/rsvp/RsvpAlreadyConfirmed.astro";
-import RsvpSuccess from "@/components/rsvp/RsvpSuccess.astro";
-import RsvpError from "@/components/rsvp/RsvpError.astro";
-import NoUpcomingEvents from "@/components/rsvp/NoUpcomingEvents.astro";
 import { formatEventDate } from "@/lib/date-utils";
 
 type RsvpState = "already-rsvped" | "success" | "error" | "no-event";
 
 // Check if user is authenticated
 const session = await auth.api.getSession({
-  headers: Astro.request.headers,
+	headers: Astro.request.headers,
 });
 
 // If not authenticated, redirect to login with callback
 if (!session?.user) {
-  const callbackURL = encodeURIComponent(Astro.url.pathname);
-  return Astro.redirect(`/login?callback=${callbackURL}`);
+	const callbackURL = encodeURIComponent(Astro.url.pathname);
+	return Astro.redirect(`/login?callback=${callbackURL}`);
 }
 
 // Process RSVP
@@ -26,53 +26,53 @@ let nextEvent = null;
 let eventDateStr = "";
 
 try {
-  db(Astro.locals.runtime.env);
+	db(Astro.locals.runtime.env);
 
-  // Get next event
-  nextEvent = await db.event.findFirst({
-    where: {
-      eventDate: {
-        gte: new Date(),
-      },
-      status: {
-        in: ["scheduled", "inprogress"],
-      },
-    },
-    orderBy: {
-      eventDate: "asc",
-    },
-  });
+	// Get next event
+	nextEvent = await db.event.findFirst({
+		where: {
+			eventDate: {
+				gte: new Date(),
+			},
+			status: {
+				in: ["scheduled", "inprogress"],
+			},
+		},
+		orderBy: {
+			eventDate: "asc",
+		},
+	});
 
-  if (!nextEvent) {
-    state = "no-event";
-  } else {
-    eventDateStr = formatEventDate(new Date(nextEvent.eventDate));
-    
-    // Check current RSVP status
-    const user = await db.user.findUnique({
-      where: { id: session.user.id },
-      select: { rsvped: true },
-    });
+	if (!nextEvent) {
+		state = "no-event";
+	} else {
+		eventDateStr = formatEventDate(new Date(nextEvent.eventDate));
 
-    if (user?.rsvped) {
-      state = "already-rsvped";
-    } else {
-      // Auto-RSVP the user
-      try {
-        await db.user.update({
-          where: { id: session.user.id },
-          data: { rsvped: true },
-        });
-        state = "success";
-      } catch (error) {
-        console.error("Error updating RSVP:", error);
-        state = "error";
-      }
-    }
-  }
+		// Check current RSVP status
+		const user = await db.user.findUnique({
+			where: { id: session.user.id },
+			select: { rsvped: true },
+		});
+
+		if (user?.rsvped) {
+			state = "already-rsvped";
+		} else {
+			// Auto-RSVP the user
+			try {
+				await db.user.update({
+					where: { id: session.user.id },
+					data: { rsvped: true },
+				});
+				state = "success";
+			} catch (error) {
+				console.error("Error updating RSVP:", error);
+				state = "error";
+			}
+		}
+	}
 } catch (error) {
-  console.error("Error processing RSVP:", error);
-  state = "error";
+	console.error("Error processing RSVP:", error);
+	state = "error";
 }
 ---
 
