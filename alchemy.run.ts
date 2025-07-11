@@ -89,7 +89,7 @@ export const worker = await Astro("sideprojectsaturday", {
 	},
 });
 
-WranglerJson("wrangler.jsonc", {
+await WranglerJson("wrangler.jsonc", {
 	worker,
 	transform: {
 		wrangler(config) {
