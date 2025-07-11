@@ -45,6 +45,10 @@ run = "tsx alchemy.run.ts --destroy"
 description = "Format code with Prettier and Biome"
 run = ["prettier --write '**/*.astro'", "biome check --write --unsafe ."]
 
+[tasks.check]
+description = "Check code formatting without making changes"
+run = ["prettier --check '**/*.astro'", "biome check"]
+
 [tasks.emails]
 description = "Preview email templates with react-email"
 run = "email dev -d src/emails"
