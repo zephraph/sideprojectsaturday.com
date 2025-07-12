@@ -1,8 +1,10 @@
 import { defineMiddleware } from "astro:middleware";
-import { auth, db } from "./lib/auth";
+import { createAuth, db } from "./lib/auth";
 
 export const onRequest = defineMiddleware(async (context, next) => {
 	db(context.locals.runtime.env);
+	const auth = createAuth(context.locals.runtime.env);
+
 	// Initialize locals
 	context.locals.user = null;
 	context.locals.session = null;

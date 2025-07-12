@@ -1,8 +1,9 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import { auth } from "@/lib/auth";
+import { createAuth } from "@/lib/auth";
 
 // Check if user is already authenticated
+const auth = createAuth(Astro.locals.runtime.env);
 const session = await auth.api.getSession({
 	headers: Astro.request.headers,
 });

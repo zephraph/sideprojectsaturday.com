@@ -22,6 +22,20 @@ export const queueUserEvent = (env: Env, message: UserEventMessage) => {
 	return env.USER_EVENT_QUEUE.send(message);
 };
 
+// KV adapter for better-auth secondary storage
+const createKVAdapter = (kv: KVNamespace) => ({
+	async get(key: string): Promise<string | null> {
+		return await kv.get(key);
+	},
+	async set(key: string, value: string, ttl?: number): Promise<void> {
+		const options = ttl ? { expirationTtl: ttl } : undefined;
+		await kv.put(key, value, options);
+	},
+	async delete(key: string): Promise<void> {
+		await kv.delete(key);
+	},
+});
+
 // Function to create auth with environment context
 export const createAuth = (env?: Env) =>
 	betterAuth({
@@ -30,6 +44,7 @@ export const createAuth = (env?: Env) =>
 		database: prismaAdapter(db, {
 			provider: "sqlite",
 		}),
+		secondaryStorage: env?.KV ? createKVAdapter(env.KV) : undefined,
 		plugins: [
 			admin(),
 			magicLink({

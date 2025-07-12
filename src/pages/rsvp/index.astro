@@ -4,12 +4,13 @@ import RsvpAlreadyConfirmed from "@/components/rsvp/RsvpAlreadyConfirmed.astro";
 import RsvpError from "@/components/rsvp/RsvpError.astro";
 import RsvpSuccess from "@/components/rsvp/RsvpSuccess.astro";
 import Layout from "@/layouts/Layout.astro";
-import { auth, db } from "@/lib/auth";
+import { createAuth, db } from "@/lib/auth";
 import { formatEventDate } from "@/lib/date-utils";
 
 type RsvpState = "already-rsvped" | "success" | "error" | "no-event";
 
 // Check if user is authenticated
+const auth = createAuth(Astro.locals.runtime.env);
 const session = await auth.api.getSession({
 	headers: Astro.request.headers,
 });

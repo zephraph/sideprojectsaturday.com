@@ -1,6 +1,6 @@
 import { defineAction } from "astro:actions";
 import { z } from "astro:schema";
-import { auth, db } from "../lib/auth";
+import { createAuth, db } from "../lib/auth";
 
 export const server = {
 	sendMagicLink: defineAction({
@@ -10,6 +10,7 @@ export const server = {
 		}),
 		handler: async (input, context) => {
 			try {
+				const auth = createAuth(context.locals.runtime.env);
 				// Use Better Auth to send magic link
 				await auth.api.signInMagicLink({
 					body: {
@@ -36,6 +37,7 @@ export const server = {
 		input: z.object({}),
 		handler: async (_input, context) => {
 			try {
+				const auth = createAuth(context.locals.runtime.env);
 				await auth.api.signOut({
 					headers: context.request.headers,
 				});
@@ -58,6 +60,7 @@ export const server = {
 		}),
 		handler: async (input, context) => {
 			try {
+				const auth = createAuth(context.locals.runtime.env);
 				// Get current user session
 				const session = await auth.api.getSession({
 					headers: context.request.headers,
@@ -99,6 +102,7 @@ export const server = {
 		}),
 		handler: async (input, context) => {
 			try {
+				const auth = createAuth(context.locals.runtime.env);
 				// Get current user session
 				const session = await auth.api.getSession({
 					headers: context.request.headers,

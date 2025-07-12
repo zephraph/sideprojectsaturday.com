@@ -1,13 +1,13 @@
 import type { APIRoute } from "astro";
 import { z } from "zod/v4";
-import { auth } from "@/lib/auth";
+import { createAuth } from "@/lib/auth";
 
 const MagicLinkRequestSchema = z.object({
 	email: z.email("Invalid email address"),
 	callbackURL: z.enum(["/buzz", "/rsvp", "/rsvp/cancel"]).optional(),
 });
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
 	try {
 		const body = await request.json();
 
@@ -21,6 +21,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 		const { email, callbackURL } = result.data;
 
+		const auth = createAuth(locals.runtime.env);
 		// Send magic link using better-auth
 		await auth.api.signInMagicLink({
 			body: {
