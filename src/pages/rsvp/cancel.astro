@@ -3,11 +3,12 @@ import CancelError from "@/components/rsvp/CancelError.astro";
 import CancelSuccess from "@/components/rsvp/CancelSuccess.astro";
 import NoRsvpToCancel from "@/components/rsvp/NoRsvpToCancel.astro";
 import Layout from "@/layouts/Layout.astro";
-import { auth, db } from "@/lib/auth";
+import { createAuth, db } from "@/lib/auth";
 
 type CancelState = "success" | "error" | "no-rsvp";
 
 // Check if user is authenticated
+const auth = createAuth(Astro.locals.runtime.env);
 const session = await auth.api.getSession({
 	headers: Astro.request.headers,
 });

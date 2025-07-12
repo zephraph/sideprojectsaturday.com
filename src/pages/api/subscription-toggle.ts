@@ -1,9 +1,10 @@
 import type { APIRoute } from "astro";
-import { auth, db } from "@/lib/auth";
+import { createAuth, db } from "@/lib/auth";
 import resend from "@/lib/resend";
 
 export const POST: APIRoute = async ({ request, locals }) => {
 	try {
+		const auth = createAuth(locals.runtime.env);
 		// Get current user session
 		const session = await auth.api.getSession({
 			headers: request.headers,
