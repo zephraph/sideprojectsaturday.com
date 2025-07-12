@@ -197,3 +197,81 @@ The `EventManagementWorkflow` in `src/services/event-management-workflow.ts` han
 - User management with role updates
 - Bulk user import functionality
 - Real-time RSVP tracking
+
+## Backlog.md CLI Tool Usage Instructions
+
+- Tasks live under **`backlog/tasks/`** (drafts under **`backlog/drafts/`**).
+- Every implementation decision starts with reading the corresponding Markdown task file.
+- Project documentation is in **`backlog/docs/`**.
+- Project decisions are in **`backlog/decisions/`**.
+
+### Task File Structure
+
+```markdown
+# task‑42 - Add GraphQL resolver
+
+## Description (the why)
+
+Short, imperative explanation of the goal of the task and why it is needed.
+
+## Acceptance Criteria (the what)
+
+- [ ] Resolver returns correct data for happy path
+- [ ] Error response matches REST
+- [ ] P95 latency ≤ 50 ms under 100 RPS
+
+## Implementation Plan (the how)
+
+1. Research existing GraphQL resolver patterns
+2. Implement basic resolver with error handling
+3. Add performance monitoring
+4. Write unit and integration tests
+5. Benchmark performance under load
+
+## Implementation Notes (only added after working on the task)
+
+- Approach taken
+- Features implemented or modified
+- Technical decisions and trade-offs
+- Modified or added files
+```
+
+### Task Creation and Management
+
+1. Create tasks with clear, atomic goals
+2. Define acceptance criteria as testable outcomes
+3. Add implementation plan before starting work
+4. Document implementation notes after completing the task
+
+### Workflow Commands
+
+```bash
+# List tasks
+backlog task list -s "To Do" --plain
+
+# View task details
+backlog task 42 --plain
+
+# Start work
+backlog task edit 42 -a @{yourself} -s "In Progress"
+
+# Add implementation plan
+backlog task edit 42 --plan "Steps to complete task"
+
+# Create subtasks
+backlog task create "Subtask" -p 42 -a @{yourself}
+
+# Mark as done
+backlog task edit 42 -s Done --notes "Completed task details"
+```
+
+### Definition of Done
+
+A task is complete only when:
+1. All acceptance criteria are checked
+2. Implementation plan followed or deviations documented
+3. Automated tests added
+4. Linting and formatting pass
+5. Documentation updated
+6. Self-review completed
+7. No regressions in performance, security, or licensing
