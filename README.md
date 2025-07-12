@@ -66,7 +66,7 @@ ADMIN_EMAIL=admin@example.com               # for admin notifications
 
 | Command | Description |
 |---------|-------------|
-| `mise migrate:create name="your_migration"` | Create new database migration |
+| `mise migrate:create your_migration` | Create new database migration |
 | `mise migrate:dev` | Apply migrations to local database |
 | `mise migrate:prod` | Apply migrations to production database |
 | `mise gen:better-auth` | Generate better-auth types |
@@ -117,7 +117,7 @@ ADMIN_EMAIL=admin@example.com               # for admin notifications
 ### Database Changes
 
 1. Update `prisma/schema.prisma`
-2. Create migration: `mise migrate:create name="describe_your_change"`
+2. Create migration: `mise migrate:create describe_your_change`
 3. Apply locally: `mise migrate:dev`
 4. Test your changes
 5. Commit both schema and migration files
