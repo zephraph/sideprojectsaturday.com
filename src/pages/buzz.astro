@@ -54,7 +54,6 @@ import Layout from "@/layouts/Layout.astro";
 					<p class="text-gray-600 mb-4">
 						The door can only be opened during Side Project Saturday events.
 					</p>
-					<p class="text-sm text-gray-500">Events run Saturdays 9 AM - 12 PM</p>
 				</div>
 
 				<!-- Error State -->
@@ -174,6 +173,8 @@ import Layout from "@/layouts/Layout.astro";
 </style>
 
 <script>
+	import { isWithinEventHours } from "@/lib/date-utils";
+
 	// State elements
 	const loadingState = document.getElementById("loading-state");
 	const successState = document.getElementById("success-state");
@@ -192,6 +193,13 @@ import Layout from "@/layouts/Layout.astro";
 
 	// Automatically call the buzz API on page load
 	async function buzzDoor() {
+		// First check if we're within event hours
+		if (!isWithinEventHours()) {
+			showState(lockedState);
+			startLockAnimation();
+			return;
+		}
+
 		try {
 			const response = await fetch("/api/buzz", {
 				method: "POST",

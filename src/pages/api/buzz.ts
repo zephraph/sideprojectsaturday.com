@@ -1,38 +1,22 @@
 import { createHmac } from "node:crypto";
 import type { APIRoute } from "astro";
-import type { WorkerEnv } from "@/env";
 import { db } from "@/lib/auth";
+import { isWithinEventHours } from "@/lib/date-utils";
 
 export const POST: APIRoute = async ({ locals }) => {
 	try {
 		const runtime = locals.runtime;
-		if (!runtime?.env) {
-			return new Response("Environment not available", { status: 500 });
-		}
 
 		// Initialize database
 		db(runtime.env);
 
-		// Check if there's an active event
-		const today = new Date();
-		const todayStr = today.toISOString().split("T")[0];
-
-		const activeEvent = await db.event.findFirst({
-			where: {
-				eventDate: {
-					gte: new Date(todayStr),
-					lt: new Date(new Date(todayStr).getTime() + 24 * 60 * 60 * 1000),
-				},
-				status: "inprogress",
-			},
-		});
-
-		if (!activeEvent) {
+		// Check if it's Saturday between 9am and 12pm EST/EDT
+		if (!isWithinEventHours()) {
 			return new Response(
 				JSON.stringify({
 					success: false,
 					message:
-						"No active event found. The door can only be opened during events.",
+						"The door can only be opened on Saturdays from 9 AM to 12 PM EST.",
 				}),
 				{
 					status: 403,
@@ -43,8 +27,7 @@ export const POST: APIRoute = async ({ locals }) => {
 
 		// Make SwitchBot request to open door
 		const result = await switchbotRequest(
-			runtime.env,
-			`v1.1/devices/${runtime.env.SWITCHBOT_DEVICE_ID}/commands`,
+			`v1.1/devices/${process.env.SWITCHBOT_DEVICE_ID}/commands`,
 			{
 				method: "POST",
 				body: JSON.stringify({
@@ -93,13 +76,13 @@ export const POST: APIRoute = async ({ locals }) => {
 	}
 };
 
-async function switchbotRequest(
-	env: WorkerEnv,
-	path: string,
-	args: RequestInit,
-) {
-	const token = env.SWITCHBOT_TOKEN;
-	const secret = env.SWITCHBOT_KEY;
+async function switchbotRequest(path: string, args: RequestInit) {
+	const token = process.env.SWITCHBOT_TOKEN;
+	const secret = process.env.SWITCHBOT_KEY;
+
+	if (!token || !secret) {
+		throw new Error("SwitchBot credentials not configured");
+	}
 
 	const t = Date.now();
 	const nonce = Math.floor(Math.random() * 1000000);

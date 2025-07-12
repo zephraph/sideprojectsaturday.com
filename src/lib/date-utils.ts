@@ -117,3 +117,18 @@ export function getDayRange(date: Date): { start: Date; end: Date } {
 
 	return { start, end };
 }
+
+/**
+ * Check if current time is within Saturday event hours (9am-12pm EST/EDT)
+ */
+export function isWithinEventHours(date: Date = new Date()): boolean {
+	const nyTime = new Date(
+		date.toLocaleString("en-US", { timeZone: "America/New_York" }),
+	);
+	const day = nyTime.getDay();
+	const hours = nyTime.getHours();
+
+	// Saturday is day 6
+	// Check if it's Saturday and between 9am-12pm EST/EDT
+	return day === 6 && hours >= 9 && hours < 12;
+}
