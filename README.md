@@ -1,6 +1,6 @@
 # Side Project Saturday
 
-A web application for managing weekly side project meetups in Brooklyn, NY. Built with Astro SSR on Cloudflare Workers edge runtime.
+The site for Side Project Saturday, a weekly meetup for builders in Brooklyn.
 
 ## About
 
