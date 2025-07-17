@@ -4,6 +4,7 @@ import {
 	getDayRange,
 	getNextSaturdayDate,
 	getNextSaturdayFormatted,
+	isWithinEventHours,
 } from "@/lib/date-utils";
 import AuthenticatedUserSection from "../components/AuthenticatedUserSection.astro";
 import BackgroundDecorations from "../components/BackgroundDecorations.astro";
@@ -52,6 +53,7 @@ const { start, end } = getDayRange(nextSaturdayDate);
 
 // Check if there's a scheduled event for next Saturday
 let hasEvent = false;
+let hasActiveEvent = false;
 try {
 	db(Astro.locals.runtime.env);
 	const event = await db.event.findFirst({
@@ -64,6 +66,14 @@ try {
 		},
 	});
 	hasEvent = !!event;
+
+	// Check if there's an active event in progress
+	const activeEvent = await db.event.findFirst({
+		where: {
+			status: "inprogress",
+		},
+	});
+	hasActiveEvent = !!activeEvent;
 } catch (error) {
 	console.error("Error checking for event:", error);
 }
@@ -131,6 +141,7 @@ if (signOutResult && !signOutResult.error) {
 					<AuthenticatedUserSection
 						user={userWithPreferences}
 						hasEvent={hasEvent}
+						hasActiveEvent={hasActiveEvent}
 					/>
 				) : magicLinkResult && !magicLinkResult.error ? (
 					<MagicLinkSentSection message={magicLinkResult.data.message} />
