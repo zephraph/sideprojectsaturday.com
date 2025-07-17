@@ -1,5 +1,6 @@
 ---
 import { actions } from "astro:actions";
+import { isWithinEventHours } from "@/lib/date-utils";
 
 interface Props {
 	user: {
@@ -9,9 +10,16 @@ interface Props {
 		rsvped?: boolean;
 	};
 	hasEvent?: boolean;
+	hasActiveEvent?: boolean;
 }
 
-const { user, hasEvent = true } = Astro.props;
+const { user, hasEvent = true, hasActiveEvent = false } = Astro.props;
+
+// Check if buzzer should be shown
+const showBuzzer = hasActiveEvent && isWithinEventHours();
+
+// Get buzzer action result
+const buzzerResult = Astro.getActionResult(actions.openDoor);
 ---
 
 <div>
@@ -115,6 +123,36 @@ const { user, hasEvent = true } = Astro.props;
 				</form>
 			</div>
 		</div>
+
+		{
+			showBuzzer && (
+				<div class="bg-rose-50 border border-rose-200 rounded-md p-3">
+					<div class="text-sm font-medium text-rose-800 mb-2">
+						Building Access
+					</div>
+					{buzzerResult && !buzzerResult.error ? (
+						<div class="text-green-700 text-sm mb-2">
+							✅ {buzzerResult.data.message}
+						</div>
+					) : buzzerResult?.error ? (
+						<div class="text-red-700 text-sm mb-2">
+							❌ {buzzerResult.error.message}
+						</div>
+					) : null}
+					<form method="POST" action={actions.openDoor}>
+						<button
+							type="submit"
+							class="w-full bg-rose-600 text-white font-medium py-2 px-4 rounded-md hover:bg-rose-700 transition-all"
+						>
+							🚪 Open Building Door
+						</button>
+					</form>
+					<div class="text-xs text-rose-600 mt-2">
+						Press to unlock the building entrance
+					</div>
+				</div>
+			)
+		}
 
 		<form method="POST" action={actions.signOut}>
 			<button
