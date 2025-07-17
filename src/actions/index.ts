@@ -213,7 +213,7 @@ export const server = {
 					},
 				);
 
-				const result = await response.json();
+				const result = await response.json() as { statusCode: number };
 
 				if (result.statusCode === 100) {
 					return {
