@@ -1,6 +1,5 @@
 [tools]
 node = "22.16.0"
-"npm:backlog.md" = "1.2.3"
 pnpm = "10.12.1"
 
 [settings]
