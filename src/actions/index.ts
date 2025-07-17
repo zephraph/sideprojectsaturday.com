@@ -1,6 +1,6 @@
-import { createHmac } from "node:crypto";
 import { defineAction } from "astro:actions";
 import { z } from "astro:schema";
+import { createHmac } from "node:crypto";
 import { createAuth, db } from "../lib/auth";
 import { isWithinEventHours } from "../lib/date-utils";
 
@@ -213,7 +213,7 @@ export const server = {
 					},
 				);
 
-				const result = await response.json() as { statusCode: number };
+				const result = (await response.json()) as { statusCode: number };
 
 				if (result.statusCode === 100) {
 					return {

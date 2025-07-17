@@ -66,7 +66,7 @@ try {
 		},
 	});
 	hasEvent = !!event;
-	
+
 	// Check if there's an active event in progress
 	const activeEvent = await db.event.findFirst({
 		where: {
