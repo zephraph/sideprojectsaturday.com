@@ -12,8 +12,8 @@ Add a buzzer button to the homepage for authenticated users during active events
 - [x] Check for active events during event hours in the homepage
 - [x] Add buzzer button form to AuthenticatedUserSection component when conditions are met
 - [x] Create an Astro Action to handle the buzzer logic server-side
-- [ ] Display success/error states using form action results
-- [ ] Style the button and states to match existing UI patterns
+- [x] Display success/error states using form action results
+- [x] Style the button and states to match existing UI patterns
 
 ## Notes
 [Implementation notes]
