@@ -1,5 +1,5 @@
 # Add buzzer button to logged in view for active events
-**Status:** AwaitingCommit
+**Status:** Done
 **Agent PID:** 79010
 
 ## Original Todo
