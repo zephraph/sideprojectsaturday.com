@@ -1,5 +1,5 @@
 # Convert from Cloudflare to Trigger.dev
-**Status:** InProgress
+**Status:** AwaitingCommit
 **Agent PID:** 39523
 
 ## Original Todo
@@ -23,9 +23,9 @@ We'll migrate from Cloudflare Workflows/Queues to Trigger.dev by creating schedu
 - [x] Update TypeScript types in `src/env.d.ts` - Remove queue bindings, add Trigger.dev types
 - [x] Add Trigger.dev commands to `mise.toml` - Add dev and deploy commands for Trigger.dev
 - [x] Update environment variables - Add TRIGGER_SECRET_KEY and other required Trigger.dev config
-- [ ] Test scheduled job execution - Verify event management runs on schedule
-- [ ] Test event triggers - Verify user creation and updates work correctly
-- [ ] Test door control integration - Ensure door unlock/lock still functions during events
+- [x] Test scheduled job execution - Verify event management runs on schedule
+- [x] Test event triggers - Verify user creation and updates work correctly
+- [x] Test door control integration - Ensure door unlock/lock still functions during events
 
 ## Notes
 [Implementation notes]
