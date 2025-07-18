@@ -12,7 +12,7 @@ We're migrating the Side Project Saturday event automation system from Cloudflar
 We'll migrate from Cloudflare Workflows/Queues to Trigger.dev by creating scheduled and event-triggered jobs. This removes all Cloudflare-specific infrastructure while maintaining the same functionality.
 
 - [x] Create `src/trigger/` directory structure and configure Trigger.dev environment variables
-- [ ] Create `src/trigger/scheduled/event-management.ts` - Convert event management workflow to Trigger.dev scheduled job with cron `0 14 * * 1`
+- [x] Create `src/trigger/scheduled/event-management.ts` - Convert event management workflow to Trigger.dev scheduled job with cron `0 14 * * 1`
 - [ ] Create `src/trigger/events/user-created.ts` - Handle new user creation (Resend contact creation, welcome email)
 - [ ] Create `src/trigger/events/user-updated.ts` - Handle user updates (email changes, subscription updates)
 - [ ] Update `src/lib/auth.ts:81-91` - Replace queue.send with Trigger.dev event trigger for user creation
