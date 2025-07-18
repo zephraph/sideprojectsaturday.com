@@ -12,7 +12,7 @@ export const userCreatedJob = task({
 	id: "user-created",
 	run: async (payload: UserCreatedPayload, { ctx }) => {
 		const { email, name, sendWelcomeEmail } = payload;
-		
+
 		// Get environment variables
 		const RESEND_API_KEY = process.env.RESEND_API_KEY;
 		const RESEND_AUDIENCE_ID = process.env.RESEND_AUDIENCE_ID;
@@ -48,11 +48,11 @@ export const userCreatedJob = task({
 				console.log(`Welcome email sent to ${email}`);
 			}
 
-			return { 
-				success: true, 
-				email, 
+			return {
+				success: true,
+				email,
 				addedToAudience: true,
-				welcomeEmailSent: sendWelcomeEmail || false 
+				welcomeEmailSent: sendWelcomeEmail || false,
 			};
 		} catch (error) {
 			console.error("Failed to process user creation:", error);

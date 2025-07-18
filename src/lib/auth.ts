@@ -5,7 +5,8 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { admin, magicLink } from "better-auth/plugins";
 import MagicLinkEmail from "@/emails/MagicLinkEmail";
 import VerificationEmail from "@/emails/VerificationEmail";
-import type { UserEventMessage } from "@/services/user-event-consumer";
+import { userCreatedJob } from "@/trigger/events/user-created";
+import { userUpdatedJob } from "@/trigger/events/user-updated";
 import resend from "./resend";
 import { lazyInvokable } from "./utils";
 
@@ -17,9 +18,22 @@ export const db = lazyInvokable(
 		}),
 );
 
-// Helper function to queue user events
-export const queueUserEvent = (env: Env, message: UserEventMessage) => {
-	return env.USER_EVENT_QUEUE.send(message);
+// Helper function to trigger user events
+export const triggerUserEvent = async (payload: { type: "user_create" | "user_update"; email: string; name?: string; sendWelcomeEmail?: boolean; newEmail?: string; subscribed?: boolean }) => {
+	if (payload.type === "user_create") {
+		return await userCreatedJob.trigger({
+			email: payload.email,
+			name: payload.name,
+			sendWelcomeEmail: payload.sendWelcomeEmail,
+		});
+	} else if (payload.type === "user_update") {
+		return await userUpdatedJob.trigger({
+			email: payload.email,
+			name: payload.name,
+			newEmail: payload.newEmail,
+			subscribed: payload.subscribed,
+		});
+	}
 };
 
 // KV adapter for better-auth secondary storage
@@ -75,19 +89,17 @@ export const createAuth = (env?: Env) =>
 			},
 			sendOnSignUp: true,
 			async onEmailVerification(user, _request) {
-				// Queue the contact creation and welcome email instead of doing it directly
-				if (env) {
-					try {
-						await queueUserEvent(env, {
-							type: "user_create",
-							email: user.email,
-							name: user.name || undefined,
-							sendWelcomeEmail: true,
-						});
-					} catch (error) {
-						// Log error but don't fail the verification process
-						console.error("Failed to queue user event:", error);
-					}
+				// Trigger user creation event instead of using queue
+				try {
+					await triggerUserEvent({
+						type: "user_create",
+						email: user.email,
+						name: user.name || undefined,
+						sendWelcomeEmail: true,
+					});
+				} catch (error) {
+					// Log error but don't fail the verification process
+					console.error("Failed to trigger user event:", error);
 				}
 			},
 			autoSignInAfterVerification: true,

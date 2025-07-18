@@ -12,7 +12,7 @@ export const userUpdatedJob = task({
 	id: "user-updated",
 	run: async (payload: UserUpdatedPayload, { ctx }) => {
 		const { email, newEmail, subscribed } = payload;
-		
+
 		// Get environment variables
 		const RESEND_API_KEY = process.env.RESEND_API_KEY;
 		const RESEND_AUDIENCE_ID = process.env.RESEND_AUDIENCE_ID;
@@ -37,7 +37,10 @@ export const userUpdatedJob = task({
 					await resend.contacts.create({
 						email: newEmail,
 						audienceId: RESEND_AUDIENCE_ID,
-						unsubscribed: subscribed !== undefined ? !subscribed : existingContact.unsubscribed,
+						unsubscribed:
+							subscribed !== undefined
+								? !subscribed
+								: existingContact.unsubscribed,
 					});
 
 					// Delete old contact
@@ -46,15 +49,20 @@ export const userUpdatedJob = task({
 						audienceId: RESEND_AUDIENCE_ID,
 					});
 
-					console.log(`Successfully updated contact from ${email} to ${newEmail}`);
-					return { 
-						success: true, 
-						oldEmail: email, 
+					console.log(
+						`Successfully updated contact from ${email} to ${newEmail}`,
+					);
+					return {
+						success: true,
+						oldEmail: email,
 						newEmail,
-						action: "email_changed" 
+						action: "email_changed",
 					};
 				} catch (error) {
-					console.error(`Failed to update contact email from ${email} to ${newEmail}:`, error);
+					console.error(
+						`Failed to update contact email from ${email} to ${newEmail}:`,
+						error,
+					);
 					throw error;
 				}
 			} else if (subscribed !== undefined) {
@@ -66,21 +74,23 @@ export const userUpdatedJob = task({
 				};
 
 				await resend.contacts.update(updateData);
-				console.log(`Successfully updated subscription status for ${email} to ${subscribed ? "subscribed" : "unsubscribed"}`);
-				
-				return { 
-					success: true, 
-					email, 
+				console.log(
+					`Successfully updated subscription status for ${email} to ${subscribed ? "subscribed" : "unsubscribed"}`,
+				);
+
+				return {
+					success: true,
+					email,
 					subscribed,
-					action: "subscription_updated" 
+					action: "subscription_updated",
 				};
 			} else {
 				// Nothing to update
 				console.log(`No updates needed for contact ${email}`);
-				return { 
-					success: true, 
-					email, 
-					action: "no_changes" 
+				return {
+					success: true,
+					email,
+					action: "no_changes",
 				};
 			}
 		} catch (error) {
