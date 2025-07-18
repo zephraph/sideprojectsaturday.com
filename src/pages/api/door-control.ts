@@ -8,7 +8,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 		if (!action || (action !== "unlock" && action !== "lock")) {
 			return new Response(
 				JSON.stringify({ error: "Invalid action. Must be 'unlock' or 'lock'" }),
-				{ status: 400, headers: { "Content-Type": "application/json" } }
+				{ status: 400, headers: { "Content-Type": "application/json" } },
 			);
 		}
 
@@ -17,18 +17,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
 		await locals.runtime.env.KV.put("sps:door", doorStatus);
 
 		return new Response(
-			JSON.stringify({ 
-				success: true, 
+			JSON.stringify({
+				success: true,
 				action: action,
-				doorStatus: doorStatus 
+				doorStatus: doorStatus,
 			}),
-			{ status: 200, headers: { "Content-Type": "application/json" } }
+			{ status: 200, headers: { "Content-Type": "application/json" } },
 		);
 	} catch (error) {
 		console.error("Door control error:", error);
-		return new Response(
-			JSON.stringify({ error: "Failed to control door" }),
-			{ status: 500, headers: { "Content-Type": "application/json" } }
-		);
+		return new Response(JSON.stringify({ error: "Failed to control door" }), {
+			status: 500,
+			headers: { "Content-Type": "application/json" },
+		});
 	}
 };

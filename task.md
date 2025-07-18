@@ -18,7 +18,7 @@ We'll migrate from Cloudflare Workflows/Queues to Trigger.dev by creating schedu
 - [x] Update `src/lib/auth.ts:81-91` - Replace queue.send with Trigger.dev event trigger for user creation
 - [x] Update `src/pages/api/admin/import-users.ts:137-145` - Replace queue.send with Trigger.dev event triggers for bulk import
 - [x] Create API endpoint for door control - Move KV door operations to an API endpoint that Trigger jobs can call
-- [ ] Remove Cloudflare infrastructure from `alchemy.run.ts` - Delete queue resource, both workers, and related bindings
+- [x] Remove Cloudflare infrastructure from `alchemy.run.ts` - Delete queue resource, both workers, and related bindings
 - [ ] Remove obsolete files: `src/services/event-management.tsx` and `src/services/user-event-consumer.ts`
 - [ ] Update TypeScript types in `src/env.d.ts` - Remove queue bindings, add Trigger.dev types
 - [ ] Add Trigger.dev commands to `mise.toml` - Add dev and deploy commands for Trigger.dev
