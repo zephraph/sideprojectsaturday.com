@@ -1,0 +1,15 @@
+pre-commit:
+  jobs:
+    - name: format astro files
+      glob:
+        - "**/*.astro"
+      run: prettier --write {staged_files}
+
+    - name: format code
+      glob:
+        - "**/*.astro"
+        - "**/*.ts"
+        - "**/*.tsx"
+        - "**/*.md"
+        - "**/*.json"
+      run: biome check --write --unsafe {staged_files}
