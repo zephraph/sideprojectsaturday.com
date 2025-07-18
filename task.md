@@ -22,7 +22,7 @@ We'll migrate from Cloudflare Workflows/Queues to Trigger.dev by creating schedu
 - [x] Remove obsolete files: `src/services/event-management.tsx` and `src/services/user-event-consumer.ts`
 - [x] Update TypeScript types in `src/env.d.ts` - Remove queue bindings, add Trigger.dev types
 - [x] Add Trigger.dev commands to `mise.toml` - Add dev and deploy commands for Trigger.dev
-- [ ] Update environment variables - Add TRIGGER_SECRET_KEY and other required Trigger.dev config
+- [x] Update environment variables - Add TRIGGER_SECRET_KEY and other required Trigger.dev config
 - [ ] Test scheduled job execution - Verify event management runs on schedule
 - [ ] Test event triggers - Verify user creation and updates work correctly
 - [ ] Test door control integration - Ensure door unlock/lock still functions during events

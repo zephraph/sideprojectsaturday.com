@@ -18,6 +18,12 @@ mise fmt                   # Format code with Biome
 # Email Development
 mise emails                # Preview email templates with react-email
 
+# Trigger.dev Development
+mise trigger:dev           # Run Trigger.dev development server
+mise trigger:deploy        # Deploy Trigger.dev tasks to production
+mise trigger:login         # Login to Trigger.dev
+mise trigger:init          # Initialize Trigger.dev project
+
 # Database
 mise migrate:create migration_name  # Create new migration
 mise migrate:dev           # Apply migrations locally
@@ -41,7 +47,7 @@ mise open:deployment       # Open Cloudflare dashboard
 - **Email**: Resend for sending emails
 - **Email Templates**: React Email with custom branded templates
 - **React**: v19 (using latest React features)
-- **Automation**: Cloudflare Workflows & Queues for event management
+- **Automation**: Trigger.dev for scheduled jobs and event processing
 - **IoT**: SwitchBot API for physical door control
 - **Deployment**: Alchemy deployment system
 - **Tooling**: mise for task management, Biome for formatting, TypeScript
@@ -51,9 +57,9 @@ mise open:deployment       # Open Cloudflare dashboard
 1. **Edge-First Architecture**: Everything runs on Cloudflare Workers edge runtime. Database access uses Prisma's D1 adapter for edge compatibility.
 
 2. **Event-Driven Architecture**:
-   - Cloudflare Workflows manage the event lifecycle automatically
-   - Cloudflare Queues handle async user event processing
-   - Cron jobs trigger weekly event management tasks
+   - Trigger.dev scheduled jobs manage the event lifecycle automatically
+   - Trigger.dev event jobs handle async user event processing
+   - Cron-based scheduled jobs trigger weekly event management tasks
 
 3. **Authentication Flow**:
    - Magic link only (no passwords)
@@ -92,6 +98,8 @@ Database migrations are managed by Prisma but require manual SQL application to 
    - `SWITCHBOT_TOKEN`, `SWITCHBOT_KEY`, `SWITCHBOT_DEVICE_ID`: Door control
    - `ADMIN_EMAIL`: Admin notifications
    - `DB`: D1 database binding
+   - `TRIGGER_SECRET_KEY`: Trigger.dev API key
+   - `DATABASE_URL`: Database connection string for Trigger.dev jobs
 2. **Code Style**: Biome enforces tabs, double quotes, and consistent formatting
 3. **No Test Framework**: Currently no automated testing setup
 
@@ -170,13 +178,13 @@ The app deploys to Cloudflare using Alchemy deployment system configured in `alc
 
 ## Feature-Specific Implementation Details
 
-### Event Management Workflow
-The `EventManagementWorkflow` in `src/services/event-management-workflow.ts` handles:
-1. **Monday**: Creates new event for upcoming Saturday
-2. **Wednesday**: Sends invitations via Resend broadcast
-3. **Saturday 7AM**: Sends "event today" reminders
-4. **Saturday 9AM**: Marks event as in-progress, unlocks door
-5. **Saturday 12PM**: Completes event, locks door, resets RSVPs
+### Event Management Jobs
+The Trigger.dev jobs in `src/trigger/scheduled/event-management.ts` handle:
+1. **Monday**: Creates new event for upcoming Saturday (main scheduled job)
+2. **Wednesday**: Sends invitations via Resend broadcast (scheduled sub-job)
+3. **Saturday 7AM**: Sends "event today" reminders (scheduled sub-job)
+4. **Saturday 9AM**: Marks event as in-progress, unlocks door (scheduled sub-job)
+5. **Saturday 12PM**: Completes event, locks door, resets RSVPs (scheduled sub-job)
 
 ### Door Buzzer Integration
 - Endpoint: `/api/buzz`
@@ -185,11 +193,11 @@ The `EventManagementWorkflow` in `src/services/event-management-workflow.ts` han
 - Uses SwitchBot API to remotely unlock building door
 - 30-second unlock duration with visual countdown
 
-### User Event Queue
-- Queue name: `sps-user-event`
-- Handles async processing of user updates
+### User Event Jobs
+- **User Created Job** (`src/trigger/events/user-created.ts`): Handles new user creation
+- **User Updated Job** (`src/trigger/events/user-updated.ts`): Handles user updates
 - Syncs users with Resend audience for email broadcasts
-- Processes subscription status changes
+- Processes subscription status changes and email updates
 
 ### Admin Dashboard Features
 - Event scheduling, rescheduling, and cancellation
