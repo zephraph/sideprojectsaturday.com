@@ -13,8 +13,8 @@ We'll migrate from Cloudflare Workflows/Queues to Trigger.dev by creating schedu
 
 - [x] Create `src/trigger/` directory structure and configure Trigger.dev environment variables
 - [x] Create `src/trigger/scheduled/event-management.ts` - Convert event management workflow to Trigger.dev scheduled job with cron `0 14 * * 1`
-- [ ] Create `src/trigger/events/user-created.ts` - Handle new user creation (Resend contact creation, welcome email)
-- [ ] Create `src/trigger/events/user-updated.ts` - Handle user updates (email changes, subscription updates)
+- [x] Create `src/trigger/events/user-created.ts` - Handle new user creation (Resend contact creation, welcome email)
+- [x] Create `src/trigger/events/user-updated.ts` - Handle user updates (email changes, subscription updates)
 - [ ] Update `src/lib/auth.ts:81-91` - Replace queue.send with Trigger.dev event trigger for user creation
 - [ ] Update `src/pages/api/admin/import-users.ts:137-145` - Replace queue.send with Trigger.dev event triggers for bulk import
 - [ ] Create API endpoint for door control - Move KV door operations to an API endpoint that Trigger jobs can call

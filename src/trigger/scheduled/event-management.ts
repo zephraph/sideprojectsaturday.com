@@ -1,16 +1,15 @@
-import { schedules } from "@trigger.dev/sdk/v3";
 import { PrismaClient } from "@generated/prisma/client";
-import { PrismaD1 } from "@prisma/adapter-d1";
+import { schedules } from "@trigger.dev/sdk/v3";
 import { Resend } from "resend";
 import EventInviteEmail from "@/emails/EventInviteEmail";
 import EventTodayEmail from "@/emails/EventTodayEmail";
 import {
 	formatEventDate,
-	getNextSaturdayAtNYCTime,
-	getWednesdayBeforeEvent,
-	getSaturdayMorning,
-	getEventStartTime,
 	getEventEndTime,
+	getEventStartTime,
+	getNextSaturdayAtNYCTime,
+	getSaturdayMorning,
+	getWednesdayBeforeEvent,
 } from "@/lib/date-utils";
 
 interface EventManagementPayload {
@@ -33,7 +32,7 @@ export const eventManagementJob = schedules.task({
 	id: "event-management",
 	// Run every Monday at 2 PM UTC (9 AM EST / 10 AM EDT)
 	cron: "0 14 * * 1",
-	run: async (payload, { ctx }) => {
+	run: async (_payload, { ctx }) => {
 		const nextSaturday = getNextSaturdayAtNYCTime(9, 0);
 		const eventDate = nextSaturday.toISOString();
 
@@ -57,21 +56,30 @@ export const eventManagementJob = schedules.task({
 			const wednesdayDelay = getWednesdayBeforeEvent(nextSaturday);
 			const wednesdayDelayMs = wednesdayDelay.getTime() - Date.now();
 			if (wednesdayDelayMs > 0) {
-				await eventInviteJob.trigger({ eventDate }, { delay: wednesdayDelayMs });
+				await eventInviteJob.trigger(
+					{ eventDate },
+					{ delay: wednesdayDelayMs },
+				);
 			}
 
 			// Schedule event today emails for Saturday morning
 			const saturdayMorning = getSaturdayMorning(nextSaturday);
 			const saturdayMorningDelayMs = saturdayMorning.getTime() - Date.now();
 			if (saturdayMorningDelayMs > 0) {
-				await eventTodayJob.trigger({ eventDate }, { delay: saturdayMorningDelayMs });
+				await eventTodayJob.trigger(
+					{ eventDate },
+					{ delay: saturdayMorningDelayMs },
+				);
 			}
 
 			// Schedule event start for 9 AM Saturday
 			const eventStart = getEventStartTime(nextSaturday);
 			const eventStartDelayMs = eventStart.getTime() - Date.now();
 			if (eventStartDelayMs > 0) {
-				await eventStartJob.trigger({ eventDate }, { delay: eventStartDelayMs });
+				await eventStartJob.trigger(
+					{ eventDate },
+					{ delay: eventStartDelayMs },
+				);
 			}
 
 			// Schedule event end for 12 PM Saturday
