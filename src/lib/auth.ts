@@ -19,7 +19,14 @@ export const db = lazyInvokable(
 );
 
 // Helper function to trigger user events
-export const triggerUserEvent = async (payload: { type: "user_create" | "user_update"; email: string; name?: string; sendWelcomeEmail?: boolean; newEmail?: string; subscribed?: boolean }) => {
+export const triggerUserEvent = async (payload: {
+	type: "user_create" | "user_update";
+	email: string;
+	name?: string;
+	sendWelcomeEmail?: boolean;
+	newEmail?: string;
+	subscribed?: boolean;
+}) => {
 	if (payload.type === "user_create") {
 		return await userCreatedJob.trigger({
 			email: payload.email,
