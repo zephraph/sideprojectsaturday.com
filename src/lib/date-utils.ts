@@ -132,3 +132,47 @@ export function isWithinEventHours(date: Date = new Date()): boolean {
 	// Check if it's Saturday and between 9am-12pm EST/EDT
 	return day === 6 && hours >= 9 && hours < 12;
 }
+
+/**
+ * Get the NYC timezone offset in hours (handles DST automatically)
+ */
+export function getNYCTimezoneOffset(): number {
+	const isEST = new Date()
+		.toLocaleString("en-US", {
+			timeZone: "America/New_York",
+			timeZoneName: "short",
+		})
+		.includes("EST");
+	return isEST ? 5 : 4; // EST is UTC-5, EDT is UTC-4
+}
+
+/**
+ * Convert UTC date to NYC time
+ */
+export function convertToNYCTime(date: Date): Date {
+	const offset = getNYCTimezoneOffset();
+	return new Date(date.getTime() - offset * 60 * 60 * 1000);
+}
+
+/**
+ * Get the next Saturday date at a specific NYC time
+ */
+export function getNextSaturdayAtNYCTime(
+	hour: number = 9,
+	minute: number = 0,
+): Date {
+	const now = new Date();
+	const nyTime = convertToNYCTime(now);
+	const dayOfWeek = nyTime.getDay();
+
+	// Calculate days until Saturday (if today is Saturday, get next Saturday)
+	const daysUntilSaturday = dayOfWeek === 6 ? 7 : 6 - dayOfWeek;
+
+	// Create the event date at specified NYC time
+	const nextSaturday = new Date(now);
+	nextSaturday.setUTCDate(now.getUTCDate() + daysUntilSaturday);
+	const offset = getNYCTimezoneOffset();
+	nextSaturday.setUTCHours(hour + offset, minute, 0, 0);
+
+	return nextSaturday;
+}

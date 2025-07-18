@@ -7,6 +7,13 @@ import { Resend } from "resend";
 import EventInviteEmail from "@/emails/EventInviteEmail";
 import EventTodayEmail from "@/emails/EventTodayEmail";
 import type { WorkflowEnv } from "@/env";
+import {
+	formatEventDate,
+	getDelayUntil,
+	getNextSaturdayAtNYCTime,
+	getSaturdayMorning,
+	getWednesdayBeforeEvent,
+} from "@/lib/date-utils";
 
 interface EventWorkflowParams {
 	scheduledDate: string; // ISO date string for the event date
@@ -116,30 +123,19 @@ export class EventManagementWorkflow extends WorkflowEntrypoint<WorkflowEnv> {
 	}
 
 	private getWednesdayDelay(eventDate: Date): number {
-		const now = new Date();
-		// Get the Wednesday before the event (3 days before Saturday)
-		const wednesday = new Date(eventDate);
-		wednesday.setDate(wednesday.getDate() - 3);
-		wednesday.setHours(12, 0, 0, 0); // 12 PM Wednesday
-		return Math.max(0, wednesday.getTime() - now.getTime());
+		const wednesday = getWednesdayBeforeEvent(eventDate);
+		return getDelayUntil(wednesday);
 	}
 
 	private getSaturdayMorningDelay(eventDate: Date): number {
-		const now = new Date();
-		const saturdayMorning = new Date(eventDate);
-		saturdayMorning.setHours(7, 0, 0, 0); // 7 AM Saturday
-		return Math.max(0, saturdayMorning.getTime() - now.getTime());
+		const saturdayMorning = getSaturdayMorning(eventDate);
+		return getDelayUntil(saturdayMorning);
 	}
 
 	private async sendEventInviteBroadcast(eventDate: Date): Promise<void> {
 		const resend = new Resend(this.env.RESEND_API_KEY);
 
-		const eventDateStr = eventDate.toLocaleDateString("en-US", {
-			weekday: "long",
-			year: "numeric",
-			month: "long",
-			day: "numeric",
-		});
+		const eventDateStr = formatEventDate(eventDate);
 
 		await resend.broadcasts.create({
 			audienceId: this.env.RESEND_AUDIENCE_ID,
@@ -187,30 +183,8 @@ export class EventManagementWorkflow extends WorkflowEntrypoint<WorkflowEnv> {
 
 export default {
 	scheduled(_: ScheduledController, env: WorkflowEnv, _ctx: ExecutionContext) {
-		// Get current UTC time
-		const now = new Date();
-
-		// Calculate offset for NYC timezone (this handles DST automatically)
-		const nyOffset = new Date()
-			.toLocaleString("en-US", {
-				timeZone: "America/New_York",
-				timeZoneName: "short",
-			})
-			.includes("EST")
-			? 5
-			: 4; // EST is UTC-5, EDT is UTC-4
-
-		// Adjust to NYC time
-		const nyTime = new Date(now.getTime() - nyOffset * 60 * 60 * 1000);
-		const dayOfWeek = nyTime.getDay();
-
-		// Calculate days until Saturday (if today is Saturday, get next Saturday)
-		const daysUntilSaturday = dayOfWeek === 6 ? 7 : 6 - dayOfWeek;
-
-		// Create the event date at 9 AM EST/EDT on Saturday
-		const nextSaturday = new Date(now);
-		nextSaturday.setUTCDate(now.getUTCDate() + daysUntilSaturday);
-		nextSaturday.setUTCHours(9 + nyOffset, 0, 0, 0); // 9 AM NYC = (9 + offset) UTC
+		// Get the next Saturday at 9 AM NYC time
+		const nextSaturday = getNextSaturdayAtNYCTime(9, 0);
 
 		const workflowInstance = env.EVENT_WORKFLOW.create({
 			params: {
