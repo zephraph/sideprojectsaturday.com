@@ -1,18 +1,55 @@
 ---
+import { getEventStartTime, getEventEndTime } from "@/lib/date-utils";
+
 interface Props {
 	nextEventDate: string;
+	eventForToday?: any;
 }
 
-const { nextEventDate } = Astro.props;
+const { nextEventDate, eventForToday } = Astro.props;
+
+// Determine the display text based on event status and timing
+let eventLabel = "Next Event";
+let eventDateDisplay = nextEventDate;
+let highlightClass = "text-amber-600";
+
+if (eventForToday) {
+	const now = new Date();
+	const eventStart = getEventStartTime(eventForToday.eventDate);
+	const eventEnd = getEventEndTime(eventForToday.eventDate);
+	
+	if (eventForToday.status === "inprogress") {
+		eventLabel = "Happening Now";
+		eventDateDisplay = "Until 12:00 PM";
+		highlightClass = "text-green-600";
+	} else if (eventStart.toDateString() === now.toDateString()) {
+		// Event is today but hasn't started
+		eventLabel = "Happening Today";
+		eventDateDisplay = "9:00 AM - 12:00 PM";
+		highlightClass = "text-[rgb(255,167,0)]";
+	}
+} else {
+	// Check if the next event is tomorrow
+	const tomorrow = new Date();
+	tomorrow.setDate(tomorrow.getDate() + 1);
+	tomorrow.setHours(0, 0, 0, 0);
+	
+	// Parse the next Saturday date to check if it's tomorrow
+	const nextSaturday = new Date(nextEventDate);
+	if (nextSaturday.toDateString() === tomorrow.toDateString()) {
+		eventLabel = "Happening Tomorrow";
+		highlightClass = "text-purple-600";
+	}
+}
 ---
 
 <div
 	class="bg-gray-50/50 border border-gray-200/50 rounded-lg p-4 mb-4 pulse-glow"
 >
 	<div class="text-center">
-		<div class="text-sm font-medium text-gray-600 mb-1">Next Event</div>
-		<div class="text-lg font-bold text-amber-600">
-			{nextEventDate}
+		<div class="text-sm font-medium text-gray-600 mb-1">{eventLabel}</div>
+		<div class={`text-lg font-bold ${highlightClass}`}>
+			{eventDateDisplay}
 		</div>
 	</div>
 </div>
