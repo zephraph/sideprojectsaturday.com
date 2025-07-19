@@ -73,7 +73,7 @@ export default function EventTodayEmail({
 							<Text style={arrivalText}>
 								When you arrive at the building, click the "Buzz Me In" button
 								above from your phone to unlock the door (if that doesn't work,
-								press the buzzer by the door for 501). We're on the{" "}
+								press the buzzer by the door for 503). We're on the{" "}
 								<strong>5th floor</strong> - you can take the stairs or
 								elevator.
 								<br />
