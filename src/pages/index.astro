@@ -1,8 +1,8 @@
 ---
 import { actions } from "astro:actions";
 import {
-	getDayRange,
 	getCurrentWeekSaturdayDate,
+	getDayRange,
 	getNextSaturdayDate,
 	getNextSaturdayFormatted,
 	isWithinEventHours,
@@ -135,7 +135,7 @@ if (signOutResult && !signOutResult.error) {
 				background: "rgba(255,255,255,0.85)",
 			}}
 		>
-			<NextEventCard {nextEventDate} eventForToday={eventForToday} />
+			<NextEventCard {nextEventDate} {eventForToday} />
 			{
 				userWithPreferences && session ? (
 					<AuthenticatedUserSection

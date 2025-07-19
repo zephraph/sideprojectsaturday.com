@@ -1,9 +1,10 @@
 ---
-import { getEventStartTime, getEventEndTime } from "@/lib/date-utils";
+import type { Event } from "@generated/prisma/client";
+import { getEventEndTime, getEventStartTime } from "@/lib/date-utils";
 
 interface Props {
 	nextEventDate: string;
-	eventForToday?: any;
+	eventForToday?: Event | null;
 }
 
 const { nextEventDate, eventForToday } = Astro.props;
@@ -17,7 +18,7 @@ if (eventForToday) {
 	const now = new Date();
 	const eventStart = getEventStartTime(eventForToday.eventDate);
 	const eventEnd = getEventEndTime(eventForToday.eventDate);
-	
+
 	if (eventForToday.status === "inprogress") {
 		eventLabel = "Happening Now";
 		eventDateDisplay = "Until 12:00 PM";
@@ -33,7 +34,7 @@ if (eventForToday) {
 	const tomorrow = new Date();
 	tomorrow.setDate(tomorrow.getDate() + 1);
 	tomorrow.setHours(0, 0, 0, 0);
-	
+
 	// Parse the next Saturday date to check if it's tomorrow
 	const nextSaturday = new Date(nextEventDate);
 	if (nextSaturday.toDateString() === tomorrow.toDateString()) {

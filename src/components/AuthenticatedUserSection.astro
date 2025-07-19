@@ -1,5 +1,6 @@
 ---
 import { actions } from "astro:actions";
+import type { Event } from "@generated/prisma/client";
 import { getEventStartTime, isWithinEventHours } from "@/lib/date-utils";
 
 interface Props {
@@ -11,10 +12,15 @@ interface Props {
 	};
 	hasEvent?: boolean;
 	hasActiveEvent?: boolean;
-	eventForToday?: any;
+	eventForToday?: Event | null;
 }
 
-const { user, hasEvent = true, hasActiveEvent = false, eventForToday } = Astro.props;
+const {
+	user,
+	hasEvent = true,
+	hasActiveEvent = false,
+	eventForToday,
+} = Astro.props;
 
 // Check if buzzer should be shown
 const showBuzzer = hasActiveEvent && isWithinEventHours();
@@ -49,7 +55,7 @@ const buzzerResult = Astro.getActionResult(actions.openDoor);
 								const now = new Date();
 								const eventStart = getEventStartTime(eventForToday.eventDate);
 								const timeDiff = eventStart.getTime() - now.getTime();
-								
+
 								if (eventForToday.status === "inprogress") {
 									return (
 										<div class="text-green-700 text-sm font-semibold mb-2">
@@ -58,10 +64,15 @@ const buzzerResult = Astro.getActionResult(actions.openDoor);
 									);
 								} else if (timeDiff > 0) {
 									const hours = Math.floor(timeDiff / (1000 * 60 * 60));
-									const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+									const minutes = Math.floor(
+										(timeDiff % (1000 * 60 * 60)) / (1000 * 60),
+									);
 									return (
 										<div class="text-blue-700 text-sm font-semibold mb-2">
-											⏰ Starting in {hours > 0 ? `${hours}h ${minutes}m` : `${minutes} minutes`}
+											⏰ Starting in{" "}
+											{hours > 0
+												? `${hours}h ${minutes}m`
+												: `${minutes} minutes`}
 										</div>
 									);
 								}
