@@ -1,6 +1,7 @@
 ---
 import { actions } from "astro:actions";
-import { isWithinEventHours } from "@/lib/date-utils";
+import type { Event } from "@generated/prisma/client";
+import { getEventStartTime, isWithinEventHours } from "@/lib/date-utils";
 
 interface Props {
 	user: {
@@ -11,9 +12,15 @@ interface Props {
 	};
 	hasEvent?: boolean;
 	hasActiveEvent?: boolean;
+	eventForToday?: Event | null;
 }
 
-const { user, hasEvent = true, hasActiveEvent = false } = Astro.props;
+const {
+	user,
+	hasEvent = true,
+	hasActiveEvent = false,
+	eventForToday,
+} = Astro.props;
 
 // Check if buzzer should be shown
 const showBuzzer = hasActiveEvent && isWithinEventHours();
@@ -42,28 +49,59 @@ const buzzerResult = Astro.getActionResult(actions.openDoor);
 			</div>
 			{
 				hasEvent ? (
-					<div class="flex items-center justify-between">
-						<span class="text-green-700 text-sm">
-							{user.rsvped ? "✅ You're RSVP'd!" : "❌ Not RSVP'd"}
-						</span>
-						<form
-							hx-post="/api/rsvp-toggle"
-							hx-target="#rsvp-section"
-							hx-swap="outerHTML"
-						>
-							<input
-								type="hidden"
-								name="rsvped"
-								value={user.rsvped ? "false" : "true"}
-							/>
-							<button
-								type="submit"
-								class="text-xs text-green-600 hover:text-green-800 font-medium underline cursor-pointer"
+					<>
+						{(() => {
+							if (eventForToday) {
+								const now = new Date();
+								const eventStart = getEventStartTime(eventForToday.eventDate);
+								const timeDiff = eventStart.getTime() - now.getTime();
+
+								if (eventForToday.status === "inprogress") {
+									return (
+										<div class="text-green-700 text-sm font-semibold mb-2">
+											🚀 Event is happening now!
+										</div>
+									);
+								} else if (timeDiff > 0) {
+									const hours = Math.floor(timeDiff / (1000 * 60 * 60));
+									const minutes = Math.floor(
+										(timeDiff % (1000 * 60 * 60)) / (1000 * 60),
+									);
+									return (
+										<div class="text-blue-700 text-sm font-semibold mb-2">
+											⏰ Starting in{" "}
+											{hours > 0
+												? `${hours}h ${minutes}m`
+												: `${minutes} minutes`}
+										</div>
+									);
+								}
+							}
+							return null;
+						})()}
+						<div class="flex items-center justify-between">
+							<span class="text-green-700 text-sm">
+								{user.rsvped ? "✅ You're RSVP'd!" : "❌ Not RSVP'd"}
+							</span>
+							<form
+								hx-post="/api/rsvp-toggle"
+								hx-target="#rsvp-section"
+								hx-swap="outerHTML"
 							>
-								{user.rsvped ? "Cancel RSVP" : "RSVP Now"}
-							</button>
-						</form>
-					</div>
+								<input
+									type="hidden"
+									name="rsvped"
+									value={user.rsvped ? "false" : "true"}
+								/>
+								<button
+									type="submit"
+									class="text-xs text-green-600 hover:text-green-800 font-medium underline cursor-pointer"
+								>
+									{user.rsvped ? "Cancel RSVP" : "RSVP Now"}
+								</button>
+							</form>
+						</div>
+					</>
 				) : (
 					<div class="text-gray-600 text-sm">
 						No event scheduled yet. Check back soon!

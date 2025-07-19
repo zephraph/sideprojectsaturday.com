@@ -1,6 +1,7 @@
 ---
 import { actions } from "astro:actions";
 import {
+	getCurrentWeekSaturdayDate,
 	getDayRange,
 	getNextSaturdayDate,
 	getNextSaturdayFormatted,
@@ -48,32 +49,31 @@ if (user) {
 }
 
 const nextEventDate = getNextSaturdayFormatted();
-const nextSaturdayDate = getNextSaturdayDate();
-const { start, end } = getDayRange(nextSaturdayDate);
+const currentWeekSaturday = getCurrentWeekSaturdayDate();
+const { start, end } = getDayRange(currentWeekSaturday);
 
-// Check if there's a scheduled event for next Saturday
+// Check if there's a scheduled event for this Saturday
 let hasEvent = false;
 let hasActiveEvent = false;
+let eventForToday = null;
 try {
 	db(Astro.locals.runtime.env);
-	const event = await db.event.findFirst({
+	// Check for any event today (scheduled or in progress)
+	eventForToday = await db.event.findFirst({
 		where: {
 			eventDate: {
 				gte: start,
 				lt: end,
 			},
-			status: "scheduled",
+			status: {
+				in: ["scheduled", "inprogress"],
+			},
 		},
 	});
-	hasEvent = !!event;
+	hasEvent = !!eventForToday;
 
 	// Check if there's an active event in progress
-	const activeEvent = await db.event.findFirst({
-		where: {
-			status: "inprogress",
-		},
-	});
-	hasActiveEvent = !!activeEvent;
+	hasActiveEvent = eventForToday?.status === "inprogress";
 } catch (error) {
 	console.error("Error checking for event:", error);
 }
@@ -135,13 +135,14 @@ if (signOutResult && !signOutResult.error) {
 				background: "rgba(255,255,255,0.85)",
 			}}
 		>
-			<NextEventCard {nextEventDate} />
+			<NextEventCard {nextEventDate} {eventForToday} />
 			{
 				userWithPreferences && session ? (
 					<AuthenticatedUserSection
 						user={userWithPreferences}
 						hasEvent={hasEvent}
 						hasActiveEvent={hasActiveEvent}
+						eventForToday={eventForToday}
 					/>
 				) : magicLinkResult && !magicLinkResult.error ? (
 					<MagicLinkSentSection message={magicLinkResult.data.message} />

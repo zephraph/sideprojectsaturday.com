@@ -21,7 +21,7 @@ export function getNextSaturdayDate(): Date {
 export function getCurrentWeekSaturdayDate(): Date {
 	const today = new Date();
 	const dayOfWeek = today.getDay();
-	const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7;
+	const daysUntilSaturday = dayOfWeek === 6 ? 0 : (6 - dayOfWeek + 7) % 7;
 	const currentWeekSaturday = new Date(today);
 	currentWeekSaturday.setDate(today.getDate() + daysUntilSaturday);
 	currentWeekSaturday.setHours(0, 0, 0, 0);
