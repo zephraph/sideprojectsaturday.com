@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { z } from "zod";
-import { db, queueUserEvent } from "@/lib/auth";
+import { db, triggerUserEvent } from "@/lib/auth";
 
 const ImportUsersSchema = z.object({
 	csvData: z.string(),
@@ -128,21 +128,21 @@ export const POST: APIRoute = async ({ request, locals }) => {
 			upsertResults.push(...batchResults);
 		}
 
-		// Queue all users for contact creation (without welcome emails) in batches
-		// Note: This will queue both new and existing users, but that's okay for contact sync
-		const QUEUE_BATCH_SIZE = 25; // Smaller batches for queue operations
+		// Trigger user creation events for all users (without welcome emails) in batches
+		// Note: This will trigger events for both new and existing users, but that's okay for contact sync
+		const TRIGGER_BATCH_SIZE = 25; // Smaller batches for trigger operations
 
-		for (let i = 0; i < upsertResults.length; i += QUEUE_BATCH_SIZE) {
-			const batch = upsertResults.slice(i, i + QUEUE_BATCH_SIZE);
-			const queuePromises = batch.map((user) =>
-				queueUserEvent(locals.runtime.env, {
+		for (let i = 0; i < upsertResults.length; i += TRIGGER_BATCH_SIZE) {
+			const batch = upsertResults.slice(i, i + TRIGGER_BATCH_SIZE);
+			const triggerPromises = batch.map((user) =>
+				triggerUserEvent({
 					type: "user_create",
 					email: user.email,
 					name: user.name || undefined,
 					sendWelcomeEmail: false, // Don't send welcome emails for batch imports
 				}),
 			);
-			await Promise.all(queuePromises);
+			await Promise.all(triggerPromises);
 		}
 
 		return new Response(

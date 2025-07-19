@@ -1,6 +1,10 @@
 {
 	"extends": "astro/tsconfigs/strict",
-	"include": [".astro/types.d.ts", "**/*"],
+  "include": [
+    ".astro/types.d.ts",
+    "**/*",
+    "trigger.config.ts"
+  ],
 	"exclude": ["dist"],
 	"compilerOptions": {
 		"verbatimModuleSyntax": false,

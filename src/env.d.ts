@@ -1,10 +1,9 @@
 /// <reference types="astro/client" />
 /// <reference types="@cloudflare/workers-types" />
 
-import type { worker, eventWorker } from "../alchemy.run";
+import type { worker } from "../alchemy.run";
 
 export type WorkerEnv = worker.Env;
-export type WorkflowEnv = eventWorker.Env;
 
 declare module "cloudflare:workers" {
 	namespace Cloudflare {

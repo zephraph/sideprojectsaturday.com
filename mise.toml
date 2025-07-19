@@ -94,3 +94,19 @@ run = "bash scripts/move-commit.sh {{arg(name=\"commit\")}} {{arg(name=\"target_
 [tasks."cleanup-worktrees"]
 description = "Clean up merged worktrees (use --force to clean all)"
 run = "bash scripts/cleanup-worktrees.sh {{arg(name=\"flags\", default=\"\")}}"
+
+[tasks."trigger:dev"]
+description = "Run Trigger.dev development server"
+run = "npx @trigger.dev/cli@latest dev"
+
+[tasks."trigger:deploy"]
+description = "Deploy Trigger.dev tasks to production"
+run = "npx @trigger.dev/cli@latest deploy"
+
+[tasks."trigger:login"]
+description = "Login to Trigger.dev"
+run = "npx @trigger.dev/cli@latest login"
+
+[tasks."trigger:init"]
+description = "Initialize Trigger.dev project"
+run = "npx @trigger.dev/cli@latest init"
