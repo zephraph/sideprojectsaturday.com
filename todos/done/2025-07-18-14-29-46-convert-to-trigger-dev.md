@@ -1,5 +1,5 @@
 # Convert from Cloudflare to Trigger.dev
-**Status:** AwaitingCommit
+**Status:** Done
 **Agent PID:** 39523
 
 ## Original Todo
