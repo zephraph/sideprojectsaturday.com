@@ -64,7 +64,7 @@ export default function VerificationEmail({
 							<Text style={locationText}>
 								325 Gold Street, Brooklyn, NY
 								<br />
-								Studio 501 - Just follow the creative energy! ⬆️
+								Studio 503 - Just follow the creative energy! ⬆️
 							</Text>
 						</Section>
 						<Text style={expiry}>
