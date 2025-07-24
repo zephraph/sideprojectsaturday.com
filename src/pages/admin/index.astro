@@ -247,9 +247,35 @@ const activeBreaks = await db.break.findMany({
 			<!-- Users Section -->
 			<div class="card bg-base-100 shadow-xl">
 				<div class="card-body">
-					<h2 class="card-title text-2xl mb-6">
-						Users ({users.length})
-					</h2>
+					<div class="flex justify-between items-center mb-6">
+						<h2 class="card-title text-2xl">
+							Users ({users.length})
+						</h2>
+						<div class="dropdown dropdown-end">
+							<div tabindex="0" role="button" class="btn btn-sm btn-outline">
+								Copy Emails
+							</div>
+							<ul
+								tabindex="0"
+								class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-lg border border-base-300"
+							>
+								<li><button data-copy-filter="all">All Users</button></li>
+								<li><button data-copy-filter="rsvped">RSVPed Users</button></li>
+								<li>
+									<button data-copy-filter="subscribed">Subscribed Users</button
+									>
+								</li>
+								<li>
+									<button data-copy-filter="verified">Verified Users</button>
+								</li>
+								<li>
+									<button data-copy-filter="rsvped-subscribed"
+										>RSVPed & Subscribed</button
+									>
+								</li>
+							</ul>
+						</div>
+					</div>
 
 					<div class="overflow-x-auto">
 						<table class="table table-zebra w-full">
@@ -368,6 +394,86 @@ const activeBreaks = await db.break.findMany({
 						eval(handler);
 					});
 				});
+		});
+
+		// Copy emails functionality
+		document.addEventListener("DOMContentLoaded", function () {
+			const copyButtons = document.querySelectorAll("[data-copy-filter]");
+
+			copyButtons.forEach((button) => {
+				button.addEventListener("click", async function (e) {
+					e.preventDefault();
+
+					const filter = this.getAttribute("data-copy-filter");
+					const rows = document.querySelectorAll("tbody tr");
+					const emails = [];
+
+					rows.forEach((row) => {
+						const email = row
+							.querySelector("td:first-child")
+							.textContent.trim();
+						const rsvpCheckbox = row.querySelector('[data-field="rsvped"]');
+						const subscribedCheckbox = row.querySelector(
+							'[data-field="subscribed"]',
+						);
+						const verifiedBadge = row.querySelector(".badge");
+
+						const isRsvped = rsvpCheckbox?.checked;
+						const isSubscribed = subscribedCheckbox?.checked;
+						const isVerified = verifiedBadge?.textContent.trim() === "Yes";
+
+						let shouldInclude = false;
+
+						switch (filter) {
+							case "all":
+								shouldInclude = true;
+								break;
+							case "rsvped":
+								shouldInclude = isRsvped;
+								break;
+							case "subscribed":
+								shouldInclude = isSubscribed;
+								break;
+							case "verified":
+								shouldInclude = isVerified;
+								break;
+							case "rsvped-subscribed":
+								shouldInclude = isRsvped && isSubscribed;
+								break;
+						}
+
+						if (shouldInclude) {
+							emails.push(email);
+						}
+					});
+
+					if (emails.length > 0) {
+						try {
+							await navigator.clipboard.writeText(emails.join(", "));
+
+							// Show success feedback
+							const originalText = this.textContent;
+							this.textContent = `Copied ${emails.length} emails!`;
+							this.classList.add("text-success");
+
+							setTimeout(() => {
+								this.textContent = originalText;
+								this.classList.remove("text-success");
+							}, 2000);
+						} catch (err) {
+							console.error("Failed to copy emails:", err);
+							alert("Failed to copy emails. Please try again.");
+						}
+					} else {
+						this.textContent = "No emails found";
+						setTimeout(() => {
+							this.textContent = this.getAttribute("data-copy-filter")
+								.replace("-", " & ")
+								.replace(/\b\w/g, (l) => l.toUpperCase());
+						}, 1500);
+					}
+				});
+			});
 		});
 	</script>
 </Layout>
