@@ -2,6 +2,7 @@
 import Layout from "@/layouts/Layout.astro";
 import { db } from "@/lib/auth";
 import { getCurrentWeekSaturdayDate } from "@/lib/date-utils";
+import SwitchBotStatusCard from "@/components/SwitchBotStatusCard.astro";
 
 db(Astro.locals.runtime.env);
 
@@ -84,7 +85,7 @@ const activeBreaks = await db.break.findMany({
 				<div class="card-body">
 					<h2 class="card-title text-2xl mb-6">Event Management</h2>
 
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 						<!-- Schedule Current Week -->
 						<div class="card bg-base-200">
 							<div class="card-body">
@@ -216,6 +217,9 @@ const activeBreaks = await db.break.findMany({
 								</form>
 							</div>
 						</div>
+
+						<!-- SwitchBot Status -->
+						<SwitchBotStatusCard />
 					</div>
 
 					<!-- Active Breaks -->

@@ -1,0 +1,110 @@
+---
+import type { SwitchBotApiResponse } from "@/lib/switchbot-types";
+
+// Fetch SwitchBot status on component render
+let switchbotStatus: SwitchBotApiResponse | null = null;
+let fetchError = false;
+
+try {
+	const response = await fetch(`${Astro.url.origin}/api/admin/switchbot-status`);
+	switchbotStatus = await response.json();
+} catch (error) {
+	console.error("Failed to fetch SwitchBot status:", error);
+	fetchError = true;
+}
+
+// Determine status display properties
+let statusColor = "badge-error";
+let statusText = "Unknown";
+let batteryColor = "text-gray-500";
+let batteryText = "Unknown";
+
+if (switchbotStatus?.success && switchbotStatus.data) {
+	const { battery, enableCloudService } = switchbotStatus.data;
+	
+	// Set battery status
+	batteryText = `${battery}%`;
+	if (battery >= 75) {
+		batteryColor = "text-green-600";
+	} else if (battery >= 50) {
+		batteryColor = "text-yellow-600";
+	} else if (battery >= 25) {
+		batteryColor = "text-orange-600";
+	} else {
+		batteryColor = "text-red-600";
+	}
+	
+	// Set connection status
+	if (enableCloudService) {
+		statusColor = "badge-success";
+		statusText = "Online";
+	} else {
+		statusColor = "badge-warning";
+		statusText = "Offline";
+	}
+} else if (fetchError) {
+	statusText = "Connection Error";
+	statusColor = "badge-error";
+} else {
+	statusText = "API Error";
+	statusColor = "badge-error";
+}
+---
+
+<div class="card bg-base-200">
+	<div class="card-body">
+		<div class="flex items-center justify-between mb-2">
+			<h3 class="card-title text-lg">SwitchBot Status</h3>
+			<button 
+				class="btn btn-ghost btn-xs"
+				onclick="location.reload()"
+				title="Refresh status"
+			>
+				🔄
+			</button>
+		</div>
+		
+		<div class="space-y-3">
+			<!-- Connection Status -->
+			<div class="flex justify-between items-center">
+				<span class="text-sm font-medium">Connection:</span>
+				<div class={`badge ${statusColor}`}>
+					{statusText}
+				</div>
+			</div>
+			
+			<!-- Battery Level -->
+			<div class="flex justify-between items-center">
+				<span class="text-sm font-medium">Battery:</span>
+				<span class={`text-sm font-bold ${batteryColor}`}>
+					{batteryText}
+				</span>
+			</div>
+			
+			<!-- Device Info -->
+			{switchbotStatus?.success && switchbotStatus.data && (
+				<div class="space-y-1">
+					<div class="flex justify-between items-center">
+						<span class="text-xs text-gray-500">Device:</span>
+						<span class="text-xs text-gray-700">
+							{switchbotStatus.data.deviceName || switchbotStatus.data.deviceType}
+						</span>
+					</div>
+					<div class="flex justify-between items-center">
+						<span class="text-xs text-gray-500">Version:</span>
+						<span class="text-xs text-gray-700">
+							{switchbotStatus.data.version}
+						</span>
+					</div>
+				</div>
+			)}
+			
+			<!-- Error Message -->
+			{!switchbotStatus?.success && (
+				<div class="text-xs text-error mt-2">
+					{fetchError ? "Failed to connect to device" : switchbotStatus?.error || "Unknown error"}
+				</div>
+			)}
+		</div>
+	</div>
+</div>
