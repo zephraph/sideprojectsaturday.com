@@ -31,3 +31,5 @@ pnpm-debug.log*
 .worktrees/
 
 /todos/worktrees/
+
+/todos/worktrees/
