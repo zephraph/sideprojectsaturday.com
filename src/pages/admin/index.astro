@@ -1,8 +1,8 @@
 ---
+import SwitchBotStatusCard from "@/components/SwitchBotStatusCard.astro";
 import Layout from "@/layouts/Layout.astro";
 import { db } from "@/lib/auth";
 import { getCurrentWeekSaturdayDate } from "@/lib/date-utils";
-import SwitchBotStatusCard from "@/components/SwitchBotStatusCard.astro";
 
 db(Astro.locals.runtime.env);
 

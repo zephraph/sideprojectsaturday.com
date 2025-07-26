@@ -6,7 +6,9 @@ let switchbotStatus: SwitchBotApiResponse | null = null;
 let fetchError = false;
 
 try {
-	const response = await fetch(`${Astro.url.origin}/api/admin/switchbot-status`);
+	const response = await fetch(
+		`${Astro.url.origin}/api/admin/switchbot-status`,
+	);
 	switchbotStatus = await response.json();
 } catch (error) {
 	console.error("Failed to fetch SwitchBot status:", error);
@@ -21,7 +23,7 @@ let batteryText = "Unknown";
 
 if (switchbotStatus?.success && switchbotStatus.data) {
 	const { battery, enableCloudService } = switchbotStatus.data;
-	
+
 	// Set battery status
 	batteryText = `${battery}%`;
 	if (battery >= 75) {
@@ -33,7 +35,7 @@ if (switchbotStatus?.success && switchbotStatus.data) {
 	} else {
 		batteryColor = "text-red-600";
 	}
-	
+
 	// Set connection status
 	if (enableCloudService) {
 		statusColor = "badge-success";
@@ -55,7 +57,7 @@ if (switchbotStatus?.success && switchbotStatus.data) {
 	<div class="card-body">
 		<div class="flex items-center justify-between mb-2">
 			<h3 class="card-title text-lg">SwitchBot Status</h3>
-			<button 
+			<button
 				class="btn btn-ghost btn-xs"
 				onclick="location.reload()"
 				title="Refresh status"
@@ -63,7 +65,7 @@ if (switchbotStatus?.success && switchbotStatus.data) {
 				🔄
 			</button>
 		</div>
-		
+
 		<div class="space-y-3">
 			<!-- Connection Status -->
 			<div class="flex justify-between items-center">
@@ -72,7 +74,7 @@ if (switchbotStatus?.success && switchbotStatus.data) {
 					{statusText}
 				</div>
 			</div>
-			
+
 			<!-- Battery Level -->
 			<div class="flex justify-between items-center">
 				<span class="text-sm font-medium">Battery:</span>
@@ -80,31 +82,38 @@ if (switchbotStatus?.success && switchbotStatus.data) {
 					{batteryText}
 				</span>
 			</div>
-			
+
 			<!-- Device Info -->
-			{switchbotStatus?.success && switchbotStatus.data && (
-				<div class="space-y-1">
-					<div class="flex justify-between items-center">
-						<span class="text-xs text-gray-500">Device:</span>
-						<span class="text-xs text-gray-700">
-							{switchbotStatus.data.deviceName || switchbotStatus.data.deviceType}
-						</span>
+			{
+				switchbotStatus?.success && switchbotStatus.data && (
+					<div class="space-y-1">
+						<div class="flex justify-between items-center">
+							<span class="text-xs text-gray-500">Device:</span>
+							<span class="text-xs text-gray-700">
+								{switchbotStatus.data.deviceName ||
+									switchbotStatus.data.deviceType}
+							</span>
+						</div>
+						<div class="flex justify-between items-center">
+							<span class="text-xs text-gray-500">Version:</span>
+							<span class="text-xs text-gray-700">
+								{switchbotStatus.data.version}
+							</span>
+						</div>
 					</div>
-					<div class="flex justify-between items-center">
-						<span class="text-xs text-gray-500">Version:</span>
-						<span class="text-xs text-gray-700">
-							{switchbotStatus.data.version}
-						</span>
-					</div>
-				</div>
-			)}
-			
+				)
+			}
+
 			<!-- Error Message -->
-			{!switchbotStatus?.success && (
-				<div class="text-xs text-error mt-2">
-					{fetchError ? "Failed to connect to device" : switchbotStatus?.error || "Unknown error"}
-				</div>
-			)}
+			{
+				!switchbotStatus?.success && (
+					<div class="text-xs text-error mt-2">
+						{fetchError
+							? "Failed to connect to device"
+							: switchbotStatus?.error || "Unknown error"}
+					</div>
+				)
+			}
 		</div>
 	</div>
 </div>

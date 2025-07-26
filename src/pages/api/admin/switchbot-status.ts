@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 import type { APIRoute } from "astro";
-import type { SwitchBotStatusResponse, SwitchBotApiResponse } from "@/lib/switchbot-types";
+import type { SwitchBotStatusResponse } from "@/lib/switchbot-types";
 
 export const GET: APIRoute = async () => {
 	try {

@@ -1,5 +1,5 @@
 # Add SwitchBot status UI
-**Status:** InProgress
+**Status:** Done
 **Agent PID:** 28083
 
 ## Original Todo
