@@ -1,0 +1,300 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { db } from "@/lib/auth";
+import { getCurrentWeekSaturdayDate } from "@/lib/date-utils";
+
+// Check if user is admin
+if (!Astro.locals.user || Astro.locals.user.role !== "admin") {
+	return Astro.redirect("/");
+}
+
+db(Astro.locals.runtime.env);
+
+// Get current week's Saturday
+const currentWeekSaturday = getCurrentWeekSaturdayDate();
+
+// Check if current week has an event
+const currentWeekEvent = await db.event.findFirst({
+	where: {
+		eventDate: currentWeekSaturday,
+	},
+});
+
+// Get next scheduled event
+const nextEvent = await db.event.findFirst({
+	where: {
+		eventDate: { gte: new Date() },
+		status: "scheduled",
+	},
+	orderBy: {
+		eventDate: "asc",
+	},
+});
+
+// Get all upcoming events
+const upcomingEvents = await db.event.findMany({
+	where: {
+		eventDate: { gte: new Date() },
+	},
+	orderBy: {
+		eventDate: "asc",
+	},
+	take: 10,
+});
+
+// Get active breaks
+const activeBreaks = await db.break.findMany({
+	where: {
+		endDate: { gte: new Date() },
+	},
+	orderBy: {
+		startDate: "asc",
+	},
+});
+---
+
+<AdminLayout title="Events - Admin">
+	<div class="max-w-6xl">
+		<h1 class="text-3xl font-bold mb-8">Event Management</h1>
+
+		<!-- Quick Actions -->
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+			<!-- Schedule Current Week -->
+			<div class="card bg-base-100 shadow-xl">
+				<div class="card-body">
+					<h3 class="card-title text-lg">Current Week Event</h3>
+					<p class="text-sm text-gray-600">
+						Saturday, {currentWeekSaturday.toLocaleDateString()}
+					</p>
+					{
+						currentWeekEvent ? (
+							<div class="mt-2">
+								<div
+									class={`badge ${currentWeekEvent.status === "scheduled" ? "badge-success" : currentWeekEvent.status === "inprogress" ? "badge-info" : "badge-error"} badge-lg`}
+								>
+									{currentWeekEvent.status}
+								</div>
+								{currentWeekEvent.status === "canceled" && (
+									<button
+										class="btn btn-primary btn-sm mt-2 w-full"
+										hx-post="/api/admin/reschedule-event"
+										hx-ext="json-enc"
+										hx-vals={JSON.stringify({
+											eventId: currentWeekEvent.id,
+										})}
+										hx-swap="none"
+										data-hx-on-htmx-after-request="if(event.detail.successful) location.reload()"
+									>
+										Reschedule Event
+									</button>
+								)}
+							</div>
+						) : (
+							<button
+								class="btn btn-primary btn-sm mt-2 w-full"
+								hx-post="/api/admin/schedule-event"
+								hx-ext="json-enc"
+								hx-vals={JSON.stringify({
+									eventDate: currentWeekSaturday.toISOString(),
+								})}
+								hx-swap="none"
+								data-hx-on-htmx-after-request="if(event.detail.successful) location.reload()"
+							>
+								Schedule Event
+							</button>
+						)
+					}
+				</div>
+			</div>
+
+			<!-- Cancel Next Event -->
+			<div class="card bg-base-100 shadow-xl">
+				<div class="card-body">
+					<h3 class="card-title text-lg">Next Scheduled Event</h3>
+					{
+						nextEvent ? (
+							<>
+								<p class="text-sm text-gray-600">
+									{new Date(nextEvent.eventDate).toLocaleDateString()}
+								</p>
+								<button
+									class="btn btn-error btn-sm mt-2 w-full"
+									hx-post="/api/admin/cancel-event"
+									hx-ext="json-enc"
+									hx-vals={JSON.stringify({ eventId: nextEvent.id })}
+									hx-swap="none"
+									hx-confirm="Are you sure you want to cancel this event?"
+									data-hx-on-htmx-after-request="if(event.detail.successful) location.reload()"
+								>
+									Cancel Event
+								</button>
+							</>
+						) : (
+							<p class="text-sm text-gray-600">No upcoming events scheduled</p>
+						)
+					}
+				</div>
+			</div>
+
+			<!-- Schedule Break -->
+			<div class="card bg-base-100 shadow-xl">
+				<div class="card-body">
+					<h3 class="card-title text-lg">Schedule Break</h3>
+					<form
+						hx-post="/api/admin/schedule-break"
+						hx-ext="json-enc"
+						hx-swap="none"
+						data-hx-on-htmx-after-request="if(event.detail.successful) { this.reset(); location.reload(); }"
+					>
+						<div class="form-control">
+							<label class="label">
+								<span class="label-text text-xs">Start Date</span>
+							</label>
+							<input
+								type="date"
+								name="startDate"
+								class="input input-bordered input-sm"
+								required
+							/>
+						</div>
+						<div class="form-control">
+							<label class="label">
+								<span class="label-text text-xs">End Date</span>
+							</label>
+							<input
+								type="date"
+								name="endDate"
+								class="input input-bordered input-sm"
+								required
+							/>
+						</div>
+						<div class="form-control">
+							<label class="label">
+								<span class="label-text text-xs">Reason (optional)</span>
+							</label>
+							<input
+								type="text"
+								name="reason"
+								class="input input-bordered input-sm"
+								placeholder="Holiday, vacation, etc."
+							/>
+						</div>
+						<button type="submit" class="btn btn-warning btn-sm mt-3 w-full">
+							Schedule Break
+						</button>
+					</form>
+				</div>
+			</div>
+		</div>
+
+		<!-- Active Breaks -->
+		{
+			activeBreaks.length > 0 && (
+				<div class="card bg-base-100 shadow-xl mb-8">
+					<div class="card-body">
+						<h2 class="card-title text-xl mb-4">Active Breaks</h2>
+						<div class="space-y-2">
+							{activeBreaks.map((breakPeriod) => (
+								<div class="alert alert-warning">
+									<div>
+										<span class="font-semibold">
+											{new Date(breakPeriod.startDate).toLocaleDateString()} -{" "}
+											{new Date(breakPeriod.endDate).toLocaleDateString()}
+										</span>
+										{breakPeriod.reason && (
+											<span class="ml-2">({breakPeriod.reason})</span>
+										)}
+									</div>
+								</div>
+							))}
+						</div>
+					</div>
+				</div>
+			)
+		}
+
+		<!-- Upcoming Events -->
+		<div class="card bg-base-100 shadow-xl">
+			<div class="card-body">
+				<h2 class="card-title text-xl mb-4">Upcoming Events</h2>
+				{
+					upcomingEvents.length > 0 ? (
+						<div class="overflow-x-auto">
+							<table class="table table-zebra">
+								<thead>
+									<tr>
+										<th>Date</th>
+										<th>Status</th>
+										<th>Created</th>
+										<th>Actions</th>
+									</tr>
+								</thead>
+								<tbody>
+									{upcomingEvents.map((event) => (
+										<tr>
+											<td class="font-medium">
+												{new Date(event.eventDate).toLocaleDateString("en-US", {
+													weekday: "long",
+													year: "numeric",
+													month: "long",
+													day: "numeric",
+												})}
+											</td>
+											<td>
+												<div
+													class={`badge ${
+														event.status === "scheduled"
+															? "badge-success"
+															: event.status === "inprogress"
+																? "badge-info"
+																: event.status === "completed"
+																	? "badge-neutral"
+																	: "badge-error"
+													}`}
+												>
+													{event.status}
+												</div>
+											</td>
+											<td class="text-sm text-gray-500">
+												{new Date(event.createdAt).toLocaleDateString()}
+											</td>
+											<td>
+												{event.status === "scheduled" && (
+													<button
+														class="btn btn-error btn-xs"
+														hx-post="/api/admin/cancel-event"
+														hx-ext="json-enc"
+														hx-vals={JSON.stringify({ eventId: event.id })}
+														hx-swap="none"
+														hx-confirm={`Cancel event on ${new Date(event.eventDate).toLocaleDateString()}?`}
+														data-hx-on-htmx-after-request="if(event.detail.successful) location.reload()"
+													>
+														Cancel
+													</button>
+												)}
+												{event.status === "canceled" && (
+													<button
+														class="btn btn-primary btn-xs"
+														hx-post="/api/admin/reschedule-event"
+														hx-ext="json-enc"
+														hx-vals={JSON.stringify({ eventId: event.id })}
+														hx-swap="none"
+														data-hx-on-htmx-after-request="if(event.detail.successful) location.reload()"
+													>
+														Reschedule
+													</button>
+												)}
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					) : (
+						<p class="text-base-content/70">No upcoming events scheduled.</p>
+					)
+				}
+			</div>
+		</div>
+	</div>
+</AdminLayout>

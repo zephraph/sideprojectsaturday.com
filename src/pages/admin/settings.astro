@@ -1,0 +1,40 @@
+---
+import BannerControls from "@/components/admin/BannerControls.astro";
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { db } from "@/lib/auth";
+
+// Check if user is admin
+if (!Astro.locals.user || Astro.locals.user.role !== "admin") {
+	return Astro.redirect("/");
+}
+
+db(Astro.locals.runtime.env);
+
+// Get banner configuration
+const bannerConfig = await db.bannerConfig.findFirst({
+	orderBy: {
+		updatedAt: "desc",
+	},
+});
+---
+
+<AdminLayout title="Settings - Admin">
+	<div class="max-w-4xl">
+		<h1 class="text-3xl font-bold mb-8">Settings</h1>
+
+		<!-- Banner Configuration -->
+		<div class="mb-6">
+			<BannerControls config={bannerConfig} />
+		</div>
+
+		<!-- Future settings sections can go here -->
+		<div class="card bg-base-100 shadow-xl">
+			<div class="card-body">
+				<h2 class="card-title text-2xl mb-4">Other Settings</h2>
+				<p class="text-base-content/70">
+					Additional site settings will appear here.
+				</p>
+			</div>
+		</div>
+	</div>
+</AdminLayout>

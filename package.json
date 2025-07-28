@@ -10,6 +10,7 @@
 		"@tailwindcss/vite": "^4.1.11",
 		"astro": "^5.10.2",
 		"better-auth": "^1.2.12",
+		"marked": "^16.1.1",
 		"prisma": "^6.11.0",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0",

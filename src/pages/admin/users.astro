@@ -1,0 +1,267 @@
+---
+import AdminLayout from "@/layouts/AdminLayout.astro";
+import { db } from "@/lib/auth";
+
+// Check if user is admin
+if (!Astro.locals.user || Astro.locals.user.role !== "admin") {
+	return Astro.redirect("/");
+}
+
+db(Astro.locals.runtime.env);
+
+const users = await db.user.findMany({
+	select: {
+		id: true,
+		email: true,
+		name: true,
+		role: true,
+		subscribed: true,
+		rsvped: true,
+		emailVerified: true,
+		createdAt: true,
+	},
+	orderBy: [{ rsvped: "desc" }, { updatedAt: "desc" }],
+});
+
+// Get user stats
+const totalUsers = users.length;
+const rsvpedUsers = users.filter((u) => u.rsvped).length;
+const subscribedUsers = users.filter((u) => u.subscribed).length;
+const verifiedUsers = users.filter((u) => u.emailVerified).length;
+---
+
+<AdminLayout title="Users - Admin">
+	<div class="max-w-7xl">
+		<div
+			class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4"
+		>
+			<h1 class="text-3xl font-bold">User Management</h1>
+			<div class="flex gap-2">
+				<a href="/admin/import" class="btn btn-primary btn-sm">
+					Import Users
+				</a>
+				<div class="dropdown dropdown-end">
+					<div tabindex="0" role="button" class="btn btn-sm btn-outline">
+						Copy Emails
+					</div>
+					<ul
+						tabindex="0"
+						class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-lg border border-base-300"
+					>
+						<li><button data-copy-filter="all">All Users</button></li>
+						<li><button data-copy-filter="rsvped">RSVPed Users</button></li>
+						<li>
+							<button data-copy-filter="subscribed">Subscribed Users</button>
+						</li>
+						<li>
+							<button data-copy-filter="verified">Verified Users</button>
+						</li>
+						<li>
+							<button data-copy-filter="rsvped-subscribed"
+								>RSVPed & Subscribed</button
+							>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<!-- User Stats -->
+		<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+			<div class="stat bg-base-100 shadow rounded-box">
+				<div class="stat-title">Total Users</div>
+				<div class="stat-value text-primary">{totalUsers}</div>
+			</div>
+			<div class="stat bg-base-100 shadow rounded-box">
+				<div class="stat-title">RSVPed</div>
+				<div class="stat-value text-success">{rsvpedUsers}</div>
+			</div>
+			<div class="stat bg-base-100 shadow rounded-box">
+				<div class="stat-title">Subscribed</div>
+				<div class="stat-value text-info">{subscribedUsers}</div>
+			</div>
+			<div class="stat bg-base-100 shadow rounded-box">
+				<div class="stat-title">Verified</div>
+				<div class="stat-value text-warning">{verifiedUsers}</div>
+			</div>
+		</div>
+
+		<!-- Users Table -->
+		<div class="card bg-base-100 shadow-xl">
+			<div class="card-body">
+				<div class="overflow-x-auto">
+					<table class="table table-zebra w-full">
+						<thead>
+							<tr>
+								<th>Email</th>
+								<th>Name</th>
+								<th>Role</th>
+								<th>RSVP Status</th>
+								<th>Subscribed</th>
+								<th>Email Verified</th>
+								<th>Created</th>
+							</tr>
+						</thead>
+						<tbody>
+							{
+								users.map((user) => (
+									<tr>
+										<td class="font-medium">{user.email}</td>
+										<td>{user.name || "-"}</td>
+										<td>
+											<select
+												class="select select-bordered select-sm"
+												name="role"
+												hx-post="/api/admin/update-role"
+												hx-trigger="change"
+												hx-ext="json-enc"
+												hx-confirm={`Are you sure you want to change ${user.email}'s role?`}
+												hx-swap="none"
+												data-user-id={user.id}
+												hx-vals="js:{userId: event.target.dataset.userId, role: event.target.value}"
+												hx-on:before-request="this.dataset.previousValue = this.value"
+												hx-on:response-error="this.value = this.dataset.previousValue; alert(event.detail.xhr.responseJSON?.error || 'Failed to update role')"
+											>
+												<option
+													value="user"
+													selected={!user.role || user.role === "user"}
+												>
+													User
+												</option>
+												<option value="admin" selected={user.role === "admin"}>
+													Admin
+												</option>
+											</select>
+										</td>
+										<td>
+											<input
+												type="checkbox"
+												class="checkbox checkbox-success"
+												checked={user.rsvped}
+												hx-post="/api/admin/update-user-field"
+												hx-trigger="change"
+												hx-ext="json-enc"
+												hx-swap="none"
+												name="dummy"
+												data-user-id={user.id}
+												data-field="rsvped"
+												hx-vals="js:{userId: event.target.dataset.userId, field: event.target.dataset.field, value: event.target.checked}"
+											/>
+										</td>
+										<td>
+											<input
+												type="checkbox"
+												class="checkbox checkbox-success"
+												checked={user.subscribed}
+												hx-post="/api/admin/update-user-field"
+												hx-trigger="change"
+												hx-ext="json-enc"
+												hx-swap="none"
+												name="dummy"
+												data-user-id={user.id}
+												data-field="subscribed"
+												hx-vals="js:{userId: event.target.dataset.userId, field: event.target.dataset.field, value: event.target.checked}"
+											/>
+										</td>
+										<td>
+											<div
+												class={`badge ${user.emailVerified ? "badge-success" : "badge-warning"}`}
+											>
+												{user.emailVerified ? "Yes" : "No"}
+											</div>
+										</td>
+										<td class="text-sm text-gray-500">
+											{new Date(user.createdAt).toLocaleDateString()}
+										</td>
+									</tr>
+								))
+							}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		// Copy emails functionality
+		document.addEventListener("DOMContentLoaded", function () {
+			const copyButtons = document.querySelectorAll("[data-copy-filter]");
+
+			copyButtons.forEach((button) => {
+				button.addEventListener("click", async function (e) {
+					e.preventDefault();
+
+					const filter = this.getAttribute("data-copy-filter");
+					const rows = document.querySelectorAll("tbody tr");
+					const emails = [];
+
+					rows.forEach((row) => {
+						const email = row
+							.querySelector("td:first-child")
+							.textContent.trim();
+						const rsvpCheckbox = row.querySelector('[data-field="rsvped"]');
+						const subscribedCheckbox = row.querySelector(
+							'[data-field="subscribed"]',
+						);
+						const verifiedBadge = row.querySelector(".badge");
+
+						const isRsvped = rsvpCheckbox?.checked;
+						const isSubscribed = subscribedCheckbox?.checked;
+						const isVerified = verifiedBadge?.textContent.trim() === "Yes";
+
+						let shouldInclude = false;
+
+						switch (filter) {
+							case "all":
+								shouldInclude = true;
+								break;
+							case "rsvped":
+								shouldInclude = isRsvped;
+								break;
+							case "subscribed":
+								shouldInclude = isSubscribed;
+								break;
+							case "verified":
+								shouldInclude = isVerified;
+								break;
+							case "rsvped-subscribed":
+								shouldInclude = isRsvped && isSubscribed;
+								break;
+						}
+
+						if (shouldInclude) {
+							emails.push(email);
+						}
+					});
+
+					if (emails.length > 0) {
+						try {
+							await navigator.clipboard.writeText(emails.join(", "));
+
+							// Show success feedback
+							const originalText = this.textContent;
+							this.textContent = `Copied ${emails.length} emails!`;
+							this.classList.add("text-success");
+
+							setTimeout(() => {
+								this.textContent = originalText;
+								this.classList.remove("text-success");
+							}, 2000);
+						} catch (err) {
+							console.error("Failed to copy emails:", err);
+							alert("Failed to copy emails. Please try again.");
+						}
+					} else {
+						this.textContent = "No emails found";
+						setTimeout(() => {
+							this.textContent = this.getAttribute("data-copy-filter")
+								.replace("-", " & ")
+								.replace(/\b\w/g, (l) => l.toUpperCase());
+						}, 1500);
+					}
+				});
+			});
+		});
+	</script>
+</AdminLayout>

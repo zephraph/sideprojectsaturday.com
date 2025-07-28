@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import Banner from "@/components/Banner.astro";
 
 export interface Props {
 	title?: string;
@@ -25,18 +26,7 @@ const { title = "Side Project Saturday" } = Astro.props;
 		<title>{title}</title>
 	</head>
 	<body>
-		<!-- Launch announcement banner -->
-		<div
-			class="bg-warning text-warning-content text-center py-2 px-4 text-sm sticky top-0 z-50"
-		>
-			<p class="font-medium">
-				🚧 New site just launched, report bugs <a
-					class="link"
-					href="https://github.com/zephraph/sideprojectsaturday.com/issues/new"
-					>here</a
-				> 🚧
-			</p>
-		</div>
+		<Banner />
 		<slot />
 	</body>
 </html>
