@@ -1,3 +1,4 @@
+
 generator client {
   provider               = "prisma-client"
   runtime                = "workerd"
@@ -30,6 +31,8 @@ model User {
   banExpires DateTime?
   subscribed Boolean   @default(true)
   rsvped     Boolean   @default(false)
+
+  image String?
 
   @@map("user")
 }
@@ -78,6 +81,8 @@ model Account {
   accessTokenExpiresAt  DateTime?
   refreshTokenExpiresAt DateTime?
 
+  password String?
+
   @@unique([provider, providerAccountId])
   @@map("account")
 }
@@ -96,7 +101,7 @@ model Verification {
 
 model Event {
   id        String      @id @default(cuid())
-  eventDate DateTime    // The Saturday date of the event
+  eventDate DateTime // The Saturday date of the event
   status    EventStatus @default(scheduled)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
@@ -120,4 +125,14 @@ model Break {
   updatedAt DateTime @updatedAt
 
   @@map("break")
+}
+
+model BannerConfig {
+  id        String   @id @default(cuid())
+  content   String // Markdown content
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("banner_config")
 }

@@ -1,23 +1,20 @@
 ---
-import Layout from "@/layouts/Layout.astro";
+import AdminLayout from "@/layouts/AdminLayout.astro";
 import { db } from "@/lib/auth";
 import { getCurrentWeekSaturdayDate } from "@/lib/date-utils";
 
+// Check if user is admin
+if (!Astro.locals.user || Astro.locals.user.role !== "admin") {
+	return Astro.redirect("/");
+}
+
 db(Astro.locals.runtime.env);
 
-const users = await db.user.findMany({
-	select: {
-		id: true,
-		email: true,
-		name: true,
-		role: true,
-		subscribed: true,
-		rsvped: true,
-		emailVerified: true,
-		createdAt: true,
-	},
-	orderBy: [{ rsvped: "desc" }, { updatedAt: "desc" }],
-});
+// Get user statistics
+const totalUsers = await db.user.count();
+const rsvpedUsers = await db.user.count({ where: { rsvped: true } });
+const subscribedUsers = await db.user.count({ where: { subscribed: true } });
+const verifiedUsers = await db.user.count({ where: { emailVerified: true } });
 
 // Get current week's Saturday
 const currentWeekSaturday = getCurrentWeekSaturdayDate();
@@ -40,440 +37,288 @@ const nextEvent = await db.event.findFirst({
 	},
 });
 
-// Get active breaks
-const activeBreaks = await db.break.findMany({
+// Get recent user updates
+const recentUsers = await db.user.findMany({
+	take: 15,
+	orderBy: { updatedAt: "desc" },
+	select: {
+		id: true,
+		email: true,
+		name: true,
+		updatedAt: true,
+	},
+});
+
+// Group users by update date
+const groupedUsers = recentUsers.reduce((groups, user) => {
+	const date = new Date(user.updatedAt).toLocaleDateString();
+	if (!groups[date]) {
+		groups[date] = [];
+	}
+	groups[date].push(user);
+	return groups;
+}, {});
+
+// Get upcoming events count
+const upcomingEventsCount = await db.event.count({
+	where: {
+		eventDate: { gte: new Date() },
+		status: "scheduled",
+	},
+});
+
+// Get active breaks count
+const activeBreaksCount = await db.break.count({
 	where: {
 		endDate: { gte: new Date() },
-	},
-	orderBy: {
-		startDate: "asc",
 	},
 });
 ---
 
-<Layout title="Admin - Side Project Saturday">
-	<div class="min-h-screen bg-base-200">
-		<div class="navbar bg-base-100 shadow-lg">
-			<div class="flex-1">
-				<a class="btn btn-ghost text-xl">Admin Dashboard</a>
+<AdminLayout title="Dashboard - Admin">
+	<div class="max-w-7xl">
+		<h1 class="text-3xl font-bold mb-8">Admin Dashboard</h1>
+
+		<!-- Stats Overview -->
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+			<div class="stat bg-base-100 shadow rounded-box">
+				<div class="stat-figure text-primary">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="w-8 h-8"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
+						></path>
+					</svg>
+				</div>
+				<div class="stat-title">Total Users</div>
+				<div class="stat-value">{totalUsers}</div>
+				<div class="stat-desc">All registered users</div>
 			</div>
-			<div class="flex-none">
-				<div class="flex items-center gap-2">
-					<a href="/admin/import" class="btn btn-primary btn-sm">
-						Import Users
-					</a>
-					<div class="dropdown dropdown-end">
-						<div tabindex="0" role="button" class="btn btn-ghost">
-							{Astro.locals.user?.name || Astro.locals.user?.email}
-						</div>
-						<ul
-							tabindex="0"
-							class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
-						>
-							<li><a href="/">Home</a></li>
-							<li><a href="/auth/sign-out">Sign Out</a></li>
-						</ul>
-					</div>
+
+			<div class="stat bg-base-100 shadow rounded-box">
+				<div class="stat-figure text-success">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="w-8 h-8"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+						></path>
+					</svg>
+				</div>
+				<div class="stat-title">RSVPed</div>
+				<div class="stat-value text-success">{rsvpedUsers}</div>
+				<div class="stat-desc">
+					{((rsvpedUsers / totalUsers) * 100).toFixed(0)}% of users
+				</div>
+			</div>
+
+			<div class="stat bg-base-100 shadow rounded-box">
+				<div class="stat-figure text-info">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="w-8 h-8"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"
+						></path>
+					</svg>
+				</div>
+				<div class="stat-title">Subscribed</div>
+				<div class="stat-value text-info">{subscribedUsers}</div>
+				<div class="stat-desc">
+					{((subscribedUsers / totalUsers) * 100).toFixed(0)}% of users
+				</div>
+			</div>
+
+			<div class="stat bg-base-100 shadow rounded-box">
+				<div class="stat-figure text-warning">
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="w-8 h-8"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"
+						></path>
+					</svg>
+				</div>
+				<div class="stat-title">Verified</div>
+				<div class="stat-value text-warning">{verifiedUsers}</div>
+				<div class="stat-desc">
+					{((verifiedUsers / totalUsers) * 100).toFixed(0)}% of users
 				</div>
 			</div>
 		</div>
 
-		<div class="container mx-auto px-4 py-8 space-y-6">
-			<!-- Event Management Section -->
+		<!-- Quick Status -->
+		<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+			<!-- Event Status -->
 			<div class="card bg-base-100 shadow-xl">
 				<div class="card-body">
-					<h2 class="card-title text-2xl mb-6">Event Management</h2>
+					<h2 class="card-title text-xl mb-4">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="1.5"
+							stroke="currentColor"
+							class="w-6 h-6"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+							></path>
+						</svg>
+						Event Status
+					</h2>
 
-					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-						<!-- Schedule Current Week -->
-						<div class="card bg-base-200">
-							<div class="card-body">
-								<h3 class="card-title text-lg">Current Week Event</h3>
-								<p class="text-sm text-gray-600">
-									Saturday, {currentWeekSaturday.toLocaleDateString()}
+					<div class="space-y-3">
+						<!-- Current Week -->
+						<div
+							class="flex justify-between items-center p-3 bg-base-200 rounded-lg"
+						>
+							<div>
+								<p class="font-semibold">This Saturday</p>
+								<p class="text-sm text-base-content/70">
+									{currentWeekSaturday.toLocaleDateString()}
 								</p>
-								{
-									currentWeekEvent ? (
-										<div class="mt-2">
-											<div
-												class={`badge ${currentWeekEvent.status === "scheduled" ? "badge-success" : "badge-error"}`}
-											>
-												{currentWeekEvent.status}
-											</div>
-											{currentWeekEvent.status === "canceled" && (
-												<button
-													class="btn btn-primary btn-sm mt-2"
-													hx-post="/api/admin/reschedule-event"
-													hx-ext="json-enc"
-													hx-vals={JSON.stringify({
-														eventId: currentWeekEvent.id,
-													})}
-													hx-swap="none"
-													data-hx-on-htmx-after-request="if(event.detail.successful) location.reload()"
-												>
-													Reschedule Event
-												</button>
-											)}
-										</div>
-									) : (
-										<button
-											class="btn btn-primary btn-sm mt-2"
-											hx-post="/api/admin/schedule-event"
-											hx-ext="json-enc"
-											hx-vals={JSON.stringify({
-												eventDate: currentWeekSaturday.toISOString(),
-											})}
-											hx-swap="none"
-											data-hx-on-htmx-after-request="if(event.detail.successful) location.reload()"
-										>
-											Schedule Event
-										</button>
-									)
-								}
 							</div>
-						</div>
-
-						<!-- Cancel Next Event -->
-						<div class="card bg-base-200">
-							<div class="card-body">
-								<h3 class="card-title text-lg">Next Scheduled Event</h3>
-								{
-									nextEvent ? (
-										<>
-											<p class="text-sm text-gray-600">
-												{new Date(nextEvent.eventDate).toLocaleDateString()}
-											</p>
-											<button
-												class="btn btn-error btn-sm mt-2"
-												hx-post="/api/admin/cancel-event"
-												hx-ext="json-enc"
-												hx-vals={JSON.stringify({ eventId: nextEvent.id })}
-												hx-swap="none"
-												hx-confirm="Are you sure you want to cancel this event?"
-												data-hx-on-htmx-after-request="if(event.detail.successful) location.reload()"
-											>
-												Cancel Event
-											</button>
-										</>
-									) : (
-										<p class="text-sm text-gray-600">
-											No upcoming events scheduled
-										</p>
-									)
-								}
-							</div>
-						</div>
-
-						<!-- Schedule Break -->
-						<div class="card bg-base-200">
-							<div class="card-body">
-								<h3 class="card-title text-lg">Schedule Break</h3>
-								<form
-									hx-post="/api/admin/schedule-break"
-									hx-ext="json-enc"
-									hx-swap="none"
-									data-hx-on-htmx-after-request="if(event.detail.successful) { this.reset(); location.reload(); }"
-								>
-									<div class="form-control">
-										<label class="label">
-											<span class="label-text text-xs">Start Date</span>
-										</label>
-										<input
-											type="date"
-											name="startDate"
-											class="input input-bordered input-sm"
-											required
-										/>
-									</div>
-									<div class="form-control">
-										<label class="label">
-											<span class="label-text text-xs">End Date</span>
-										</label>
-										<input
-											type="date"
-											name="endDate"
-											class="input input-bordered input-sm"
-											required
-										/>
-									</div>
-									<div class="form-control">
-										<label class="label">
-											<span class="label-text text-xs">Reason (optional)</span>
-										</label>
-										<input
-											type="text"
-											name="reason"
-											class="input input-bordered input-sm"
-											placeholder="Holiday, vacation, etc."
-										/>
-									</div>
-									<button
-										type="submit"
-										class="btn btn-warning btn-sm mt-3 w-full"
+							{
+								currentWeekEvent ? (
+									<div
+										class={`badge ${currentWeekEvent.status === "scheduled" ? "badge-success" : currentWeekEvent.status === "inprogress" ? "badge-info" : currentWeekEvent.status === "completed" ? "badge-neutral" : "badge-error"} badge-lg`}
 									>
-										Schedule Break
-									</button>
-								</form>
+										{currentWeekEvent.status}
+									</div>
+								) : (
+									<span class="text-sm text-base-content/70">No event</span>
+								)
+							}
+						</div>
+
+						<!-- Next Event -->
+						{
+							nextEvent && (
+								<div class="flex justify-between items-center p-3 bg-base-200 rounded-lg">
+									<div>
+										<p class="font-semibold">Next Event</p>
+										<p class="text-sm text-base-content/70">
+											{new Date(nextEvent.eventDate).toLocaleDateString()}
+										</p>
+									</div>
+									<div class="badge badge-success badge-lg">scheduled</div>
+								</div>
+							)
+						}
+
+						<!-- Summary Stats -->
+						<div class="divider"></div>
+						<div class="grid grid-cols-2 gap-4 text-center">
+							<div>
+								<p class="text-2xl font-bold">{upcomingEventsCount}</p>
+								<p class="text-sm text-base-content/70">Upcoming Events</p>
+							</div>
+							<div>
+								<p class="text-2xl font-bold">{activeBreaksCount}</p>
+								<p class="text-sm text-base-content/70">Active Breaks</p>
 							</div>
 						</div>
 					</div>
 
-					<!-- Active Breaks -->
-					{
-						activeBreaks.length > 0 && (
-							<div class="mt-6">
-								<h3 class="text-lg font-semibold mb-2">Active Breaks</h3>
-								<div class="space-y-2">
-									{activeBreaks.map((breakPeriod) => (
-										<div class="alert alert-warning">
-											<div>
-												<span class="font-semibold">
-													{new Date(breakPeriod.startDate).toLocaleDateString()}{" "}
-													- {new Date(breakPeriod.endDate).toLocaleDateString()}
-												</span>
-												{breakPeriod.reason && (
-													<span class="ml-2">({breakPeriod.reason})</span>
-												)}
-											</div>
-										</div>
-									))}
-								</div>
-							</div>
-						)
-					}
+					<div class="mt-6">
+						<a href="/admin/events" class="btn btn-primary btn-block">
+							Manage Events
+						</a>
+					</div>
 				</div>
 			</div>
 
-			<!-- Users Section -->
+			<!-- Recent Activity -->
 			<div class="card bg-base-100 shadow-xl">
 				<div class="card-body">
-					<div class="flex justify-between items-center mb-6">
-						<h2 class="card-title text-2xl">
-							Users ({users.length})
-						</h2>
-						<div class="dropdown dropdown-end">
-							<div tabindex="0" role="button" class="btn btn-sm btn-outline">
-								Copy Emails
-							</div>
-							<ul
-								tabindex="0"
-								class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow-lg border border-base-300"
-							>
-								<li><button data-copy-filter="all">All Users</button></li>
-								<li><button data-copy-filter="rsvped">RSVPed Users</button></li>
-								<li>
-									<button data-copy-filter="subscribed">Subscribed Users</button
-									>
-								</li>
-								<li>
-									<button data-copy-filter="verified">Verified Users</button>
-								</li>
-								<li>
-									<button data-copy-filter="rsvped-subscribed"
-										>RSVPed & Subscribed</button
-									>
-								</li>
-							</ul>
-						</div>
+					<h2 class="card-title text-xl mb-4">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+							stroke-width="1.5"
+							stroke="currentColor"
+							class="w-6 h-6"
+						>
+							<path
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+						</svg>
+						Recent User Updates
+					</h2>
+
+					<div class="space-y-4 max-h-96 overflow-y-auto">
+						{
+							Object.keys(groupedUsers).length > 0 ? (
+								Object.entries(groupedUsers).map(([date, users]) => (
+									<div class="space-y-2">
+										<h3 class="text-xs font-semibold text-base-content/50 uppercase">
+											{date}
+										</h3>
+										<div class="space-y-1">
+											{users.map((user) => (
+												<div class="flex justify-between items-center p-2 hover:bg-base-200 rounded-lg transition-colors">
+													<div class="flex-1 min-w-0">
+														<p class="text-sm font-medium truncate">
+															{user.email}
+														</p>
+														<p class="text-xs text-base-content/70">
+															{user.name || "No name"}
+														</p>
+													</div>
+												</div>
+											))}
+										</div>
+									</div>
+								))
+							) : (
+								<p class="text-sm text-base-content/70 text-center py-8">
+									No recent activity
+								</p>
+							)
+						}
 					</div>
 
-					<div class="overflow-x-auto">
-						<table class="table table-zebra w-full">
-							<thead>
-								<tr>
-									<th>Email</th>
-									<th>Name</th>
-									<th>Role</th>
-									<th>RSVP Status</th>
-									<th>Subscribed</th>
-									<th>Email Verified</th>
-									<th>Created</th>
-								</tr>
-							</thead>
-							<tbody>
-								{
-									users.map((user) => (
-										<tr>
-											<td class="font-medium">{user.email}</td>
-											<td>{user.name || "-"}</td>
-											<td>
-												<select
-													class="select select-bordered select-sm"
-													name="role"
-													hx-post="/api/admin/update-role"
-													hx-trigger="change"
-													hx-ext="json-enc"
-													hx-confirm={`Are you sure you want to change ${user.email}'s role?`}
-													hx-swap="none"
-													data-user-id={user.id}
-													hx-vals="js:{userId: event.target.dataset.userId, role: event.target.value}"
-													hx-on:before-request="this.dataset.previousValue = this.value"
-													hx-on:response-error="this.value = this.dataset.previousValue; alert(event.detail.xhr.responseJSON?.error || 'Failed to update role')"
-												>
-													<option
-														value="user"
-														selected={!user.role || user.role === "user"}
-													>
-														User
-													</option>
-													<option
-														value="admin"
-														selected={user.role === "admin"}
-													>
-														Admin
-													</option>
-												</select>
-											</td>
-											<td>
-												<input
-													type="checkbox"
-													class="checkbox checkbox-success"
-													checked={user.rsvped}
-													hx-post="/api/admin/update-user-field"
-													hx-trigger="change"
-													hx-ext="json-enc"
-													hx-swap="none"
-													name="dummy"
-													data-user-id={user.id}
-													data-field="rsvped"
-													hx-vals="js:{userId: event.target.dataset.userId, field: event.target.dataset.field, value: event.target.checked}"
-												/>
-											</td>
-											<td>
-												<input
-													type="checkbox"
-													class="checkbox checkbox-success"
-													checked={user.subscribed}
-													hx-post="/api/admin/update-user-field"
-													hx-trigger="change"
-													hx-ext="json-enc"
-													hx-swap="none"
-													name="dummy"
-													data-user-id={user.id}
-													data-field="subscribed"
-													hx-vals="js:{userId: event.target.dataset.userId, field: event.target.dataset.field, value: event.target.checked}"
-												/>
-											</td>
-											<td>
-												<div
-													class={`badge ${user.emailVerified ? "badge-success" : "badge-warning"}`}
-												>
-													{user.emailVerified ? "Yes" : "No"}
-												</div>
-											</td>
-											<td class="text-sm text-gray-500">
-												{new Date(user.createdAt).toLocaleDateString()}
-											</td>
-										</tr>
-									))
-								}
-							</tbody>
-						</table>
+					<div class="mt-6">
+						<a href="/admin/users" class="btn btn-primary btn-block">
+							View All Users
+						</a>
 					</div>
 				</div>
 			</div>
 		</div>
 	</div>
-
-	<script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"></script>
-	<script>
-		// Parse JSON error responses
-		document.body.addEventListener("htmx:responseError", function (evt) {
-			try {
-				evt.detail.xhr.responseJSON = JSON.parse(evt.detail.xhr.response);
-			} catch (e) {}
-		});
-
-		// Handle data-hx-on-htmx-after-request attributes
-		document.addEventListener("DOMContentLoaded", function () {
-			document
-				.querySelectorAll("[data-hx-on-htmx-after-request]")
-				.forEach(function (el) {
-					const handler = el.getAttribute("data-hx-on-htmx-after-request");
-					el.addEventListener("htmx:afterRequest", function (event) {
-						eval(handler);
-					});
-				});
-		});
-
-		// Copy emails functionality
-		document.addEventListener("DOMContentLoaded", function () {
-			const copyButtons = document.querySelectorAll("[data-copy-filter]");
-
-			copyButtons.forEach((button) => {
-				button.addEventListener("click", async function (e) {
-					e.preventDefault();
-
-					const filter = this.getAttribute("data-copy-filter");
-					const rows = document.querySelectorAll("tbody tr");
-					const emails = [];
-
-					rows.forEach((row) => {
-						const email = row
-							.querySelector("td:first-child")
-							.textContent.trim();
-						const rsvpCheckbox = row.querySelector('[data-field="rsvped"]');
-						const subscribedCheckbox = row.querySelector(
-							'[data-field="subscribed"]',
-						);
-						const verifiedBadge = row.querySelector(".badge");
-
-						const isRsvped = rsvpCheckbox?.checked;
-						const isSubscribed = subscribedCheckbox?.checked;
-						const isVerified = verifiedBadge?.textContent.trim() === "Yes";
-
-						let shouldInclude = false;
-
-						switch (filter) {
-							case "all":
-								shouldInclude = true;
-								break;
-							case "rsvped":
-								shouldInclude = isRsvped;
-								break;
-							case "subscribed":
-								shouldInclude = isSubscribed;
-								break;
-							case "verified":
-								shouldInclude = isVerified;
-								break;
-							case "rsvped-subscribed":
-								shouldInclude = isRsvped && isSubscribed;
-								break;
-						}
-
-						if (shouldInclude) {
-							emails.push(email);
-						}
-					});
-
-					if (emails.length > 0) {
-						try {
-							await navigator.clipboard.writeText(emails.join(", "));
-
-							// Show success feedback
-							const originalText = this.textContent;
-							this.textContent = `Copied ${emails.length} emails!`;
-							this.classList.add("text-success");
-
-							setTimeout(() => {
-								this.textContent = originalText;
-								this.classList.remove("text-success");
-							}, 2000);
-						} catch (err) {
-							console.error("Failed to copy emails:", err);
-							alert("Failed to copy emails. Please try again.");
-						}
-					} else {
-						this.textContent = "No emails found";
-						setTimeout(() => {
-							this.textContent = this.getAttribute("data-copy-filter")
-								.replace("-", " & ")
-								.replace(/\b\w/g, (l) => l.toUpperCase());
-						}, 1500);
-					}
-				});
-			});
-		});
-	</script>
-</Layout>
+</AdminLayout>

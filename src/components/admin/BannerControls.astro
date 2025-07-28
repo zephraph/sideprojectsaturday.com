@@ -1,0 +1,100 @@
+---
+export interface Props {
+	config?: {
+		id: string;
+		content: string;
+		enabled: boolean;
+		createdAt: Date;
+		updatedAt: Date;
+	} | null;
+}
+
+const { config } = Astro.props;
+---
+
+<div class="card bg-base-100 shadow-xl">
+	<div class="card-body">
+		<h2 class="card-title text-2xl mb-6">Banner Configuration</h2>
+
+		<form id="banner-form" onsubmit="submitBannerForm(event)">
+			<div class="form-control">
+				<label class="label cursor-pointer justify-start gap-4">
+					<input
+						type="checkbox"
+						id="banner-enabled"
+						class="checkbox checkbox-primary"
+						checked={config?.enabled !== false}
+					/>
+					<span class="label-text">Display banner</span>
+				</label>
+			</div>
+
+			<div class="form-control mt-4 flex flex-col">
+				<label class="label">
+					<span class="label-text">Banner Content</span>
+				</label>
+				<textarea
+					id="banner-content"
+					name="content"
+					class="textarea textarea-bordered h-24"
+					placeholder="Enter banner content..."
+					required>{config?.content || ""}</textarea
+				>
+				<label class="label">
+					<span class="label-text-alt"
+						>You can use markdown for links and formatting</span
+					>
+				</label>
+			</div>
+
+			<div class="form-control mt-4">
+				<button type="submit" class="btn btn-primary"> Update Banner </button>
+			</div>
+		</form>
+	</div>
+</div>
+
+<script>
+	// Toast notification function
+	window.showToast = function (message) {
+		const toast = document.createElement("div");
+		toast.className = "toast toast-top toast-center";
+		toast.innerHTML = `
+			<div class="alert alert-success">
+				<span>${message}</span>
+			</div>
+		`;
+		document.body.appendChild(toast);
+
+		setTimeout(() => {
+			toast.remove();
+		}, 3000);
+	};
+
+	// Submit banner form
+	window.submitBannerForm = async function (event) {
+		event.preventDefault();
+
+		const content = document.getElementById("banner-content").value;
+		const enabled = document.getElementById("banner-enabled").checked;
+
+		try {
+			const response = await fetch("/api/admin/update-banner", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({ content, enabled }),
+			});
+
+			if (response.ok) {
+				showToast("Banner updated successfully");
+			} else {
+				const error = await response.json();
+				showToast("Failed to update banner: " + error.error, "error");
+			}
+		} catch (error) {
+			showToast("Failed to update banner: " + error.message, "error");
+		}
+	};
+</script>

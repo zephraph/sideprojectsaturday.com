@@ -1,0 +1,212 @@
+---
+import "../styles/global.css";
+export interface Props {
+	title: string;
+	activeRoute?: string;
+}
+
+const { title, activeRoute } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+// Define navigation items
+const navItems = [
+	{
+		href: "/admin",
+		label: "Dashboard",
+		icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6",
+	},
+	{
+		href: "/admin/events",
+		label: "Events",
+		icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z",
+	},
+	{
+		href: "/admin/users",
+		label: "Users",
+		icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z",
+	},
+	{
+		href: "/admin/settings",
+		label: "Settings",
+		icon: "M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z",
+	},
+];
+---
+
+<!doctype html>
+<html lang="en" data-theme="light">
+	<head>
+		<meta charset="UTF-8" />
+		<meta
+			name="description"
+			content="Admin Dashboard - Side Project Saturday"
+		/>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<title>{title}</title>
+		<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+	</head>
+	<body>
+		<div class="drawer lg:drawer-open">
+			<input id="drawer-toggle" type="checkbox" class="drawer-toggle" />
+			<div class="drawer-content flex flex-col">
+				<!-- Navbar -->
+				<div class="navbar bg-base-100 shadow-lg lg:hidden">
+					<div class="flex-1">
+						<label for="drawer-toggle" class="btn btn-ghost drawer-button">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="w-6 h-6"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"></path>
+							</svg>
+						</label>
+						<a class="text-xl">Admin Dashboard</a>
+					</div>
+				</div>
+
+				<!-- Page content -->
+				<main class="flex-1 p-6 bg-base-200 min-h-screen">
+					<slot />
+				</main>
+			</div>
+
+			<!-- Sidebar -->
+			<div class="drawer-side">
+				<label for="drawer-toggle" class="drawer-overlay"></label>
+				<aside class="w-64 min-h-screen bg-base-100">
+					<!-- Sidebar header -->
+					<div class="p-4 border-b border-base-300">
+						<h2 class="text-xl font-bold">SPS Admin</h2>
+						<p class="text-sm text-base-content/70">
+							{Astro.locals.user?.email}
+						</p>
+					</div>
+
+					<!-- Navigation -->
+					<ul class="menu p-4">
+						{
+							navItems.map((item) => (
+								<li>
+									<a
+										href={item.href}
+										class={currentPath === item.href ? "active" : ""}
+									>
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+											stroke-width="1.5"
+											stroke="currentColor"
+											class="w-5 h-5"
+										>
+											<path
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												d={item.icon}
+											/>
+										</svg>
+										{item.label}
+									</a>
+								</li>
+							))
+						}
+					</ul>
+
+					<!-- Sidebar footer -->
+					<div class="absolute bottom-0 w-full p-4 border-t border-base-300">
+						<ul class="menu">
+							<li>
+								<a href="/" class="btn btn-ghost btn-sm justify-start">
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke-width="1.5"
+										stroke="currentColor"
+										class="w-5 h-5"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+										></path>
+									</svg>
+									Back to Site
+								</a>
+							</li>
+							<li>
+								<a
+									href="/auth/sign-out"
+									class="btn btn-ghost btn-sm justify-start"
+								>
+									<svg
+										xmlns="http://www.w3.org/2000/svg"
+										fill="none"
+										viewBox="0 0 24 24"
+										stroke-width="1.5"
+										stroke="currentColor"
+										class="w-5 h-5"
+									>
+										<path
+											stroke-linecap="round"
+											stroke-linejoin="round"
+											d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+										></path>
+									</svg>
+									Sign Out
+								</a>
+							</li>
+						</ul>
+					</div>
+				</aside>
+			</div>
+		</div>
+
+		<script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"
+		></script>
+		<script>
+			// Parse JSON error responses
+			document.body.addEventListener("htmx:responseError", function (evt) {
+				try {
+					evt.detail.xhr.responseJSON = JSON.parse(evt.detail.xhr.response);
+				} catch (e) {}
+			});
+
+			// Handle data-hx-on-htmx-after-request attributes
+			document.addEventListener("DOMContentLoaded", function () {
+				document
+					.querySelectorAll("[data-hx-on-htmx-after-request]")
+					.forEach(function (el) {
+						const handler = el.getAttribute("data-hx-on-htmx-after-request");
+						el.addEventListener("htmx:afterRequest", function (event) {
+							eval(handler);
+						});
+					});
+			});
+
+			// Toast notification function
+			window.showToast = function (message, type = "success") {
+				const toast = document.createElement("div");
+				toast.className = "toast toast-top toast-center";
+				toast.innerHTML = `
+					<div class="alert alert-${type}">
+						<span>${message}</span>
+					</div>
+				`;
+				document.body.appendChild(toast);
+
+				setTimeout(() => {
+					toast.remove();
+				}, 3000);
+			};
+		</script>
+	</body>
+</html>

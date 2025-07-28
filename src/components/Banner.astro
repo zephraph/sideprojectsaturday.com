@@ -1,0 +1,39 @@
+---
+import { marked } from "marked";
+import { db } from "@/lib/auth";
+
+db(Astro.locals.runtime.env);
+
+// Get banner configuration from database
+const bannerConfig = await db.bannerConfig.findFirst({
+	orderBy: {
+		updatedAt: "desc",
+	},
+});
+
+// If banner is disabled or doesn't exist, don't render anything
+if (!bannerConfig || !bannerConfig.enabled) {
+	return;
+}
+
+// Convert markdown content to HTML
+const htmlContent = await marked(bannerConfig.content);
+---
+
+<!-- Launch announcement banner -->
+<div
+	class="bg-warning text-warning-content text-center py-2 px-4 text-sm sticky top-0 z-50"
+>
+	<div class="font-medium banner-content" set:html={htmlContent} />
+</div>
+
+<style>
+	@reference "@/styles/global.css"
+	.banner-content :global(a) {
+		@apply link;
+	}
+
+	.banner-content :global(p) {
+		@apply inline;
+	}
+</style>
