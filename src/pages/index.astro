@@ -135,7 +135,7 @@ if (signOutResult && !signOutResult.error) {
 				background: "rgba(255,255,255,0.85)",
 			}}
 		>
-			<NextEventCard {nextEventDate} {eventForToday} />
+			<NextEventCard {nextEventDate} {eventForToday} {hasEvent} />
 			{
 				userWithPreferences && session ? (
 					<AuthenticatedUserSection
