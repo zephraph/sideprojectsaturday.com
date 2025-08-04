@@ -2,16 +2,11 @@ import type { APIRoute } from "astro";
 import { db } from "@/lib/auth";
 
 export const POST: APIRoute = async ({ request, locals }) => {
-	// Check if user is admin
-	if (!locals.user || locals.user.role !== "admin") {
-		return new Response(JSON.stringify({ error: "Unauthorized" }), {
-			status: 401,
-			headers: { "Content-Type": "application/json" },
-		});
-	}
-
 	try {
-		const { content, enabled } = await request.json();
+		const { content, enabled } = (await request.json()) as {
+			content: string;
+			enabled: boolean | string;
+		};
 
 		// Convert string "true"/"false" to boolean if needed
 		const enabledBool =

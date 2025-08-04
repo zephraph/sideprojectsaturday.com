@@ -2,11 +2,6 @@
 import AdminLayout from "@/layouts/AdminLayout.astro";
 import { db } from "@/lib/auth";
 
-// Check if user is admin
-if (!Astro.locals.user || Astro.locals.user.role !== "admin") {
-	return Astro.redirect("/");
-}
-
 db(Astro.locals.runtime.env);
 
 const users = await db.user.findMany({
