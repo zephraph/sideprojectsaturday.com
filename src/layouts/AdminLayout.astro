@@ -45,6 +45,8 @@ const navItems = [
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<title>{title}</title>
 		<script src="https://unpkg.com/htmx.org@1.9.10"></script>
+		<script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"
+		></script>
 	</head>
 	<body>
 		<div class="drawer lg:drawer-open">
@@ -170,8 +172,6 @@ const navItems = [
 			</div>
 		</div>
 
-		<script src="https://unpkg.com/htmx.org@1.9.10/dist/ext/json-enc.js"
-		></script>
 		<script>
 			// Parse JSON error responses
 			document.body.addEventListener("htmx:responseError", function (evt) {
