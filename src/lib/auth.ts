@@ -9,13 +9,21 @@ import type { UserEventMessage } from "@/services/user-event-consumer";
 import resend from "./resend";
 import { lazyInvokable } from "./utils";
 
-export const db = lazyInvokable(
-	(env: Env) =>
-		new PrismaClient({
-			// @ts-expect-error - Prisma adapter is added at runtime
-			adapter: new PrismaD1(env.DB),
-		}),
-);
+export const db = lazyInvokable((env: Env) => {
+	const client = new PrismaClient({
+		// @ts-expect-error - Prisma adapter is added at runtime
+		adapter: new PrismaD1(env.DB),
+	});
+
+	// Seed development data when client is first created
+	if (import.meta.env.DEV) {
+		import("./seed").then(({ seedDevelopmentData }) => {
+			seedDevelopmentData(client);
+		});
+	}
+
+	return client;
+});
 
 // Helper function to queue user events
 export const queueUserEvent = (env: Env, message: UserEventMessage) => {
