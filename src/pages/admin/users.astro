@@ -21,7 +21,7 @@ const users = await db.user.findMany({
 // Get user stats
 const totalUsers = users.length;
 const rsvpedUsers = users.filter((u) => u.rsvped).length;
-const subscribedUsers = users.filter((u) => u.subscribed).length;
+const subscribedUsers = await db.user.count({ where: { subscribed: true } });
 const verifiedUsers = users.filter((u) => u.emailVerified).length;
 ---
 
