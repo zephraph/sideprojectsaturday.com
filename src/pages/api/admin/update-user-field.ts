@@ -43,7 +43,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
 		// Update user field
 		db(locals.runtime.env);
-		
+
 		// Get user data for Resend synchronization if updating subscription
 		let userEmail = null;
 		if (field === "subscribed") {
@@ -52,13 +52,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 				select: { email: true },
 			});
 			if (!user) {
-				return new Response(
-					JSON.stringify({ error: "User not found" }),
-					{
-						status: 404,
-						headers: { "Content-Type": "application/json" },
-					},
-				);
+				return new Response(JSON.stringify({ error: "User not found" }), {
+					status: 404,
+					headers: { "Content-Type": "application/json" },
+				});
 			}
 			userEmail = user.email;
 		}
