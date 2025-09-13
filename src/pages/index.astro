@@ -1,10 +1,12 @@
 ---
 import { actions } from "astro:actions";
 import {
+	canRsvpForCurrentEvent,
 	getCurrentWeekSaturdayDate,
 	getDayRange,
 	getNextSaturdayDate,
 	getNextSaturdayFormatted,
+	getRsvpEventCutoff,
 	isWithinEventHours,
 } from "@/lib/date-utils";
 import AuthenticatedUserSection from "../components/AuthenticatedUserSection.astro";
@@ -52,12 +54,16 @@ const nextEventDate = getNextSaturdayFormatted();
 const currentWeekSaturday = getCurrentWeekSaturdayDate();
 const { start, end } = getDayRange(currentWeekSaturday);
 
-// Check if there's a scheduled event for this Saturday
+// Check for events (current and next)
 let hasEvent = false;
 let hasActiveEvent = false;
 let eventForToday = null;
+let nextEvent = null;
+let rsvpEvent = null;
+
 try {
 	db(Astro.locals.runtime.env);
+
 	// Check for any event today (scheduled or in progress)
 	eventForToday = await db.event.findFirst({
 		where: {
@@ -70,12 +76,46 @@ try {
 			},
 		},
 	});
-	hasEvent = !!eventForToday;
 
 	// Check if there's an active event in progress
 	hasActiveEvent = eventForToday?.status === "inprogress";
+
+	// Get the appropriate event for RSVP based on timing
+	const eventCutoff = getRsvpEventCutoff();
+	nextEvent = await db.event.findFirst({
+		where: {
+			eventDate: {
+				gte: eventCutoff,
+			},
+			status: {
+				in: ["scheduled", "inprogress"],
+			},
+		},
+		orderBy: {
+			eventDate: "asc",
+		},
+	});
+
+	// Determine which event to show
+	// Always show event info if there's an active or upcoming event
+	if (eventForToday) {
+		// Show current event info if it exists
+		hasEvent = true;
+
+		// For RSVP purposes, use current event if we can still RSVP, otherwise use next event
+		if (canRsvpForCurrentEvent()) {
+			rsvpEvent = eventForToday;
+		} else if (nextEvent) {
+			rsvpEvent = nextEvent;
+		} else {
+			rsvpEvent = eventForToday; // Still show current event even if no next event
+		}
+	} else if (nextEvent) {
+		rsvpEvent = nextEvent;
+		hasEvent = true;
+	}
 } catch (error) {
-	console.error("Error checking for event:", error);
+	console.error("Error checking for events:", error);
 }
 
 // Redirect after successful sign out
@@ -135,7 +175,11 @@ if (signOutResult && !signOutResult.error) {
 				background: "rgba(255,255,255,0.85)",
 			}}
 		>
-			<NextEventCard {nextEventDate} {eventForToday} {hasEvent} />
+			<NextEventCard
+				{nextEventDate}
+				event={eventForToday || rsvpEvent}
+				{hasEvent}
+			/>
 			{
 				userWithPreferences && session ? (
 					<AuthenticatedUserSection
@@ -143,6 +187,7 @@ if (signOutResult && !signOutResult.error) {
 						hasEvent={hasEvent}
 						hasActiveEvent={hasActiveEvent}
 						eventForToday={eventForToday}
+						rsvpEvent={rsvpEvent}
 					/>
 				) : magicLinkResult && !magicLinkResult.error ? (
 					<MagicLinkSentSection message={magicLinkResult.data.message} />

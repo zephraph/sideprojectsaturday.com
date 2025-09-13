@@ -132,3 +132,62 @@ export function isWithinEventHours(date: Date = new Date()): boolean {
 	// Check if it's Saturday and between 9am-12pm EST/EDT
 	return day === 6 && hours >= 9 && hours < 12;
 }
+
+/**
+ * Check if we're still within the current event window for RSVP purposes
+ * Returns true if it's before Saturday noon EST/EDT, false after noon on Saturday
+ */
+export function isBeforeEventEnd(date: Date = new Date()): boolean {
+	const nyTime = new Date(
+		date.toLocaleString("en-US", { timeZone: "America/New_York" }),
+	);
+	const day = nyTime.getDay();
+	const hours = nyTime.getHours();
+
+	// If it's not Saturday, we're always before the current event end
+	if (day !== 6) {
+		return true;
+	}
+
+	// If it's Saturday, check if we're before noon (12 PM)
+	return hours < 12;
+}
+
+/**
+ * Check if we can still RSVP for current event (at least 1 hour before end)
+ * Returns true if it's at least 1 hour before Saturday noon EST/EDT
+ */
+export function canRsvpForCurrentEvent(date: Date = new Date()): boolean {
+	const nyTime = new Date(
+		date.toLocaleString("en-US", { timeZone: "America/New_York" }),
+	);
+	const day = nyTime.getDay();
+	const hours = nyTime.getHours();
+
+	// If it's not Saturday, we can still RSVP for current event
+	if (day !== 6) {
+		return true;
+	}
+
+	// If it's Saturday, check if we're at least 1 hour before noon (11 AM)
+	return hours < 11;
+}
+
+/**
+ * Get the appropriate event cutoff date for RSVP queries
+ * Before Saturday noon: allows RSVPs for current week's event (if it exists)
+ * After Saturday noon: only allows RSVPs for next week's event
+ */
+export function getRsvpEventCutoff(date: Date = new Date()): Date {
+	if (isBeforeEventEnd(date)) {
+		// Before Saturday noon - allow current week's event
+		// Use a date from the past week to include today's event if it exists
+		const cutoff = new Date(date);
+		cutoff.setDate(date.getDate() - 7); // 7 days ago
+		cutoff.setHours(0, 0, 0, 0);
+		return cutoff;
+	} else {
+		// After Saturday noon - only next week's events
+		return new Date(date);
+	}
+}

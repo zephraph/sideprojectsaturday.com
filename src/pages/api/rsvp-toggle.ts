@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { createAuth, db } from "../../lib/auth";
+import { getRsvpEventCutoff } from "../../lib/date-utils";
 import { sendRsvpConfirmation } from "../../lib/email-utils";
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -38,11 +39,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
 		// Send RSVP confirmation email when user RSVPs (not when canceling)
 		if (rsvped) {
 			try {
-				// Get the next scheduled event
+				// Get the appropriate event based on current time
+				const eventCutoff = getRsvpEventCutoff();
 				const nextEvent = await db.event.findFirst({
 					where: {
 						eventDate: {
-							gte: new Date(),
+							gte: eventCutoff,
 						},
 						status: {
 							in: ["scheduled", "inprogress"],
