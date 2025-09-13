@@ -2,7 +2,7 @@ import { defineAction } from "astro:actions";
 import { z } from "astro:schema";
 import { createHmac } from "node:crypto";
 import { createAuth, db } from "../lib/auth";
-import { isWithinEventHours } from "../lib/date-utils";
+import { getDayRange, isWithinEventHours } from "../lib/date-utils";
 
 export const server = {
 	sendMagicLink: defineAction({
@@ -162,10 +162,19 @@ export const server = {
 					);
 				}
 
-				// Check if there's an active event
+				// Check if there's a scheduled or active event during event hours
+				const today = new Date();
+				const { start, end } = getDayRange(today);
+
 				const activeEvent = await db.event.findFirst({
 					where: {
-						status: "inprogress",
+						eventDate: {
+							gte: start,
+							lt: end,
+						},
+						status: {
+							in: ["scheduled", "inprogress"],
+						},
 					},
 				});
 
