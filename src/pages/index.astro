@@ -96,12 +96,20 @@ try {
 		},
 	});
 
-	// Determine which event to show for RSVP
-	// If we can still RSVP for current event and it exists, use that
-	// Otherwise use next event
-	if (canRsvpForCurrentEvent() && eventForToday) {
-		rsvpEvent = eventForToday;
+	// Determine which event to show
+	// Always show event info if there's an active or upcoming event
+	if (eventForToday) {
+		// Show current event info if it exists
 		hasEvent = true;
+		
+		// For RSVP purposes, use current event if we can still RSVP, otherwise use next event
+		if (canRsvpForCurrentEvent()) {
+			rsvpEvent = eventForToday;
+		} else if (nextEvent) {
+			rsvpEvent = nextEvent;
+		} else {
+			rsvpEvent = eventForToday; // Still show current event even if no next event
+		}
 	} else if (nextEvent) {
 		rsvpEvent = nextEvent;
 		hasEvent = true;
@@ -168,7 +176,7 @@ if (signOutResult && !signOutResult.error) {
 				background: "rgba(255,255,255,0.85)",
 			}}
 		>
-			<NextEventCard {nextEventDate} event={rsvpEvent} {hasEvent} />
+			<NextEventCard {nextEventDate} event={eventForToday || rsvpEvent} {hasEvent} />
 			{
 				userWithPreferences && session ? (
 					<AuthenticatedUserSection
