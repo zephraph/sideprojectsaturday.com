@@ -207,8 +207,8 @@ const buzzerResult = Astro.getActionResult(actions.openDoor);
 
 		{
 			showBuzzer && (
-				<div class="bg-rose-50 border border-rose-200 rounded-md p-3">
-					<div class="text-sm font-medium text-rose-800 mb-2">
+				<div class="bg-green-50 border border-green-200 rounded-md p-3">
+					<div class="text-sm font-medium text-green-800 mb-2">
 						Building Access
 					</div>
 					{buzzerResult && !buzzerResult.error ? (
@@ -223,12 +223,12 @@ const buzzerResult = Astro.getActionResult(actions.openDoor);
 					<form method="POST" action={actions.openDoor}>
 						<button
 							type="submit"
-							class="w-full bg-rose-600 text-white font-medium py-2 px-4 rounded-md hover:bg-rose-700 transition-all"
+							class="w-full bg-green-600 text-white font-medium py-2 px-4 rounded-md hover:bg-green-700 transition-all"
 						>
 							🚪 Open Building Door
 						</button>
 					</form>
-					<div class="text-xs text-rose-600 mt-2">
+					<div class="text-xs text-green-600 mt-2">
 						Press to unlock the building entrance
 					</div>
 				</div>

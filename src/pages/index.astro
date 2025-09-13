@@ -78,7 +78,7 @@ try {
 	});
 
 	// Check if there's an active event in progress
-	hasActiveEvent = eventForToday?.status === "inprogress";
+	hasActiveEvent = !!eventForToday;
 
 	// Get the appropriate event for RSVP based on timing
 	const eventCutoff = getRsvpEventCutoff();
