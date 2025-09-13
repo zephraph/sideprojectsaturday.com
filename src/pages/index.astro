@@ -1,13 +1,13 @@
 ---
 import { actions } from "astro:actions";
 import {
+	canRsvpForCurrentEvent,
 	getCurrentWeekSaturdayDate,
 	getDayRange,
 	getNextSaturdayDate,
 	getNextSaturdayFormatted,
-	isWithinEventHours,
-	canRsvpForCurrentEvent,
 	getRsvpEventCutoff,
+	isWithinEventHours,
 } from "@/lib/date-utils";
 import AuthenticatedUserSection from "../components/AuthenticatedUserSection.astro";
 import BackgroundDecorations from "../components/BackgroundDecorations.astro";
@@ -63,7 +63,7 @@ let rsvpEvent = null;
 
 try {
 	db(Astro.locals.runtime.env);
-	
+
 	// Check for any event today (scheduled or in progress)
 	eventForToday = await db.event.findFirst({
 		where: {
@@ -101,7 +101,7 @@ try {
 	if (eventForToday) {
 		// Show current event info if it exists
 		hasEvent = true;
-		
+
 		// For RSVP purposes, use current event if we can still RSVP, otherwise use next event
 		if (canRsvpForCurrentEvent()) {
 			rsvpEvent = eventForToday;
@@ -114,7 +114,6 @@ try {
 		rsvpEvent = nextEvent;
 		hasEvent = true;
 	}
-
 } catch (error) {
 	console.error("Error checking for events:", error);
 }
@@ -176,7 +175,11 @@ if (signOutResult && !signOutResult.error) {
 				background: "rgba(255,255,255,0.85)",
 			}}
 		>
-			<NextEventCard {nextEventDate} event={eventForToday || rsvpEvent} {hasEvent} />
+			<NextEventCard
+				{nextEventDate}
+				event={eventForToday || rsvpEvent}
+				{hasEvent}
+			/>
 			{
 				userWithPreferences && session ? (
 					<AuthenticatedUserSection

@@ -28,8 +28,8 @@ if (!hasEvent) {
 		eventLabel = "Happening Now";
 		eventDateDisplay = "Until 12:00 PM";
 		highlightClass = "text-green-600";
-	} else if (eventStart.toDateString() === now.toDateString()) {
-		// Event is today but hasn't started
+	} else if (event.status === "scheduled" && eventStart.toDateString() === now.toDateString()) {
+		// Event is scheduled for today but hasn't started yet
 		eventLabel = "Happening Today";
 		eventDateDisplay = "9:00 AM - 12:00 PM";
 		highlightClass = "text-[rgb(255,167,0)]";

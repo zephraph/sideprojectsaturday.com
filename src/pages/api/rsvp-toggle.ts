@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { createAuth, db } from "../../lib/auth";
-import { sendRsvpConfirmation } from "../../lib/email-utils";
 import { getRsvpEventCutoff } from "../../lib/date-utils";
+import { sendRsvpConfirmation } from "../../lib/email-utils";
 
 export const POST: APIRoute = async ({ request, locals }) => {
 	try {
