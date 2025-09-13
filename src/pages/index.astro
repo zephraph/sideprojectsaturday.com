@@ -6,6 +6,8 @@ import {
 	getNextSaturdayDate,
 	getNextSaturdayFormatted,
 	isWithinEventHours,
+	canRsvpForCurrentEvent,
+	getRsvpEventCutoff,
 } from "@/lib/date-utils";
 import AuthenticatedUserSection from "../components/AuthenticatedUserSection.astro";
 import BackgroundDecorations from "../components/BackgroundDecorations.astro";
@@ -52,12 +54,16 @@ const nextEventDate = getNextSaturdayFormatted();
 const currentWeekSaturday = getCurrentWeekSaturdayDate();
 const { start, end } = getDayRange(currentWeekSaturday);
 
-// Check if there's a scheduled event for this Saturday
+// Check for events (current and next)
 let hasEvent = false;
 let hasActiveEvent = false;
 let eventForToday = null;
+let nextEvent = null;
+let rsvpEvent = null;
+
 try {
 	db(Astro.locals.runtime.env);
+	
 	// Check for any event today (scheduled or in progress)
 	eventForToday = await db.event.findFirst({
 		where: {
@@ -70,12 +76,39 @@ try {
 			},
 		},
 	});
-	hasEvent = !!eventForToday;
 
 	// Check if there's an active event in progress
 	hasActiveEvent = eventForToday?.status === "inprogress";
+
+	// Get the appropriate event for RSVP based on timing
+	const eventCutoff = getRsvpEventCutoff();
+	nextEvent = await db.event.findFirst({
+		where: {
+			eventDate: {
+				gte: eventCutoff,
+			},
+			status: {
+				in: ["scheduled", "inprogress"],
+			},
+		},
+		orderBy: {
+			eventDate: "asc",
+		},
+	});
+
+	// Determine which event to show for RSVP
+	// If we can still RSVP for current event and it exists, use that
+	// Otherwise use next event
+	if (canRsvpForCurrentEvent() && eventForToday) {
+		rsvpEvent = eventForToday;
+		hasEvent = true;
+	} else if (nextEvent) {
+		rsvpEvent = nextEvent;
+		hasEvent = true;
+	}
+
 } catch (error) {
-	console.error("Error checking for event:", error);
+	console.error("Error checking for events:", error);
 }
 
 // Redirect after successful sign out
@@ -135,7 +168,7 @@ if (signOutResult && !signOutResult.error) {
 				background: "rgba(255,255,255,0.85)",
 			}}
 		>
-			<NextEventCard {nextEventDate} {eventForToday} {hasEvent} />
+			<NextEventCard {nextEventDate} event={rsvpEvent} {hasEvent} />
 			{
 				userWithPreferences && session ? (
 					<AuthenticatedUserSection
@@ -143,6 +176,7 @@ if (signOutResult && !signOutResult.error) {
 						hasEvent={hasEvent}
 						hasActiveEvent={hasActiveEvent}
 						eventForToday={eventForToday}
+						rsvpEvent={rsvpEvent}
 					/>
 				) : magicLinkResult && !magicLinkResult.error ? (
 					<MagicLinkSentSection message={magicLinkResult.data.message} />

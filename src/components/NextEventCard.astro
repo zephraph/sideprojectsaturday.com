@@ -4,11 +4,11 @@ import { getEventEndTime, getEventStartTime } from "@/lib/date-utils";
 
 interface Props {
 	nextEventDate: string;
-	eventForToday?: Event | null;
+	event?: Event | null;
 	hasEvent?: boolean;
 }
 
-const { nextEventDate, eventForToday, hasEvent = true } = Astro.props;
+const { nextEventDate, event, hasEvent = true } = Astro.props;
 
 // Determine the display text based on event status and timing
 let eventLabel = "Next Event";
@@ -19,12 +19,12 @@ if (!hasEvent) {
 	eventLabel = "Next Event";
 	eventDateDisplay = "No event scheduled yet";
 	highlightClass = "text-gray-500";
-} else if (eventForToday) {
+} else if (event) {
 	const now = new Date();
-	const eventStart = getEventStartTime(eventForToday.eventDate);
-	const eventEnd = getEventEndTime(eventForToday.eventDate);
+	const eventStart = getEventStartTime(event.eventDate);
+	const eventEnd = getEventEndTime(event.eventDate);
 
-	if (eventForToday.status === "inprogress") {
+	if (event.status === "inprogress") {
 		eventLabel = "Happening Now";
 		eventDateDisplay = "Until 12:00 PM";
 		highlightClass = "text-green-600";

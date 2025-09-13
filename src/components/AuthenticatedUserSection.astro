@@ -1,7 +1,7 @@
 ---
 import { actions } from "astro:actions";
 import type { Event } from "@generated/prisma/client";
-import { getEventStartTime, isWithinEventHours } from "@/lib/date-utils";
+import { getEventStartTime, isWithinEventHours, formatEventDate, canRsvpForCurrentEvent } from "@/lib/date-utils";
 
 interface Props {
 	user: {
@@ -13,6 +13,7 @@ interface Props {
 	hasEvent?: boolean;
 	hasActiveEvent?: boolean;
 	eventForToday?: Event | null;
+	rsvpEvent?: Event | null;
 }
 
 const {
@@ -20,6 +21,7 @@ const {
 	hasEvent = true,
 	hasActiveEvent = false,
 	eventForToday,
+	rsvpEvent,
 } = Astro.props;
 
 // Check if buzzer should be shown
@@ -40,15 +42,33 @@ const buzzerResult = Astro.getActionResult(actions.openDoor);
 				? "bg-green-50 border border-green-200 rounded-md p-3"
 				: "bg-gray-50 border border-gray-200 rounded-md p-3"}
 		>
-			<div
-				class={hasEvent
-					? "text-sm font-medium text-green-800 mb-2"
-					: "text-sm font-medium text-gray-800 mb-2"}
-			>
-				Next Event RSVP
-			</div>
+			{(() => {
+				// Determine RSVP event context
+				const canRsvpCurrent = canRsvpForCurrentEvent();
+				const isCurrentEvent = rsvpEvent && eventForToday && rsvpEvent.id === eventForToday.id;
+				const isRsvpingForCurrent = canRsvpCurrent && isCurrentEvent;
+				
+				let rsvpTitle = "Next Event RSVP";
+				if (isRsvpingForCurrent && eventForToday) {
+					if (eventForToday.status === "inprogress") {
+						rsvpTitle = "Current Event RSVP";
+					} else {
+						rsvpTitle = "Today's Event RSVP";
+					}
+				}
+				
+				return (
+					<div
+						class={hasEvent
+							? "text-sm font-medium text-green-800 mb-2"
+							: "text-sm font-medium text-gray-800 mb-2"}
+					>
+						{rsvpTitle}
+					</div>
+				);
+			})()}
 			{
-				hasEvent ? (
+				hasEvent && rsvpEvent ? (
 					<>
 						{(() => {
 							if (eventForToday) {
@@ -62,7 +82,7 @@ const buzzerResult = Astro.getActionResult(actions.openDoor);
 											🚀 Event is happening now!
 										</div>
 									);
-								} else if (timeDiff > 0) {
+								} else if (timeDiff > 0 && eventForToday.id === rsvpEvent.id) {
 									const hours = Math.floor(timeDiff / (1000 * 60 * 60));
 									const minutes = Math.floor(
 										(timeDiff % (1000 * 60 * 60)) / (1000 * 60),
@@ -77,6 +97,16 @@ const buzzerResult = Astro.getActionResult(actions.openDoor);
 									);
 								}
 							}
+							
+							// Show which event they're RSVPing for if it's not today's
+							if (rsvpEvent && (!eventForToday || rsvpEvent.id !== eventForToday.id)) {
+								return (
+									<div class="text-blue-700 text-sm font-semibold mb-2">
+										📅 {formatEventDate(new Date(rsvpEvent.eventDate))}
+									</div>
+								);
+							}
+							
 							return null;
 						})()}
 						<div class="flex items-center justify-between">

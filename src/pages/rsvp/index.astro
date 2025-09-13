@@ -5,7 +5,7 @@ import RsvpError from "@/components/rsvp/RsvpError.astro";
 import RsvpSuccess from "@/components/rsvp/RsvpSuccess.astro";
 import Layout from "@/layouts/Layout.astro";
 import { createAuth, db } from "@/lib/auth";
-import { formatEventDate } from "@/lib/date-utils";
+import { formatEventDate, getRsvpEventCutoff } from "@/lib/date-utils";
 
 type RsvpState = "already-rsvped" | "success" | "error" | "no-event";
 
@@ -29,11 +29,12 @@ let eventDateStr = "";
 try {
 	db(Astro.locals.runtime.env);
 
-	// Get next event
+	// Get appropriate event based on current time
+	const eventCutoff = getRsvpEventCutoff();
 	nextEvent = await db.event.findFirst({
 		where: {
 			eventDate: {
-				gte: new Date(),
+				gte: eventCutoff,
 			},
 			status: {
 				in: ["scheduled", "inprogress"],
